@@ -1,11 +1,16 @@
 {
   "name": "boardgamestar",
   "version": "0.1.0",
+  "author": "Ryan McMahon",
+  "description": "Board Game Star is a platform for playing digital boardgames.",
   "private": true,
   "homepage": "./",
   "main": "./public/electron.js",
   "build": {
     "appId": "com.boardgamestar",
+    "linux": {
+      "category": "Games"
+    },
     "files": [
       "games/**/*"
     ],
