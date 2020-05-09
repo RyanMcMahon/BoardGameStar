@@ -43,6 +43,12 @@ export const Button = styled.button((options: ButtonOptions) => ({
       color: '#fff',
     },
   },
+  ':focus': {
+    color: '#fff',
+  },
+  ':active': {
+    color: '#fff',
+  },
   ':hover': {
     backgroundColor: buttonStyles[options.design].highlight,
     borderColor: buttonStyles[options.design].highlight,
