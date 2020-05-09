@@ -1,13 +1,15 @@
 import styled from 'styled-components';
 
 interface ButtonOptions {
-  design: 'primary' | 'danger';
+  design: 'primary' | 'danger' | 'success';
 }
 
 export const primaryColor = '#6E48AA';
 export const primaryHighlightColor = '#9D50BB';
 export const dangerColor = '#e74c3c';
 export const dangerHighlightColor = '#c0392b';
+export const successColor = '#2ecc71';
+export const successHighlightColor = '#27ae60';
 export const disabledColor = '#ccc';
 
 const buttonStyles: {
@@ -23,6 +25,10 @@ const buttonStyles: {
   danger: {
     base: dangerColor,
     highlight: dangerHighlightColor,
+  },
+  success: {
+    base: successColor,
+    highlight: successHighlightColor,
   },
 };
 

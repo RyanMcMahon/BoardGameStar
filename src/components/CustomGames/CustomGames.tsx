@@ -1,7 +1,6 @@
 import React from 'react';
 import { newGame } from '../../utils/game';
 import { Redirect } from 'react-router-dom';
-import { ProgressBar } from '../ProgressBar/ProgressBar';
 import { CardOption, GameConfig } from '../../types';
 import { GameSelector } from '../GameSelector';
 import { WebPage, Content } from '../WebPage';
