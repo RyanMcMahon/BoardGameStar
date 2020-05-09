@@ -94,7 +94,7 @@ export function WebPage(props: Props) {
         <MenuGameId placeholder="Game ID" onChange={handleOnChange} />
         <MenuLink to={`/play/${gameId}`}>Join Game</MenuLink>
         <MenuLink to="/game-select">
-          {isWebBuild ? 'Start New Game' : 'Prebuilt Games'}
+          {isWebBuild ? 'Start New Game' : 'Included Games'}
         </MenuLink>
         {!isWebBuild && <MenuLink to="/">Custom Games</MenuLink>}
       </Menu>

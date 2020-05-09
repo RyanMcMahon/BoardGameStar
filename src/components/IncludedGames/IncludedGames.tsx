@@ -11,7 +11,7 @@ const configs: { [key: string]: Config } = {
   Aviary,
 };
 
-export function PrebuiltGames() {
+export function IncludedGames() {
   const [newGameId, setNewGameId] = React.useState<string>();
   const handleGameSelect = (config: GameConfig) => {
     console.log(config);

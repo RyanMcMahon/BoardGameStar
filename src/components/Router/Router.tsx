@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, HashRouter, Switch, Route } from 'react-router-dom';
 
 import { App } from '../App';
-import { PrebuiltGames } from '../PrebuiltGames';
+import { IncludedGames } from '../IncludedGames';
 import { isWebBuild } from '../../utils/meta';
 
 interface Props {
@@ -29,7 +29,7 @@ export function Router() {
           <App />
         </Route>
         <Route path="/game-select">
-          <PrebuiltGames />
+          <IncludedGames />
         </Route>
         <Route path="/">
           <React.Suspense fallback={null}>

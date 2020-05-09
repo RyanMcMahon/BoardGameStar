@@ -5,15 +5,22 @@ import { ProgressBar } from '../ProgressBar/ProgressBar';
 import { CardOption, GameConfig } from '../../types';
 import { GameSelector } from '../GameSelector';
 import { WebPage, Content } from '../WebPage';
+import { Button } from '../../utils/style';
+import { CreateCustomGameModal } from '../CreateCustomGameModal';
+import styled from 'styled-components';
 
 const fs = window.require('fs');
+
+const Container = styled.div({
+  padding: '2rem 0',
+});
 
 export function CustomGame() {
   const [games, setGames] = React.useState<any>([]);
   const [gameConfigs, setGameConfigs] = React.useState<any>({});
-  const [isLoadingGames, setIsLoadingGames] = React.useState<boolean>(false);
+  const [showCreateModal, setShowCreateModal] = React.useState<boolean>(false);
   const [newGameId, setNewGameId] = React.useState<string>();
-  const handleGameSelect = (config: GameConfig) => () => {
+  const handleGameSelect = (gameName: string, config: GameConfig) => () => {
     const assets: { [key: string]: string } = {};
 
     config.board.forEach(item => {
@@ -41,7 +48,7 @@ export function CustomGame() {
     for (let key in assets) {
       if (!assets[key]) {
         assets[key] = `data:image/png;base64,${fs
-          .readFileSync('./games/Condottiere/images/' + key)
+          .readFileSync(`./games/${gameName}/images/${key}`)
           .toString('base64')}`;
       }
     }
@@ -53,27 +60,20 @@ export function CustomGame() {
   };
 
   React.useEffect(() => {
-    setIsLoadingGames(true);
-    const loadGames = async () => {
-      const gameNames = fs.statSync('./games').isDirectory()
-        ? fs.readdirSync('./games').filter((x: string) => x !== '.gitkeep')
-        : [];
-      const configs: any = {};
+    const gameNames = fs.existsSync('./games')
+      ? fs.readdirSync('./games').filter((x: string) => x !== '.gitkeep')
+      : [];
+    const configs: any = {};
 
-      for (let i = 0; i < gameNames.length; i++) {
-        const gameName = gameNames[i];
-        const config = window.require(
-          `./games/${gameName}/config`
-        ) as GameConfig;
-        configs[gameName] = config;
-        console.log(config);
-      }
+    for (let i = 0; i < gameNames.length; i++) {
+      const gameName = gameNames[i];
+      const config = window.require(`./games/${gameName}/config`) as GameConfig;
+      configs[gameName] = config;
+      console.log(config);
+    }
 
-      setGames(gameNames);
-      setGameConfigs(configs);
-      setIsLoadingGames(false);
-    };
-    loadGames();
+    setGames(gameNames);
+    setGameConfigs(configs);
   }, []);
 
   if (newGameId) {
@@ -83,20 +83,22 @@ export function CustomGame() {
   return (
     <WebPage>
       <Content>
-        {isLoadingGames ? (
-          <ProgressBar complete={60} />
-        ) : (
-          <>
-            {games.map((game: any) => (
-              <GameSelector
-                gameName={game}
-                config={gameConfigs[game]}
-                onGameSelect={handleGameSelect(gameConfigs[game])}
-              />
-            ))}
-            {!games.length && <h1>No Custom Games</h1>}
-          </>
-        )}
+        <Container>
+          <Button design="primary" onClick={() => setShowCreateModal(true)}>
+            Create New Game
+          </Button>
+          {games.map((game: any) => (
+            <GameSelector
+              gameName={game}
+              config={gameConfigs[game]}
+              onGameSelect={handleGameSelect(game, gameConfigs[game])}
+            />
+          ))}
+          {!games.length && <h1>No Custom Games</h1>}
+          {showCreateModal && (
+            <CreateCustomGameModal onClose={() => setShowCreateModal(false)} />
+          )}
+        </Container>
       </Content>
     </WebPage>
   );
