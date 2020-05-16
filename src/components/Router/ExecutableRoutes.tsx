@@ -37,7 +37,7 @@ function reducer(state: EditorState, action: EditorAction) {
         type: 'player' as const,
         name: 'Player',
         x: 50,
-        y: 50,
+        y: 100,
         width: 0,
         height: 0,
         color: '#f1c40f',

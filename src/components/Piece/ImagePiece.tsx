@@ -7,18 +7,28 @@ import { PieceTransformer, useTransformer } from './PieceTransformer';
 import { BoardItem, CardItem, ImageTokenItem } from '../../types';
 
 interface Props {
-  onSelect: () => void;
-  onChange: (o: any) => void;
-  isSelected: boolean;
+  onSelect?: () => void;
+  onChange?: (o: any) => void;
+  onDblClick?: () => void;
+  draggable?: boolean;
+  isSelected?: boolean;
   assets: Assets;
   item: BoardItem | CardItem | ImageTokenItem;
 }
 
 export function ImagePiece(props: Props) {
-  const { isSelected, assets, item, onSelect, onChange } = props;
+  const {
+    draggable,
+    isSelected,
+    assets,
+    item,
+    onSelect,
+    onDblClick,
+    onChange,
+  } = props;
   const image = useAsset(assets, item);
   const objectRef = React.useRef<any>();
-  const handleTransform = useTransformer(objectRef, onChange);
+  const handleTransform = useTransformer(objectRef, onChange || (() => {}));
 
   return (
     <>
@@ -32,12 +42,17 @@ export function ImagePiece(props: Props) {
         rotation={item.rotation}
         onClick={onSelect}
         onTap={onSelect}
+        onDblClick={onDblClick}
+        onDblTap={onDblClick}
         ref={objectRef}
-        draggable
-        onDragEnd={handleTransform}
-        onTransformEnd={handleTransform}
+        draggable={draggable}
+        onDragMove={handleTransform}
+        onTransform={handleTransform}
       />
-      <PieceTransformer isSelected={isSelected} objectRef={objectRef} />
+      <PieceTransformer
+        isSelected={isSelected || false}
+        objectRef={objectRef}
+      />
     </>
   );
 }

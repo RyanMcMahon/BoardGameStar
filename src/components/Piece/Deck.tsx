@@ -9,14 +9,23 @@ import { PieceTransformer, useTransformer } from './PieceTransformer';
 interface Props {
   assets: Assets;
   item: DeckItem;
-  isSelected: boolean;
-  onSelect: () => void;
+  isSelected?: boolean;
+  onSelect?: () => void;
   onChange: (o: any) => void;
   onDblClick: () => void;
+  onContextMenu?: (e: any) => void;
 }
 
 export function Deck(props: Props) {
-  const { item, onSelect, assets, isSelected, onChange, onDblClick } = props;
+  const {
+    item,
+    onSelect,
+    assets,
+    isSelected,
+    onChange,
+    onDblClick,
+    onContextMenu,
+  } = props;
   // const [
   const image = useAsset(props.assets, item);
   const objectRef = React.useRef<any>();
@@ -27,7 +36,7 @@ export function Deck(props: Props) {
       <Label x={item.x} y={item.y - 40}>
         <Tag fill="#111" lineJoin="round" />
         <Text
-          text={`${item.count} of ${item.total} cards remaining`}
+          text={`${item.count || 0} of ${item.total || 0} cards remaining`}
           fontSize={22}
           padding={5}
           fill="white"
@@ -45,12 +54,15 @@ export function Deck(props: Props) {
         draggable
         onClick={onSelect}
         onTap={onSelect}
-        onDragEnd={handleTransform}
+        onDragMove={handleTransform}
         onDblClick={onDblClick}
         onDblTap={onDblClick}
         onContextMenu={e => {
           // do not show native context
           e.evt.preventDefault();
+          if (onContextMenu) {
+            onContextMenu(e);
+          }
           // if (props.onContextMenu) {
           //   props.onContextMenu(e.evt.clientX, e.evt.clientY, [
           //     {
@@ -91,7 +103,10 @@ export function Deck(props: Props) {
           // }
         }}
       />
-      <PieceTransformer isSelected={isSelected} objectRef={objectRef} />
+      <PieceTransformer
+        isSelected={isSelected || false}
+        objectRef={objectRef}
+      />
     </>
   );
 }

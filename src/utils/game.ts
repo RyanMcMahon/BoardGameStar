@@ -83,8 +83,9 @@ export function newGame(
                     id: `card_${idCount++}`,
                     type: 'card',
                     deckId: deck.id,
-                    width: 200,
-                    height: 300,
+                    width: deck.width,
+                    height: deck.height,
+                    layer: deck.layer,
                     x: 0,
                     y: 0,
                     delta: 0,
@@ -106,15 +107,10 @@ export function newGame(
       board: [
         ...config.board,
         ...config.decks.map(deck => ({
+          ...deck,
           type: 'deck',
           id: deck.id,
-          name: deck.name,
-          image: deck.image,
-          x: deck.x,
-          y: deck.y,
           delta: 0,
-          width: deck.width,
-          height: deck.height,
           count: decks[deck.id].cards.length,
           total: decks[deck.id].cards.length,
         })),
@@ -173,14 +169,12 @@ export function newGame(
         const playerCount = _.size(game.players);
         const playerConfig = config.players[playerCount - 1];
         const playerArea = {
+          ...playerConfig,
           id: playerId,
           type: 'player',
           name: player.name,
-          x: playerConfig.x,
-          y: playerConfig.y,
-          fill: playerConfig.color,
           rotation: 0,
-          layer: 5,
+          layer: 9,
           delta: 0,
         };
 
@@ -307,8 +301,8 @@ export function newGame(
                 .filter(card => cardIds.includes(card.id))
                 .map((card, index) => ({
                   ...card,
-                  x: playerArea.x + index * 10,
-                  y: playerArea.y + 50 + index * 10,
+                  x: playerArea.x + index * 20,
+                  y: playerArea.y + 50 + index * 20,
                 })) as RenderItem[];
               player.hand = player.hand.filter(
                 card => !cardIds.includes(card.id)

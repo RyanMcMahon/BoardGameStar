@@ -98,7 +98,7 @@ export function Hand(props: Props): JSX.Element {
               card.image && (
                 <CardImage
                   key={card.id}
-                  src={imagePrefix + props.assets[card.image]}
+                  src={props.assets[card.image]}
                   alt=""
                   width="150"
                   onClick={handleSelectCard(card.id)}

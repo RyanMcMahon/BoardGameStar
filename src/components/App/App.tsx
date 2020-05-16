@@ -14,7 +14,7 @@ import { DeckModal } from '../DeckModal';
 import { RenameModal } from '../RenameModal';
 import { ProgressBar } from '../ProgressBar';
 import { facts } from '../../utils/facts';
-import { RenderItem } from '../../types';
+import { RenderItem, AnyPiece, ContextMenuItem } from '../../types';
 import { Layer } from 'react-konva';
 import { ImagePiece, Deck, RectPiece, CirclePiece } from '../Piece';
 import { PlayArea } from '../Piece/PlayArea';
@@ -34,7 +34,21 @@ const AppContainer = styled.div({
   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%23bdc5ca' fill-opacity='0.50' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
 });
 
-const BoardContainer = styled.div({ flex: 1 });
+const ContextMenu = styled.ul({
+  padding: '1rem',
+  listStyle: 'none',
+  background: '#fff',
+  position: 'absolute',
+  zIndex: 1000,
+  border: '1px solid #333',
+  li: {
+    padding: '.5rem',
+    ':hover': {
+      cursor: 'pointer',
+      color: '#6E48AA',
+    },
+  },
+});
 
 const PlayerContainer = styled.div({
   position: 'fixed',
@@ -111,36 +125,40 @@ export const App: React.FC = () => {
   const [showControlsModal, setShowControlsModal] = React.useState<boolean>(
     false
   );
+  const [contextMenu, setContextMenu] = React.useState<{
+    x: number;
+    y: number;
+    items: ContextMenuItem[];
+  } | null>({ x: 0, y: 0, items: [] });
 
-  const handleMoveItem = (id: string, x: number, y: number) => {
+  const handleUpdatePieceUnThrottled = (piece: AnyPiece) => {
     if (!conn) {
       return;
     }
     setBoard((b: RenderItem[]) => {
-      const index = b.findIndex(item => item.id === id);
+      const index = b.findIndex(item => item.id === piece.id);
       const boardCopy = [...b];
       if (index > -1) {
         boardCopy.splice(index, 1, {
           ...boardCopy[index],
-          x,
-          y,
+          ...piece,
           delta: boardCopy[index].delta + 1,
-        });
+        } as RenderItem);
       }
       return boardCopy;
     });
     conn.send({
       event: 'update_item',
       item: {
-        id,
-        x,
-        y,
-        delta: (board.find(item => item.id === id)?.delta || 0) + 1,
-      },
+        ...piece,
+        delta: (board.find(item => item.id === piece.id)?.delta || 0) + 1,
+      } as any,
     });
   };
 
-  const handlePickUpCard = (id: string) => {
+  const handleUpdatePiece = _.throttle(handleUpdatePieceUnThrottled, 50);
+
+  const handlePickUpCard = (id: string) => () => {
     if (conn) {
       conn.send({
         event: 'pick_up_cards',
@@ -167,10 +185,6 @@ export const App: React.FC = () => {
       cardIds,
       event: 'play_cards',
     });
-  };
-
-  const handleDeckModal = (id: string) => {
-    setDrawModalId(id);
   };
 
   const handleDrawCards = (count: number) => {
@@ -212,14 +226,19 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleSelectItem = (id: string) => () => {
+    if (id === selectedPieceId) {
+      setSelectedPieceId(null);
+    } else {
+      setSelectedPieceId(id);
+    }
+  };
+
   const handlePromptRename = () => {
     setShowRenameModal(true);
   };
 
   const player = board.find(item => item.id === playerId);
-  const boardContainerRef = React.useRef() as React.MutableRefObject<
-    HTMLInputElement
-  >;
 
   const layers = board.reduce((agg: RenderItem[][], piece: RenderItem) => {
     agg[piece.layer] = agg[piece.layer] || [];
@@ -234,6 +253,26 @@ export const App: React.FC = () => {
   return (
     <MainContainer>
       <AppContainer>
+        {contextMenu && contextMenu.items.length > 0 && (
+          <ContextMenu
+            style={{
+              left: contextMenu.x,
+              top: contextMenu.y - 10, // TODO why is this off by 10?
+            }}
+          >
+            {contextMenu.items.map(item => (
+              <li
+                onClick={() => {
+                  setContextMenu(null);
+                  item.fn();
+                }}
+              >
+                {item.label}
+              </li>
+            ))}
+            <li onClick={() => setContextMenu(null)}>Cancel</li>
+          </ContextMenu>
+        )}
         <Table>
           {layers.map(
             (layer, layerDepth) =>
@@ -249,9 +288,6 @@ export const App: React.FC = () => {
                             key={piece.id}
                             assets={assets}
                             item={piece}
-                            isSelected={piece.id === selectedPieceId}
-                            onChange={() => {}}
-                            onSelect={() => {}}
                           />
                         );
 
@@ -262,10 +298,65 @@ export const App: React.FC = () => {
                             key={piece.id}
                             assets={assets}
                             item={piece}
+                            onChange={p =>
+                              handleUpdatePiece({ ...piece, ...p })
+                            }
+                            onDblClick={() => setDrawModalId(piece.id)}
+                            onContextMenu={e =>
+                              setContextMenu({
+                                x: e.evt.clientX,
+                                y: e.evt.clientY,
+                                items: [
+                                  {
+                                    label: 'Draw Cards',
+                                    fn: () => setDrawModalId(piece.id),
+                                  },
+                                  // {
+                                  //   label: "Play Face Up",
+                                  //   fn: () => {
+                                  //     console.log("face down");
+                                  //   }
+                                  // },
+                                  // {
+                                  //   label: "Play Face Down",
+                                  //   fn: () => {
+                                  //     console.log("face up");
+                                  //   }
+                                  // },
+                                  {
+                                    label: 'Shuffle Discarded',
+                                    fn: () => {
+                                      console.log('context shuffle');
+                                      handleShuffleDiscarded(piece.id);
+                                    },
+                                  },
+                                  {
+                                    label: 'Discard Played Cards',
+                                    fn: () => {
+                                      console.log('discard played');
+                                      handleDiscardPlayed(piece.id);
+                                    },
+                                  },
+                                ],
+                              })
+                            }
+                          />
+                        );
+
+                      // Board
+                      case 'card':
+                        return (
+                          <ImagePiece
+                            key={piece.id}
+                            assets={assets}
+                            item={piece}
+                            draggable={true}
                             isSelected={piece.id === selectedPieceId}
-                            onSelect={() => {}}
-                            onChange={() => {}}
-                            onDblClick={() => {}}
+                            onSelect={handleSelectItem(piece.id)}
+                            onChange={p =>
+                              handleUpdatePiece({ ...piece, ...p })
+                            }
+                            onDblClick={handlePickUpCard(piece.id)}
                           />
                         );
 
@@ -276,9 +367,12 @@ export const App: React.FC = () => {
                             key={piece.id}
                             assets={assets}
                             item={piece}
+                            draggable={true}
                             isSelected={piece.id === selectedPieceId}
-                            onChange={() => {}}
-                            onSelect={() => {}}
+                            onSelect={handleSelectItem(piece.id)}
+                            onChange={p =>
+                              handleUpdatePiece({ ...piece, ...p })
+                            }
                           />
                         );
 
@@ -288,9 +382,9 @@ export const App: React.FC = () => {
                           <RectPiece
                             key={piece.id}
                             item={piece}
-                            isSelected={piece.id === selectedPieceId}
-                            onChange={() => {}}
-                            onSelect={() => {}}
+                            onChange={p =>
+                              handleUpdatePiece({ ...piece, ...p })
+                            }
                           />
                         );
 
@@ -300,9 +394,9 @@ export const App: React.FC = () => {
                           <CirclePiece
                             key={piece.id}
                             item={piece}
-                            isSelected={piece.id === selectedPieceId}
-                            onChange={() => {}}
-                            onSelect={() => {}}
+                            onChange={p =>
+                              handleUpdatePiece({ ...piece, ...p })
+                            }
                           />
                         );
 
@@ -313,9 +407,9 @@ export const App: React.FC = () => {
                             key={piece.id}
                             piece={piece}
                             handCount={0}
-                            isSelected={piece.id === selectedPieceId}
-                            onChange={() => {}}
-                            onSelect={() => {}}
+                            onChange={p =>
+                              handleUpdatePiece({ ...piece, ...p })
+                            }
                           />
                         );
 
@@ -334,7 +428,7 @@ export const App: React.FC = () => {
               style={{
                 margin: 0,
                 padding: 10,
-                background: player.fill,
+                background: player.color,
                 color: '#fff',
                 cursor: 'pointer',
               }}

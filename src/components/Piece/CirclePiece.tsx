@@ -12,9 +12,9 @@ import {
 } from '../../types';
 
 interface Props {
-  onSelect: () => void;
+  onSelect?: () => void;
   onChange: (o: any) => void;
-  isSelected: boolean;
+  isSelected?: boolean;
   item: CircleTokenItem;
 }
 
@@ -60,8 +60,8 @@ export function CirclePiece(props: Props) {
         onTap={onSelect}
         ref={objectRef}
         draggable
-        onDragEnd={handleTransform}
-        onTransformEnd={handleTransform}
+        onDragMove={handleTransform}
+        onTransform={handleTransform}
       />
 
       {isSelected && (

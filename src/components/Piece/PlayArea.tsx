@@ -6,9 +6,9 @@ import { useTransformer, PieceTransformer } from './PieceTransformer';
 interface Props {
   piece: PlayerOption;
   handCount: number;
-  isSelected: boolean;
+  isSelected?: boolean;
   onChange: (o: any) => void;
-  onSelect: () => void;
+  onSelect?: () => void;
 }
 
 export function PlayArea(props: Props) {
@@ -31,7 +31,7 @@ export function PlayArea(props: Props) {
         x={piece.x}
         y={piece.y}
         draggable
-        onDragEnd={handleTransform}
+        onDragMove={handleTransform}
         onClick={onSelect}
         onTap={onSelect}
       >

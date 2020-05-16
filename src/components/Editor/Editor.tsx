@@ -149,7 +149,11 @@ export function Editor(props: Props) {
     console.log(configs);
 
     const outConfig = configs.length === 1 ? configs[0].config : configs;
-    const configFile = `module.exports = ${JSON.stringify(outConfig)};`;
+    const configFile = `module.exports = ${JSON.stringify(
+      outConfig,
+      null,
+      '\t'
+    )};`;
     const outPath = `./games/${state.gameName}`;
 
     try {
@@ -368,6 +372,7 @@ export function Editor(props: Props) {
                             key={piece.id}
                             assets={assets}
                             item={piece}
+                            draggable={true}
                             isSelected={piece.id === selectedPieceId}
                             onChange={b => {
                               dispatch({
@@ -411,6 +416,7 @@ export function Editor(props: Props) {
                             key={piece.id}
                             assets={assets}
                             item={piece}
+                            draggable={true}
                             isSelected={piece.id === selectedPieceId}
                             onChange={b => {
                               dispatch({

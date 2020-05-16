@@ -20,9 +20,9 @@ import {
 } from '../../types';
 
 interface Props {
-  onSelect: () => void;
+  onSelect?: () => void;
   onChange: (o: any) => void;
-  isSelected: boolean;
+  isSelected?: boolean;
   item: RectTokenItem;
 }
 
@@ -45,10 +45,13 @@ export function RectPiece(props: Props) {
         onTap={onSelect}
         ref={objectRef}
         draggable
-        onDragEnd={handleTransform}
-        onTransformEnd={handleTransform}
+        onDragMove={handleTransform}
+        onTransform={handleTransform}
       />
-      <PieceTransformer isSelected={isSelected} objectRef={objectRef} />
+      <PieceTransformer
+        isSelected={isSelected || false}
+        objectRef={objectRef}
+      />
     </>
   );
 }
