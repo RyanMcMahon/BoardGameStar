@@ -7,10 +7,6 @@ interface Props {
   onClose: () => void;
 }
 
-const Wrapper = styled.div({
-  padding: '2rem',
-});
-
 const ControlHeader = styled.h3({
   margin: '1rem 0 0',
   fontSize: '18px',
@@ -30,7 +26,7 @@ const ControlHeader = styled.h3({
 export function ControlsModal(props: Props) {
   return (
     <Modal onClose={props.onClose}>
-      <Wrapper>
+      <Modal.Content>
         <ControlHeader>Board Controls</ControlHeader>
         <table>
           <thead>
@@ -86,7 +82,7 @@ export function ControlsModal(props: Props) {
             </tr>
           </tbody>
         </table>
-      </Wrapper>
+      </Modal.Content>
     </Modal>
   );
 }

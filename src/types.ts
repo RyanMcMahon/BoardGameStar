@@ -1,26 +1,190 @@
-interface BoardItemOption {
-  image?: string;
+export interface Assets {
+  [key: string]: string;
 }
 
-interface PlayerOption {
-  color: string;
+export interface EditorConfig {
+  gameName: string;
+}
+
+export interface ScenarioOption {
+  id: string;
+  name: string;
+  pieces: string[];
+  players: string[];
+}
+
+export interface PieceOption {
+  id: string;
   x: number;
   y: number;
+  rotation: number;
+  layer: number;
 }
+
+export interface RectPieceOption extends PieceOption {
+  width: number;
+  height: number;
+}
+
+export interface ImagePieceOption extends RectPieceOption {
+  image: string;
+}
+
+export interface BoardOption extends ImagePieceOption {
+  type: 'board';
+}
+
+export interface CardOption extends ImagePieceOption {
+  type: 'card';
+  deckId: string;
+}
+
+export interface DeckOption extends ImagePieceOption {
+  type: 'deck';
+  name: string;
+  cards: CardOption[];
+}
+
+export interface PlayerOption extends RectPieceOption {
+  type: 'player';
+  name: string;
+  color: string;
+}
+
+export interface CircleTokenOption extends PieceOption {
+  type: 'circle';
+  radius: number;
+  color: string;
+}
+
+export interface ImageTokenOption extends ImagePieceOption {
+  type: 'image';
+}
+
+export interface RectTokenOption extends RectPieceOption {
+  type: 'rect';
+  color: string;
+}
+
+export type AnyPiece =
+  | BoardOption
+  | CardOption
+  | DeckOption
+  | PlayerOption
+  | CircleTokenOption
+  | ImageTokenOption
+  | RectTokenOption;
+
+export interface EditorState {
+  gameName: string;
+  curScenario: string;
+  scenarios: {
+    [id: string]: ScenarioOption;
+  };
+  pieces: {
+    [id: string]: AnyPiece;
+  };
+}
+
+export interface CreateGameAction {
+  type: 'create_game';
+  editorConfig: EditorConfig;
+}
+
+export interface SetCurScenarioAction {
+  type: 'set_cur_scenario';
+  scenarioId: string;
+}
+
+export interface AddScenarioAction {
+  type: 'add_scenario';
+  scenario: ScenarioOption;
+}
+
+export interface DuplicateScenarioAction {
+  type: 'duplicate_scenario';
+  scenarioId: string;
+}
+
+export interface UpdateScenarioAction {
+  type: 'update_scenario';
+  scenario: ScenarioOption;
+}
+
+export interface RemoveScenarioAction {
+  type: 'remove_scenario';
+  scenarioId: string;
+}
+
+export interface UpdateGameNameAction {
+  type: 'update_game_name';
+  gameName: string;
+}
+
+export interface AddPieceAction {
+  type: 'add_piece';
+  piece:
+    | BoardOption
+    | CardOption
+    | DeckOption
+    | PlayerOption
+    | CircleTokenOption
+    | ImageTokenOption
+    | RectTokenOption;
+}
+
+export interface UpdatePieceAction {
+  type: 'update_piece';
+  piece:
+    | BoardOption
+    | CardOption
+    | DeckOption
+    | PlayerOption
+    | CircleTokenOption
+    | ImageTokenOption
+    | RectTokenOption;
+}
+
+export interface RemovePieceAction {
+  type: 'remove_piece';
+  id: string;
+}
+
+export type EditorAction =
+  | CreateGameAction
+  | UpdateGameNameAction
+  | SetCurScenarioAction
+  | AddScenarioAction
+  | DuplicateScenarioAction
+  | UpdateScenarioAction
+  | RemoveScenarioAction
+  | AddPieceAction
+  | UpdatePieceAction
+  | RemovePieceAction;
 
 export interface GameConfig {
   players: PlayerOption[];
-  board: BoardItemOption[];
-  decks: {
-    name: string;
-    id: string;
-    image: string;
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    cards: CardOption[] | string[];
-  }[];
+  board: BoardOption[];
+  decks: DeckOption[];
+}
+
+// export interface DeckOption {
+//   type: 'deck';
+//   id: string;
+//   name: string;
+//   image: string;
+//   x: number;
+//   y: number;
+//   width: number;
+//   height: number;
+//   cards: CardOption[] | string[];
+// }
+
+export interface CardOption {
+  type: 'card';
+  id: string;
+  image: string;
+  count: number;
 }
 
 export interface ScenarioConfig {
@@ -30,59 +194,48 @@ export interface ScenarioConfig {
 
 export type Config = GameConfig | ScenarioConfig[];
 
-export interface CardOption {
-  image: string;
-  count: number;
-}
+// interface BaseItem {
+//   id: string;
+//   delta: number;
+//   image: string | undefined;
+//   x: number;
+//   y: number;
+//   width: number;
+//   height?: number;
+//   fill?: string;
+//   [key: string]: any;
+// }
 
-interface BaseItem {
-  id: string;
+export interface Item {
   delta: number;
-  image: string | undefined;
-  x: number;
-  y: number;
-  width: number;
-  height?: number;
-  fill?: string;
   [key: string]: any;
 }
+export type BoardItem = BoardOption & Item;
+export type CardItem = CardOption & Item;
+export type PlayerItem = PlayerOption & Item;
+export type CircleTokenItem = CircleTokenOption & Item;
+export type ImageTokenItem = ImageTokenOption & Item;
+export type RectTokenItem = RectTokenOption & Item;
 
-export interface DeckItem extends BaseItem {
-  type: 'deck';
-  name: string;
+export interface DeckItem extends DeckOption, Item {
+  cards: CardItem[];
   count: number;
   total: number;
 }
 
-export interface CardItem extends BaseItem {
-  type: 'card';
-  deckId: string;
-}
-
-export interface PieceItem extends BaseItem {
-  type: 'piece';
-}
-
-export interface BoardItem extends BaseItem {
-  type: 'board';
-}
-
-export interface PlayerItem extends BaseItem {
-  type: 'player';
-  name: string;
-}
-
-export interface DeletedItem extends BaseItem {
+export interface DeletedItem extends PieceOption, Item {
   type: 'deleted';
 }
 
 export type RenderItem =
   | BoardItem
-  | DeckItem
   | CardItem
-  | PieceItem
+  | DeckItem
+  | DeletedItem
   | PlayerItem
-  | DeletedItem;
+  | CircleTokenItem
+  | ImageTokenItem
+  | RectTokenItem;
 
 export interface Card {
   id: string;

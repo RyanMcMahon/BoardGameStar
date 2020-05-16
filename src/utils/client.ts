@@ -95,11 +95,11 @@ export function useGameClient(gameId: string) {
             boardCopy.splice(index, 1, {
               type: 'deleted',
               id: _.uniqueId('deleted_'),
-              image: '',
               delta: 0,
               x: 0,
               y: 0,
-              width: 0,
+              rotation: 0,
+              layer: 0,
             });
           });
           return boardCopy;

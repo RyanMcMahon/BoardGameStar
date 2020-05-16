@@ -1,0 +1,56 @@
+import React from 'react';
+import { Text, Image, Label, Tag, Circle, Transformer } from 'react-konva';
+import { PlayerOption } from '../../types';
+import { useTransformer, PieceTransformer } from './PieceTransformer';
+
+interface Props {
+  piece: PlayerOption;
+  handCount: number;
+  isSelected: boolean;
+  onChange: (o: any) => void;
+  onSelect: () => void;
+}
+
+export function PlayArea(props: Props) {
+  const { piece, handCount, isSelected, onChange, onSelect } = props;
+  const objectRef = React.useRef<any>();
+  const handleTransform = useTransformer(objectRef, onChange);
+  const trRef = React.createRef<any>();
+
+  React.useEffect(() => {
+    if (isSelected && trRef.current) {
+      trRef.current.setNode(objectRef.current);
+      trRef.current.getLayer().batchDraw();
+    }
+  }, [isSelected]);
+
+  return (
+    <>
+      <Label
+        ref={objectRef}
+        x={piece.x}
+        y={piece.y}
+        draggable
+        onDragEnd={handleTransform}
+        onClick={onSelect}
+        onTap={onSelect}
+      >
+        <Tag fill={piece.color} lineJoin="round" />
+        <Text
+          text={`${piece.name} (${handCount} cards in hand)`}
+          fontSize={22}
+          padding={5}
+          fill="white"
+        />
+      </Label>
+      {isSelected && (
+        <Transformer
+          ref={trRef}
+          rotateEnabled={false}
+          resizeEnabled={false}
+          borderStrokeWidth={2}
+        />
+      )}
+    </>
+  );
+}

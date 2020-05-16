@@ -5,16 +5,19 @@ import { useParams, Link, Redirect } from 'react-router-dom';
 
 import { useGameClient } from '../../utils/client';
 import { Button } from '../../utils/style';
-import { Board } from '../Board';
+import { Table } from '../Table';
 import { ControlsModal } from '../ControlsModal';
 import { InviteModal } from '../InviteModal';
-import { RenderItem } from '../../types';
 
 import { Hand } from '../Hand';
 import { DeckModal } from '../DeckModal';
 import { RenameModal } from '../RenameModal';
 import { ProgressBar } from '../ProgressBar';
 import { facts } from '../../utils/facts';
+import { RenderItem } from '../../types';
+import { Layer } from 'react-konva';
+import { ImagePiece, Deck, RectPiece, CirclePiece } from '../Piece';
+import { PlayArea } from '../Piece/PlayArea';
 
 const MainContainer = styled.div({
   height: '100%',
@@ -101,6 +104,7 @@ export const App: React.FC = () => {
     failedConnection,
   } = useGameClient(gameId);
   const fact = React.useMemo(() => _.sample(facts), []);
+  const [selectedPieceId, setSelectedPieceId] = React.useState<string | null>();
   const [drawModalId, setDrawModalId] = React.useState<string>('');
   const [showRenameModal, setShowRenameModal] = React.useState<boolean>(false);
   const [showInviteModal, setShowInviteModal] = React.useState<boolean>(false);
@@ -217,6 +221,12 @@ export const App: React.FC = () => {
     HTMLInputElement
   >;
 
+  const layers = board.reduce((agg: RenderItem[][], piece: RenderItem) => {
+    agg[piece.layer] = agg[piece.layer] || [];
+    agg[piece.layer].push(piece);
+    return agg;
+  }, []);
+
   if (!gameId) {
     return <Redirect to="/" />;
   }
@@ -224,20 +234,100 @@ export const App: React.FC = () => {
   return (
     <MainContainer>
       <AppContainer>
-        <BoardContainer ref={boardContainerRef}>
-          <Board
-            assets={assets}
-            board={board}
-            onMoveItem={handleMoveItem}
-            onPickUpCard={handlePickUpCard}
-            onDeckPrompt={handleDeckModal}
-            onRename={handleRename}
-            container={boardContainerRef}
-            handCounts={handCounts}
-            onShuffleDiscarded={handleShuffleDiscarded}
-            onDiscardPlayed={handleDiscardPlayed}
-          />
-        </BoardContainer>
+        <Table>
+          {layers.map(
+            (layer, layerDepth) =>
+              layer &&
+              layer.length && (
+                <Layer key={layerDepth}>
+                  {layer.map(piece => {
+                    switch (piece.type) {
+                      // Board
+                      case 'board':
+                        return (
+                          <ImagePiece
+                            key={piece.id}
+                            assets={assets}
+                            item={piece}
+                            isSelected={piece.id === selectedPieceId}
+                            onChange={() => {}}
+                            onSelect={() => {}}
+                          />
+                        );
+
+                      // Deck
+                      case 'deck':
+                        return (
+                          <Deck
+                            key={piece.id}
+                            assets={assets}
+                            item={piece}
+                            isSelected={piece.id === selectedPieceId}
+                            onSelect={() => {}}
+                            onChange={() => {}}
+                            onDblClick={() => {}}
+                          />
+                        );
+
+                      // Image Token
+                      case 'image':
+                        return (
+                          <ImagePiece
+                            key={piece.id}
+                            assets={assets}
+                            item={piece}
+                            isSelected={piece.id === selectedPieceId}
+                            onChange={() => {}}
+                            onSelect={() => {}}
+                          />
+                        );
+
+                      // Rectangle
+                      case 'rect':
+                        return (
+                          <RectPiece
+                            key={piece.id}
+                            item={piece}
+                            isSelected={piece.id === selectedPieceId}
+                            onChange={() => {}}
+                            onSelect={() => {}}
+                          />
+                        );
+
+                      // Circle
+                      case 'circle':
+                        return (
+                          <CirclePiece
+                            key={piece.id}
+                            item={piece}
+                            isSelected={piece.id === selectedPieceId}
+                            onChange={() => {}}
+                            onSelect={() => {}}
+                          />
+                        );
+
+                      // Player
+                      case 'player':
+                        return (
+                          <PlayArea
+                            key={piece.id}
+                            piece={piece}
+                            handCount={0}
+                            isSelected={piece.id === selectedPieceId}
+                            onChange={() => {}}
+                            onSelect={() => {}}
+                          />
+                        );
+
+                      default:
+                        break;
+                    }
+                  })}
+                </Layer>
+              )
+          )}
+        </Table>
+
         <PlayerContainer>
           {player && (
             <h1

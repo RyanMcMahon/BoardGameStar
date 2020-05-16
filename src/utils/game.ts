@@ -7,6 +7,7 @@ import {
   CardOption,
   GameEvent,
   ClientEvent,
+  PlayerItem,
 } from '../types';
 
 import { getHostId } from './playerId';
@@ -178,8 +179,10 @@ export function newGame(
           x: playerConfig.x,
           y: playerConfig.y,
           fill: playerConfig.color,
+          rotation: 0,
+          layer: 5,
           delta: 0,
-        } as RenderItem;
+        };
 
         conn.send({
           assets: sendAssets ? assets : Object.keys(assets),
@@ -191,11 +194,11 @@ export function newGame(
           },
         });
 
-        game.board.push(playerArea);
+        game.board.push(playerArea as RenderItem);
         sendHandCounts();
         sendToRoom({
           event: 'add_to_board',
-          items: [playerArea],
+          items: [playerArea as RenderItem],
         });
       });
 
@@ -273,7 +276,9 @@ export function newGame(
           case 'rename_player':
             try {
               const { name } = data;
-              const playerArea = game.board.find(item => item.id === playerId);
+              const playerArea = game.board.find(
+                item => item.id === playerId
+              ) as PlayerItem;
               player.name = name;
               if (playerArea) {
                 playerArea.name = name;
@@ -351,10 +356,12 @@ export function newGame(
             try {
               const { deckId } = data;
               const cards = (game.board.filter(
-                item => item.deckId === deckId
+                item => (item as Card).deckId === deckId
               ) as unknown) as Card[];
               decks[deckId].discarded.push(...cards);
-              game.board = game.board.filter(item => item.deckId !== deckId);
+              game.board = game.board.filter(
+                item => (item as Card).deckId !== deckId
+              );
               sendToRoom({
                 event: 'remove_from_board',
                 ids: cards.map(x => x.id),

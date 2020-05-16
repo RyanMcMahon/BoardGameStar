@@ -4,6 +4,7 @@ import { BrowserRouter, HashRouter, Switch, Route } from 'react-router-dom';
 import { App } from '../App';
 import { IncludedGames } from '../IncludedGames';
 import { UpdateModal } from '../UpdateModal';
+import { Editor } from '../Editor';
 import { isWebBuild } from '../../utils/meta';
 
 interface Props {
@@ -11,7 +12,7 @@ interface Props {
 }
 
 const BaseRoute = React.lazy(() =>
-  isWebBuild ? import('../Home/Home') : import('../CustomGames/CustomGames')
+  isWebBuild ? import('../Home/Home') : import('./ExecutableRoutes')
 );
 
 function AppRouter(props: Props) {
@@ -37,13 +38,13 @@ export function Router() {
           `https://api.github.com/repos/RyanMcMahon/BoardGameStar/releases/latest`
         );
         const release = await data.json();
-        if (release.tag_name !== version) {
+        console.log('version', version);
+        console.log('version', release);
+        if (release.tag_name && release.tag_name !== version) {
           console.log('needs update');
           setRelease(release);
           setShowUpdateModal(true);
         }
-        console.log('version', version);
-        console.log('version', release);
       };
 
       checkForUpdate();

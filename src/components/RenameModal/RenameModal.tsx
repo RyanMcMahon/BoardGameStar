@@ -9,10 +9,6 @@ interface Props {
   onClose: () => void;
 }
 
-const Wrapper = styled.div({
-  padding: '2rem',
-});
-
 export function RenameModal(props: Props) {
   const inputRef = React.createRef<HTMLInputElement>();
   const handleSubmit = () => {
@@ -23,15 +19,16 @@ export function RenameModal(props: Props) {
 
   return (
     <Modal onClose={props.onClose}>
-      <Wrapper>
+      <Modal.Content>
+        <Modal.Title>Player Name</Modal.Title>
         <form onSubmit={handleSubmit}>
           <input type="text" ref={inputRef} placeholder="Name" />
           <br />
-          <Button design="primary" onClick={handleSubmit}>
+          <Button design="success" onClick={handleSubmit}>
             Save
           </Button>
         </form>
-      </Wrapper>
+      </Modal.Content>
     </Modal>
   );
 }
