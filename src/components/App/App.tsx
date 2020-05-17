@@ -14,7 +14,7 @@ import { DeckModal } from '../DeckModal';
 import { RenameModal } from '../RenameModal';
 import { ProgressBar } from '../ProgressBar';
 import { facts } from '../../utils/facts';
-import { RenderItem, AnyPiece, ContextMenuItem } from '../../types';
+import { RenderPiece, AnyPiece, ContextMenuItem } from '../../types';
 import { Layer } from 'react-konva';
 import { ImagePiece, Deck, RectPiece, CirclePiece } from '../Piece';
 import { PlayArea } from '../Piece/PlayArea';
@@ -135,23 +135,23 @@ export const App: React.FC = () => {
     if (!conn) {
       return;
     }
-    setBoard((b: RenderItem[]) => {
-      const index = b.findIndex(item => item.id === piece.id);
+    setBoard((b: RenderPiece[]) => {
+      const index = b.findIndex(p => p.id === piece.id);
       const boardCopy = [...b];
       if (index > -1) {
         boardCopy.splice(index, 1, {
           ...boardCopy[index],
           ...piece,
           delta: boardCopy[index].delta + 1,
-        } as RenderItem);
+        } as RenderPiece);
       }
       return boardCopy;
     });
     conn.send({
-      event: 'update_item',
-      item: {
+      event: 'update_piece',
+      piece: {
         ...piece,
-        delta: (board.find(item => item.id === piece.id)?.delta || 0) + 1,
+        delta: (board.find(p => p.id === piece.id)?.delta || 0) + 1,
       } as any,
     });
   };
@@ -226,7 +226,7 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleSelectItem = (id: string) => () => {
+  const handleSelectPiece = (id: string) => () => {
     if (id === selectedPieceId) {
       setSelectedPieceId(null);
     } else {
@@ -238,9 +238,9 @@ export const App: React.FC = () => {
     setShowRenameModal(true);
   };
 
-  const player = board.find(item => item.id === playerId);
+  const player = board.find(piece => piece.id === playerId);
 
-  const layers = board.reduce((agg: RenderItem[][], piece: RenderItem) => {
+  const layers = board.reduce((agg: RenderPiece[][], piece: RenderPiece) => {
     agg[piece.layer] = agg[piece.layer] || [];
     agg[piece.layer].push(piece);
     return agg;
@@ -260,14 +260,14 @@ export const App: React.FC = () => {
               top: contextMenu.y - 10, // TODO why is this off by 10?
             }}
           >
-            {contextMenu.items.map(item => (
+            {contextMenu.items.map(piece => (
               <li
                 onClick={() => {
                   setContextMenu(null);
-                  item.fn();
+                  piece.fn();
                 }}
               >
-                {item.label}
+                {piece.label}
               </li>
             ))}
             <li onClick={() => setContextMenu(null)}>Cancel</li>
@@ -287,7 +287,7 @@ export const App: React.FC = () => {
                           <ImagePiece
                             key={piece.id}
                             assets={assets}
-                            item={piece}
+                            piece={piece}
                           />
                         );
 
@@ -297,7 +297,7 @@ export const App: React.FC = () => {
                           <Deck
                             key={piece.id}
                             assets={assets}
-                            item={piece}
+                            piece={piece}
                             onChange={p =>
                               handleUpdatePiece({ ...piece, ...p })
                             }
@@ -349,10 +349,10 @@ export const App: React.FC = () => {
                           <ImagePiece
                             key={piece.id}
                             assets={assets}
-                            item={piece}
+                            piece={piece}
                             draggable={true}
                             isSelected={piece.id === selectedPieceId}
-                            onSelect={handleSelectItem(piece.id)}
+                            onSelect={handleSelectPiece(piece.id)}
                             onChange={p =>
                               handleUpdatePiece({ ...piece, ...p })
                             }
@@ -366,10 +366,10 @@ export const App: React.FC = () => {
                           <ImagePiece
                             key={piece.id}
                             assets={assets}
-                            item={piece}
+                            piece={piece}
                             draggable={true}
                             isSelected={piece.id === selectedPieceId}
-                            onSelect={handleSelectItem(piece.id)}
+                            onSelect={handleSelectPiece(piece.id)}
                             onChange={p =>
                               handleUpdatePiece({ ...piece, ...p })
                             }
@@ -381,7 +381,7 @@ export const App: React.FC = () => {
                         return (
                           <RectPiece
                             key={piece.id}
-                            item={piece}
+                            piece={piece}
                             onChange={p =>
                               handleUpdatePiece({ ...piece, ...p })
                             }
@@ -393,7 +393,7 @@ export const App: React.FC = () => {
                         return (
                           <CirclePiece
                             key={piece.id}
-                            item={piece}
+                            piece={piece}
                             onChange={p =>
                               handleUpdatePiece({ ...piece, ...p })
                             }

@@ -8,7 +8,7 @@ import { Button } from '../../utils/style';
 import { Table } from '../Table';
 import { loadAsset, getFilename, getAssetDimensions } from '../../utils/assets';
 import {
-  RenderItem,
+  RenderPiece,
   EditorAction,
   EditorState,
   PlayerOption,
@@ -166,7 +166,7 @@ export function Editor(props: Props) {
     });
   };
 
-  const handleSelectItem = (id: string) => () => {
+  const handleSelectPiece = (id: string) => () => {
     if (id === selectedPieceId) {
       setSelectedPieceId(null);
     } else {
@@ -201,7 +201,7 @@ export function Editor(props: Props) {
     setSelectedPieceId(id);
   };
 
-  const createNewImageItem = (options: any) => async () => {
+  const createNewImagePiece = (options: any) => async () => {
     try {
       const [file] = (window as any).electron.dialog.showOpenDialogSync({
         properties: ['openFile'],
@@ -232,14 +232,14 @@ export function Editor(props: Props) {
     }
   };
 
-  const handleAddBoard = createNewImageItem({ type: 'board', layer: 1 });
-  const handleAddDeck = createNewImageItem({
+  const handleAddBoard = createNewImagePiece({ type: 'board', layer: 1 });
+  const handleAddDeck = createNewImagePiece({
     type: 'deck',
     layer: 3,
     cards: [],
     name: 'Deck',
   });
-  const handleAddImageToken = createNewImageItem({ type: 'image', layer: 5 });
+  const handleAddImageToken = createNewImagePiece({ type: 'image', layer: 5 });
 
   const handleAddCircle = () => {
     const id = slug.nice();
@@ -316,10 +316,10 @@ export function Editor(props: Props) {
   // console.log(decks);
 
   const layers = curScenario.pieces.reduce(
-    (agg: RenderItem[][], id: string) => {
-      const item = state.pieces[id];
-      agg[item.layer] = agg[item.layer] || [];
-      agg[item.layer].push((item as unknown) as RenderItem);
+    (agg: RenderPiece[][], id: string) => {
+      const piece = state.pieces[id];
+      agg[piece.layer] = agg[piece.layer] || [];
+      agg[piece.layer].push((piece as unknown) as RenderPiece);
       return agg;
     },
     []
@@ -345,7 +345,7 @@ export function Editor(props: Props) {
                           <ImagePiece
                             key={piece.id}
                             assets={assets}
-                            item={piece}
+                            piece={piece}
                             draggable={true}
                             isSelected={piece.id === selectedPieceId}
                             onChange={b => {
@@ -357,7 +357,7 @@ export function Editor(props: Props) {
                                 },
                               });
                             }}
-                            onSelect={handleSelectItem(piece.id)}
+                            onSelect={handleSelectPiece(piece.id)}
                           />
                         );
 
@@ -367,9 +367,9 @@ export function Editor(props: Props) {
                           <Deck
                             key={piece.id}
                             assets={assets}
-                            item={piece}
+                            piece={piece}
                             isSelected={piece.id === selectedPieceId}
-                            onSelect={handleSelectItem(piece.id)}
+                            onSelect={handleSelectPiece(piece.id)}
                             onChange={b => {
                               dispatch({
                                 type: 'update_piece',
@@ -389,7 +389,7 @@ export function Editor(props: Props) {
                           <ImagePiece
                             key={piece.id}
                             assets={assets}
-                            item={piece}
+                            piece={piece}
                             draggable={true}
                             isSelected={piece.id === selectedPieceId}
                             onChange={b => {
@@ -401,7 +401,7 @@ export function Editor(props: Props) {
                                 },
                               });
                             }}
-                            onSelect={handleSelectItem(piece.id)}
+                            onSelect={handleSelectPiece(piece.id)}
                           />
                         );
 
@@ -410,7 +410,7 @@ export function Editor(props: Props) {
                         return (
                           <RectPiece
                             key={piece.id}
-                            item={piece}
+                            piece={piece}
                             isSelected={piece.id === selectedPieceId}
                             onChange={b => {
                               dispatch({
@@ -421,7 +421,7 @@ export function Editor(props: Props) {
                                 },
                               });
                             }}
-                            onSelect={handleSelectItem(piece.id)}
+                            onSelect={handleSelectPiece(piece.id)}
                           />
                         );
 
@@ -430,7 +430,7 @@ export function Editor(props: Props) {
                         return (
                           <CirclePiece
                             key={piece.id}
-                            item={piece}
+                            piece={piece}
                             isSelected={piece.id === selectedPieceId}
                             onChange={b => {
                               dispatch({
@@ -441,7 +441,7 @@ export function Editor(props: Props) {
                                 },
                               });
                             }}
-                            onSelect={handleSelectItem(piece.id)}
+                            onSelect={handleSelectPiece(piece.id)}
                           />
                         );
 
@@ -467,7 +467,7 @@ export function Editor(props: Props) {
                                 },
                               });
                             }}
-                            onSelect={handleSelectItem(piece.id)}
+                            onSelect={handleSelectPiece(piece.id)}
                           />
                         );
 

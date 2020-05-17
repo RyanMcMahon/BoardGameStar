@@ -194,7 +194,7 @@ export interface ScenarioConfig {
 
 export type Config = GameConfig | ScenarioConfig[];
 
-// interface BaseItem {
+// interface BasePiece {
 //   id: string;
 //   delta: number;
 //   image: string | undefined;
@@ -206,36 +206,36 @@ export type Config = GameConfig | ScenarioConfig[];
 //   [key: string]: any;
 // }
 
-export interface Item {
+export interface Piece {
   delta: number;
   [key: string]: any;
 }
-export type BoardItem = BoardOption & Item;
-export type CardItem = CardOption & Item;
-export type PlayerItem = PlayerOption & Item;
-export type CircleTokenItem = CircleTokenOption & Item;
-export type ImageTokenItem = ImageTokenOption & Item;
-export type RectTokenItem = RectTokenOption & Item;
+export type BoardPiece = BoardOption & Piece;
+export type CardPiece = CardOption & Piece;
+export type PlayerPiece = PlayerOption & Piece;
+export type CircleTokenPiece = CircleTokenOption & Piece;
+export type ImageTokenPiece = ImageTokenOption & Piece;
+export type RectTokenPiece = RectTokenOption & Piece;
 
-export interface DeckItem extends DeckOption, Item {
-  cards: CardItem[];
+export interface DeckPiece extends DeckOption, Piece {
+  cards: CardPiece[];
   count: number;
   total: number;
 }
 
-export interface DeletedItem extends PieceOption, Item {
+export interface DeletedPiece extends PieceOption, Piece {
   type: 'deleted';
 }
 
-export type RenderItem =
-  | BoardItem
-  | CardItem
-  | DeckItem
-  | DeletedItem
-  | PlayerItem
-  | CircleTokenItem
-  | ImageTokenItem
-  | RectTokenItem;
+export type RenderPiece =
+  | BoardPiece
+  | CardPiece
+  | DeckPiece
+  | DeletedPiece
+  | PlayerPiece
+  | CircleTokenPiece
+  | ImageTokenPiece
+  | RectTokenPiece;
 
 export interface Card {
   id: string;
@@ -253,7 +253,7 @@ export interface ContextMenuItem {
 export interface JoinEvent {
   event: 'join';
   hand: Card[];
-  board: RenderItem[];
+  board: RenderPiece[];
   assets:
     | string[]
     | {
@@ -269,9 +269,9 @@ export interface SetHandEvent {
   hand: Card[];
 }
 
-export interface UpdateItemEvent {
-  event: 'update_item';
-  item: Partial<RenderItem> & {
+export interface UpdatePieceEvent {
+  event: 'update_piece';
+  piece: Partial<RenderPiece> & {
     id: string;
     delta: number;
   };
@@ -284,7 +284,7 @@ export interface RemoveFromBoardEvent {
 
 export interface AddToBoardEvent {
   event: 'add_to_board';
-  items: RenderItem[];
+  pieces: RenderPiece[];
 }
 
 export interface RollDiceEvent {
@@ -358,7 +358,7 @@ export type ClientEvent =
   | ShuffleDiscardedEvent
   | DiscardPlayedEvent
   | RequestAssetEvent
-  | UpdateItemEvent;
+  | UpdatePieceEvent;
 
 export type GameEvent =
   | AddToBoardEvent
@@ -367,7 +367,7 @@ export type GameEvent =
   | RemoveFromBoardEvent
   | SetHandEvent
   | AssetLoadedEvent
-  | UpdateItemEvent;
+  | UpdatePieceEvent;
 
 export type Event =
   | AddToBoardEvent
@@ -386,4 +386,4 @@ export type Event =
   | DiscardPlayedEvent
   | RequestAssetEvent
   | AssetLoadedEvent
-  | UpdateItemEvent;
+  | UpdatePieceEvent;

@@ -1,25 +1,17 @@
 import React from 'react';
-import { Text, Image, Label, Tag, Circle, Transformer } from 'react-konva';
+import { Circle, Transformer } from 'react-konva';
 
-import { useAsset } from './utils';
-import { Assets } from '../../utils/game';
-import { PieceTransformer, useTransformer } from './PieceTransformer';
-import {
-  BoardItem,
-  CardItem,
-  ImageTokenItem,
-  CircleTokenItem,
-} from '../../types';
+import { CircleTokenPiece } from '../../types';
 
 interface Props {
   onSelect?: () => void;
   onChange: (o: any) => void;
   isSelected?: boolean;
-  item: CircleTokenItem;
+  piece: CircleTokenPiece;
 }
 
 export function CirclePiece(props: Props) {
-  const { isSelected, item, onSelect, onChange } = props;
+  const { isSelected, piece, onSelect, onChange } = props;
   const objectRef = React.useRef<any>();
   const trRef = React.createRef<any>();
 
@@ -46,16 +38,16 @@ export function CirclePiece(props: Props) {
       trRef.current.setNode(objectRef.current);
       trRef.current.getLayer().batchDraw();
     }
-  }, [isSelected]);
+  }, [isSelected, trRef]);
 
   return (
     <>
       <Circle
-        id={item.id}
-        radius={item.radius}
-        fill={item.color}
-        x={item.x}
-        y={item.y}
+        id={piece.id}
+        radius={piece.radius}
+        fill={piece.color}
+        x={piece.x}
+        y={piece.y}
         onClick={onSelect}
         onTap={onSelect}
         ref={objectRef}

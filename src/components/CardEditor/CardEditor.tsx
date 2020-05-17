@@ -2,13 +2,13 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { Button } from '../../utils/style';
-import { CardItem, Assets } from '../../types';
+import { CardPiece, Assets } from '../../types';
 import { useAsset } from '../Piece/utils';
 
 interface Props {
   onDelete: () => void;
   onUpdateCount: (count: number) => void;
-  card: CardItem;
+  card: CardPiece;
   assets: Assets;
 }
 

@@ -1,46 +1,31 @@
 import React from 'react';
-import {
-  Text,
-  Image,
-  Label,
-  Tag,
-  Circle,
-  Transformer,
-  Rect,
-} from 'react-konva';
+import { Rect } from 'react-konva';
 
-import { useAsset } from './utils';
-import { Assets } from '../../utils/game';
 import { PieceTransformer, useTransformer } from './PieceTransformer';
-import {
-  BoardItem,
-  CardItem,
-  ImageTokenItem,
-  RectTokenItem,
-} from '../../types';
+import { RectTokenPiece } from '../../types';
 
 interface Props {
   onSelect?: () => void;
   onChange: (o: any) => void;
   isSelected?: boolean;
-  item: RectTokenItem;
+  piece: RectTokenPiece;
 }
 
 export function RectPiece(props: Props) {
-  const { isSelected, item, onSelect, onChange } = props;
+  const { isSelected, piece, onSelect, onChange } = props;
   const objectRef = React.useRef<any>();
   const handleTransform = useTransformer(objectRef, onChange);
 
   return (
     <>
       <Rect
-        id={item.id}
-        x={item.x}
-        y={item.y}
-        width={item.width}
-        height={item.height}
-        rotation={item.rotation}
-        fill={item.color}
+        id={piece.id}
+        x={piece.x}
+        y={piece.y}
+        width={piece.width}
+        height={piece.height}
+        rotation={piece.rotation}
+        fill={piece.color}
         onClick={onSelect}
         onTap={onSelect}
         ref={objectRef}

@@ -31,15 +31,15 @@ Board Game Star is a platform for playing digital boardgames online with a focus
 | Move Viewport | Drag    | &#9745;     |
 | Zoom In / Out | Scroll  | &#9745;     |
 
-| Item Actions                                      | Command              | Implemented |
-| ------------------------------------------------- | -------------------- | ----------- |
-| Select Item                                       | Click                | -           |
-| Select Multiple Items                             | Shift + Click        | -           |
-| Group Select Items                                | Ctrl + Click -> Drag | -           |
-| Move Item                                         | Drag                 | &#9745;     |
-| Flip Item (Selected Card or Token)                | F                    | -           |
-| Rotate Item (Selected Card or Token) Left / Right | Q / E                | -           |
-| Remove From Table                                 | -                    | -           |
+| Piece Actions                                      | Command              | Implemented |
+| -------------------------------------------------- | -------------------- | ----------- |
+| Select Piece                                       | Click                | -           |
+| Select Multiple Pieces                             | Shift + Click        | -           |
+| Group Select Pieces                                | Ctrl + Click -> Drag | -           |
+| Move Piece                                         | Drag                 | &#9745;     |
+| Flip Piece (Selected Card or Token)                | F                    | -           |
+| Rotate Piece (Selected Card or Token) Left / Right | Q / E                | -           |
+| Remove From Table                                  | -                    | -           |
 
 | Deck Actions           | Command                     | Implemented |
 | ---------------------- | --------------------------- | ----------- |

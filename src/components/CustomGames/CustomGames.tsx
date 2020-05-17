@@ -33,9 +33,9 @@ export function CustomGames(props: Props) {
   const handleGameSelect = (gameName: string, config: GameConfig) => () => {
     const assets: { [key: string]: string } = {};
 
-    config.board.forEach(item => {
-      if (item.image) {
-        assets[item.image] = '';
+    config.board.forEach(piece => {
+      if (piece.image) {
+        assets[piece.image] = '';
       }
     });
 

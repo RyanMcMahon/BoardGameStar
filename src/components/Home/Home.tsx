@@ -25,7 +25,7 @@ const FeatureList = styled.ul({
   padding: 0,
 });
 
-const FeatureListItem = styled.li({
+const FeatureListPiece = styled.li({
   fontSize: '2rem',
   margin: '.5rem 0',
 });
@@ -71,11 +71,11 @@ export function Home() {
           <div className="row">
             <div className="six columns">
               <FeatureList>
-                <FeatureListItem>✓ No Sign Up</FeatureListItem>
-                <FeatureListItem>✓ Play With Anyone</FeatureListItem>
-                <FeatureListItem>✓ Create Custom Games</FeatureListItem>
-                <FeatureListItem>✓ Free Forever</FeatureListItem>
-                <FeatureListItem>✓ Open Source</FeatureListItem>
+                <FeatureListPiece>✓ No Sign Up</FeatureListPiece>
+                <FeatureListPiece>✓ Play With Anyone</FeatureListPiece>
+                <FeatureListPiece>✓ Create Custom Games</FeatureListPiece>
+                <FeatureListPiece>✓ Free Forever</FeatureListPiece>
+                <FeatureListPiece>✓ Open Source</FeatureListPiece>
               </FeatureList>
             </div>
             <div className="six columns">

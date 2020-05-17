@@ -4,11 +4,11 @@ import { Text, Image, Label, Tag } from 'react-konva';
 import { useAsset } from './utils';
 import { Assets } from '../../utils/game';
 import { PieceTransformer, useTransformer } from './PieceTransformer';
-import { DeckItem } from '../../types';
+import { DeckPiece } from '../../types';
 
 interface Props {
   assets: Assets;
-  item: DeckItem;
+  piece: DeckPiece;
   isSelected?: boolean;
   onSelect?: () => void;
   onChange: (o: any) => void;
@@ -18,7 +18,7 @@ interface Props {
 
 export function Deck(props: Props) {
   const {
-    item,
+    piece,
     onSelect,
     assets,
     isSelected,
@@ -27,16 +27,16 @@ export function Deck(props: Props) {
     onContextMenu,
   } = props;
   // const [
-  const image = useAsset(assets, item);
+  const image = useAsset(assets, piece);
   const objectRef = React.useRef<any>();
   const handleTransform = useTransformer(objectRef, onChange);
 
   return (
     <>
-      <Label x={item.x} y={item.y - 40}>
+      <Label x={piece.x} y={piece.y - 40}>
         <Tag fill="#111" lineJoin="round" />
         <Text
-          text={`${item.count || 0} of ${item.total || 0} cards remaining`}
+          text={`${piece.count || 0} of ${piece.total || 0} cards remaining`}
           fontSize={22}
           padding={5}
           fill="white"
@@ -44,13 +44,13 @@ export function Deck(props: Props) {
       </Label>
 
       <Image
-        id={item.id}
+        id={piece.id}
         ref={objectRef}
         image={image}
-        x={item.x}
-        y={item.y}
-        width={item.width}
-        height={item.height}
+        x={piece.x}
+        y={piece.y}
+        width={piece.width}
+        height={piece.height}
         draggable
         onClick={onSelect}
         onTap={onSelect}

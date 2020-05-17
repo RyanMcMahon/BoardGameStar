@@ -47,7 +47,7 @@ export function ControlsModal(props: Props) {
           </tbody>
         </table>
 
-        <ControlHeader>Item Controls</ControlHeader>
+        <ControlHeader>Piece Controls</ControlHeader>
         <table>
           <thead>
             <tr>
@@ -57,7 +57,7 @@ export function ControlsModal(props: Props) {
           </thead>
           <tbody>
             <tr>
-              <td>Move Item</td>
+              <td>Move Piece</td>
               <td>Drag</td>
             </tr>
           </tbody>

@@ -4,7 +4,7 @@ import { Image } from 'react-konva';
 import { useAsset } from './utils';
 import { Assets } from '../../utils/game';
 import { PieceTransformer, useTransformer } from './PieceTransformer';
-import { BoardItem, CardItem, ImageTokenItem } from '../../types';
+import { BoardPiece, CardPiece, ImageTokenPiece } from '../../types';
 
 interface Props {
   onSelect?: () => void;
@@ -13,7 +13,7 @@ interface Props {
   draggable?: boolean;
   isSelected?: boolean;
   assets: Assets;
-  item: BoardItem | CardItem | ImageTokenItem;
+  piece: BoardPiece | CardPiece | ImageTokenPiece;
 }
 
 export function ImagePiece(props: Props) {
@@ -21,25 +21,25 @@ export function ImagePiece(props: Props) {
     draggable,
     isSelected,
     assets,
-    item,
+    piece,
     onSelect,
     onDblClick,
     onChange,
   } = props;
-  const image = useAsset(assets, item);
+  const image = useAsset(assets, piece);
   const objectRef = React.useRef<any>();
   const handleTransform = useTransformer(objectRef, onChange || (() => {}));
 
   return (
     <>
       <Image
-        id={item.id}
+        id={piece.id}
         image={image}
-        x={item.x}
-        y={item.y}
-        width={item.width}
-        height={item.height}
-        rotation={item.rotation}
+        x={piece.x}
+        y={piece.y}
+        width={piece.width}
+        height={piece.height}
+        rotation={piece.rotation}
         onClick={onSelect}
         onTap={onSelect}
         onDblClick={onDblClick}
