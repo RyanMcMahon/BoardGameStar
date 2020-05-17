@@ -107,6 +107,7 @@ export function CustomGames(props: Props) {
           </Button>
           {games.map((game: any) => (
             <GameSelector
+              key={game}
               gameName={game}
               config={gameConfigs[game]}
               onGameSelect={handleGameSelect(game, gameConfigs[game])}

@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import { useParams, Link, Redirect } from 'react-router-dom';
 
 import { useGameClient } from '../../utils/client';
-import { Button } from '../../utils/style';
+import { Button, primaryColor, breakPoints } from '../../utils/style';
 import { Table } from '../Table';
 import { ControlsModal } from '../ControlsModal';
 import { InviteModal } from '../InviteModal';
@@ -55,16 +55,40 @@ const PlayerContainer = styled.div({
   top: 0,
   right: 0,
   bottom: 0,
-  width: '505px',
+  maxWidth: '505px',
   display: 'flex',
   flexDirection: 'column',
   backgroundColor: '#fafafa',
+  zIndex: 1000,
+  [breakPoints.mobile]: {
+    width: '100%',
+  },
 });
 
 const PlayerLinksContainer = styled.div({
   padding: '1rem',
   '> button:nth-child(n+2)': {
     marginLeft: '1rem',
+  },
+});
+
+const TogglePlayerContainerButton = styled.div({
+  position: 'absolute',
+  top: '1rem',
+  right: 0,
+  padding: '.5rem 1rem .5rem 1.5rem',
+  borderRadius: '8px 0 0 8px',
+  fontSize: '100px',
+  lineHeight: '24px',
+  height: '50px',
+  backgroundColor: 'rgba(0, 0, 0, .2)',
+  color: '#fff',
+  zIndex: 2000,
+  cursor: 'pointer',
+  [breakPoints.mobile]: {
+    fontSize: '70px',
+    lineHeight: '24px',
+    height: '40px',
   },
 });
 
@@ -81,11 +105,13 @@ const LoadingPage = styled.div({
   bottom: 0,
   left: 0,
   backgroundColor: '#fff',
-  padding: '5rem',
+  // padding: '5rem',
+  zIndex: 3000,
 });
 
 const LoadingContainer = styled.div({
-  margin: '0 auto',
+  margin: '2rem',
+  // width: '100%',
   maxWidth: '600px',
 });
 
@@ -119,6 +145,9 @@ export const App: React.FC = () => {
   } = useGameClient(gameId);
   const fact = React.useMemo(() => _.sample(facts), []);
   const [selectedPieceId, setSelectedPieceId] = React.useState<string | null>();
+  const [showPlayerControls, setShowPlayerControls] = React.useState<boolean>(
+    true
+  );
   const [drawModalId, setDrawModalId] = React.useState<string>('');
   const [showRenameModal, setShowRenameModal] = React.useState<boolean>(false);
   const [showInviteModal, setShowInviteModal] = React.useState<boolean>(false);
@@ -185,6 +214,7 @@ export const App: React.FC = () => {
       cardIds,
       event: 'play_cards',
     });
+    setShowPlayerControls(false);
   };
 
   const handleDrawCards = (count: number) => {
@@ -197,6 +227,7 @@ export const App: React.FC = () => {
       count,
     });
     setDrawModalId('');
+    setShowPlayerControls(true);
   };
 
   const handleDiscard = (cardIds: string[]) => {
@@ -422,42 +453,53 @@ export const App: React.FC = () => {
           )}
         </Table>
 
-        <PlayerContainer>
-          {player && (
-            <h1
-              style={{
-                margin: 0,
-                padding: 10,
-                background: player.color,
-                color: '#fff',
-                cursor: 'pointer',
-              }}
-              onClick={handlePromptRename}
-            >
-              {player.name}
-            </h1>
-          )}
-          <HandContainer>
-            <Hand
-              assets={assets}
-              hand={myHand}
-              playCards={handlePlayCards}
-              discard={handleDiscard}
-            />
-          </HandContainer>
-          <PlayerLinksContainer>
-            <Button design="primary" onClick={() => setShowControlsModal(true)}>
-              Controls
-            </Button>
-            <Button design="primary" onClick={() => setShowInviteModal(true)}>
-              Invite
-            </Button>
+        <TogglePlayerContainerButton
+          onClick={() => setShowPlayerControls(!showPlayerControls)}
+        >
+          {showPlayerControls ? <>&rsaquo;</> : <>&lsaquo;</>}
+        </TogglePlayerContainerButton>
 
-            <Link to="/" className="u-pull-right">
-              <Button design="danger">Leave Game</Button>
-            </Link>
-          </PlayerLinksContainer>
-        </PlayerContainer>
+        {showPlayerControls && (
+          <PlayerContainer>
+            {player && (
+              <h1
+                style={{
+                  margin: 0,
+                  padding: 10,
+                  background: player.color,
+                  color: '#fff',
+                  cursor: 'pointer',
+                }}
+                onClick={handlePromptRename}
+              >
+                {player.name}
+              </h1>
+            )}
+            <HandContainer>
+              <Hand
+                assets={assets}
+                hand={myHand}
+                playCards={handlePlayCards}
+                discard={handleDiscard}
+              />
+            </HandContainer>
+            <PlayerLinksContainer>
+              <Button
+                design="primary"
+                onClick={() => setShowControlsModal(true)}
+              >
+                Controls
+              </Button>
+              <Button design="primary" onClick={() => setShowInviteModal(true)}>
+                Invite
+              </Button>
+
+              <Link to="/" className="u-pull-right">
+                <Button design="danger">Leave Game</Button>
+              </Link>
+            </PlayerLinksContainer>
+          </PlayerContainer>
+        )}
         {drawModalId && (
           <DeckModal
             onDrawCards={handleDrawCards}

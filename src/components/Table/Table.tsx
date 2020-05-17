@@ -1,20 +1,39 @@
 import React from 'react';
 import { Stage } from 'react-konva';
+import styled from 'styled-components';
 
 interface Props {
   children: React.ReactNode;
 }
 
-interface WrapperProps {
-  children: React.ReactNode;
-}
-
 const ZOOM_RATE = 1.02;
 
+const ZoomControls = styled.div({
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  padding: '1rem',
+  zIndex: 500,
+});
+
+const CircleButton = styled.div({
+  borderRadius: '50px',
+  background: '#fff',
+  height: '30px',
+  width: '30px',
+  textAlign: 'center',
+  fontSize: '30px',
+  fontWeight: 'bold',
+  marginTop: '1rem',
+  cursor: 'pointer',
+  lineHeight: '28px',
+});
+
 export function Table(props: Props) {
+  const stageRef = React.createRef<Stage>();
   const [dimensions, setDimensions] = React.useState({
-    width: 500,
-    height: 500,
+    width: 200,
+    height: 200,
   });
   const updateDimensions = React.useCallback(() => {
     setDimensions({
@@ -52,14 +71,30 @@ export function Table(props: Props) {
     stage.batchDraw();
   };
 
+  const handleZoom = (scale: number) => () => {
+    const stage: any = stageRef.current;
+    if (stage) {
+      const oldScale = stage.scaleX();
+      stage.scale({ x: oldScale * scale, y: oldScale * scale });
+      stage.batchDraw();
+    }
+  };
+
   return (
-    <Stage
-      width={dimensions.width}
-      height={dimensions.height}
-      draggable
-      onWheel={handleOnWheel}
-    >
-      {props.children}
-    </Stage>
+    <>
+      <ZoomControls>
+        <CircleButton onClick={handleZoom(1.1)}>+</CircleButton>
+        <CircleButton onClick={handleZoom(0.9)}>-</CircleButton>
+      </ZoomControls>
+      <Stage
+        ref={stageRef}
+        width={dimensions.width}
+        height={dimensions.height}
+        draggable
+        onWheel={handleOnWheel}
+      >
+        {props.children}
+      </Stage>
+    </>
   );
 }

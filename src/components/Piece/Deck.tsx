@@ -26,10 +26,21 @@ export function Deck(props: Props) {
     onDblClick,
     onContextMenu,
   } = props;
-  // const [
+  const [isHolding, setIsHolding] = React.useState(false);
+  const [checkForHolding, setCheckForHolding] = React.useState(false);
   const image = useAsset(assets, piece);
   const objectRef = React.useRef<any>();
   const handleTransform = useTransformer(objectRef, onChange);
+
+  if (isHolding && checkForHolding && onContextMenu) {
+    onContextMenu({
+      evt: {
+        clientX: 20,
+        clientY: 20,
+      },
+    });
+    setCheckForHolding(false);
+  }
 
   return (
     <>
@@ -57,6 +68,14 @@ export function Deck(props: Props) {
         onDragMove={handleTransform}
         onDblClick={onDblClick}
         onDblTap={onDblClick}
+        onTouchStart={() => {
+          setCheckForHolding(false);
+          setIsHolding(true);
+          setTimeout(() => setCheckForHolding(true), 700);
+        }}
+        onTouchEnd={() => {
+          setIsHolding(false);
+        }}
         onContextMenu={e => {
           e.evt.preventDefault();
 

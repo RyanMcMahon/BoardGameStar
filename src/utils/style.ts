@@ -12,6 +12,11 @@ export const successColor = '#2ecc71';
 export const successHighlightColor = '#27ae60';
 export const disabledColor = '#ccc';
 
+export const breakPoints = {
+  mobile: '@media (max-width: 610px)',
+  tablet: '@media (min-width: 611px) and (max-width: 900px)',
+};
+
 const buttonStyles: {
   [key: string]: {
     base: string;
@@ -39,6 +44,8 @@ export const Button = styled.button((options: ButtonOptions) => ({
   margin: 0,
   backgroundColor: buttonStyles[options.design].base,
   borderColor: buttonStyles[options.design].base,
+  paddingLeft: '1.5rem',
+  paddingRight: '1.5rem',
   color: '#fff',
   ':disabled': {
     backgroundColor: disabledColor,

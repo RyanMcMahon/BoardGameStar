@@ -73,7 +73,6 @@ yarn run start:web
 - Implement more controls
 - Implement more games / templates
 - Make game import faster
-- Mobile interface
 
 ## FAQ / Help
 

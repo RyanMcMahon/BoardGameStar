@@ -2,7 +2,11 @@ import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
-import { primaryColor, primaryHighlightColor } from '../../utils/style';
+import {
+  primaryColor,
+  primaryHighlightColor,
+  breakPoints,
+} from '../../utils/style';
 import { isWebBuild } from '../../utils/meta';
 import { imagePrefix } from '../../utils/assets';
 
@@ -29,6 +33,10 @@ const Menu = styled.div({
   backgroundColor: '#f5f5f5',
   fontWeight: 'bold',
   boxShadow: '0px 3px 7px rgba(0, 0, 0, 0.5)',
+  zIndex: 1000,
+  [breakPoints.mobile]: {
+    flexDirection: 'column',
+  },
 });
 
 const MenuHeader = styled(Link)({
@@ -50,13 +58,23 @@ const MenuSpacer = styled.div({
   flex: 1,
 });
 
-const MenuGameId = styled.input({
-  width: '280px',
-  fontSize: '1.2rem',
+const MenuGameId = styled.div({
+  width: '220px',
   margin: '0 0 0 1rem',
-  color: '#333',
-  padding: '0 .5rem',
-  borderRadius: '4px',
+  '> input': {
+    fontSize: '1.2rem',
+    color: '#333',
+    margin: 0,
+  },
+  [breakPoints.mobile]: {
+    width: 'auto',
+    marginRight: '1rem',
+    boxSizing: 'border-box',
+    marginTop: '1rem',
+  },
+  [breakPoints.tablet]: {
+    width: '140px',
+  },
 });
 
 const MenuLink = styled(Link)({
@@ -70,6 +88,9 @@ const MenuLink = styled(Link)({
   ':hover': {
     backgroundColor: primaryHighlightColor,
     color: '#fff',
+  },
+  [breakPoints.mobile]: {
+    marginTop: '.5rem',
   },
 });
 
@@ -92,7 +113,14 @@ export function WebPage(props: Props) {
           Board Game Star
         </MenuHeader>
         <MenuSpacer />
-        <MenuGameId placeholder="Game ID" onChange={handleOnChange} />
+        <MenuGameId>
+          <input
+            className="u-full-width"
+            type="text"
+            placeholder="Game ID"
+            onChange={handleOnChange}
+          />
+        </MenuGameId>
         <MenuLink to={`/play/${gameId}`}>Join Game</MenuLink>
         <MenuLink to="/game-select">
           {isWebBuild ? 'Start New Game' : 'Included Games'}
