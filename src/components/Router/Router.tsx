@@ -4,7 +4,6 @@ import { BrowserRouter, HashRouter, Switch, Route } from 'react-router-dom';
 import { App } from '../App';
 import { IncludedGames } from '../IncludedGames';
 import { UpdateModal } from '../UpdateModal';
-import { Editor } from '../Editor';
 import { isWebBuild } from '../../utils/meta';
 
 interface Props {

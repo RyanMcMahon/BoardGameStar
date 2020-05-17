@@ -1,4 +1,3 @@
-// export * from './Card';
 export * from './Deck';
 export * from './CirclePiece';
 export * from './ImagePiece';

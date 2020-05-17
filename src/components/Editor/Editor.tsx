@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import React from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
 import slug from 'slugid';
 import { Layer, Image } from 'react-konva';
 
@@ -9,24 +8,16 @@ import { Button } from '../../utils/style';
 import { Table } from '../Table';
 import { loadAsset, getFilename, getAssetDimensions } from '../../utils/assets';
 import {
-  Config,
   RenderItem,
-  EditorConfig,
-  ScenarioConfig,
   EditorAction,
   EditorState,
-  BoardOption,
-  CardOption,
   PlayerOption,
-  DeckOption,
   AnyPiece,
   RectPieceOption,
-  CircleTokenItem,
   CircleTokenOption,
 } from '../../types';
 import { ImagePiece, Deck, CirclePiece, RectPiece } from '../Piece';
 import useImage from 'use-image';
-import { DeckModal } from '../DeckModal';
 import { DeckEditorModal } from '../DeckEditorModal/DeckEditorModal';
 import { ScenarioModal } from '../ScenarioModal';
 import { PlayArea } from '../Piece/PlayArea';
@@ -117,10 +108,10 @@ export function Editor(props: Props) {
   const [scenarioModalIsShowing, setScenarioModalIsShowing] = React.useState(
     false
   );
-  const [
-    editorHelpModalIsShowing,
-    setEditorHelpModalIsShowing,
-  ] = React.useState(false);
+  // const [
+  //   editorHelpModalIsShowing,
+  //   setEditorHelpModalIsShowing,
+  // ] = React.useState(false);
   const selectedPiece = selectedPieceId ? state.pieces[selectedPieceId] : null;
   const curScenario = state.scenarios[state.curScenario];
   const [axisImage] = useImage(`/axis.png`);
@@ -183,29 +174,12 @@ export function Editor(props: Props) {
     }
   };
 
-  const handleSelectScenario = (scenarioId: string) => {
-    dispatch({
-      scenarioId,
-      type: 'set_cur_scenario',
-    });
-  };
-
   const handleUpdateGameName = (e: React.FormEvent<HTMLInputElement>) => {
     dispatch({
       type: 'update_game_name',
       gameName: e.currentTarget.value || state.gameName,
     });
   };
-
-  // const handleUpdatePlayerCount = (e: React.FormEvent<HTMLInputElement>) => {
-  //   dispatch({
-  //     type: 'update_scenario',
-  //     scenario: {
-  //       ...curScenario,
-  //       playerCount: parseInt(e.currentTarget.value, 10),
-  //     },
-  //   });
-  // };
 
   const handleAddPlayer = () => {
     const id = slug.nice();
@@ -498,7 +472,7 @@ export function Editor(props: Props) {
                         );
 
                       default:
-                        break;
+                        return null;
                     }
                   })}
                 </Layer>

@@ -1,10 +1,10 @@
 import React from 'react';
-import { Text, Image, Label, Tag, Circle } from 'react-konva';
+import { Text, Image, Label, Tag } from 'react-konva';
 
 import { useAsset } from './utils';
-import { RenderItem, DeckItem } from '../../types';
 import { Assets } from '../../utils/game';
 import { PieceTransformer, useTransformer } from './PieceTransformer';
+import { DeckItem } from '../../types';
 
 interface Props {
   assets: Assets;
@@ -27,7 +27,7 @@ export function Deck(props: Props) {
     onContextMenu,
   } = props;
   // const [
-  const image = useAsset(props.assets, item);
+  const image = useAsset(assets, item);
   const objectRef = React.useRef<any>();
   const handleTransform = useTransformer(objectRef, onChange);
 
@@ -58,49 +58,11 @@ export function Deck(props: Props) {
         onDblClick={onDblClick}
         onDblTap={onDblClick}
         onContextMenu={e => {
-          // do not show native context
           e.evt.preventDefault();
+
           if (onContextMenu) {
             onContextMenu(e);
           }
-          // if (props.onContextMenu) {
-          //   props.onContextMenu(e.evt.clientX, e.evt.clientY, [
-          //     {
-          //       label: 'Draw Cards',
-          //       fn: handleDrawCards,
-          //     },
-          //     // {
-          //     //   label: "Play Face Up",
-          //     //   fn: () => {
-          //     //     console.log("face down");
-          //     //   }
-          //     // },
-          //     // {
-          //     //   label: "Play Face Down",
-          //     //   fn: () => {
-          //     //     console.log("face up");
-          //     //   }
-          //     // },
-          //     // {
-          //     //   label: 'Shuffle Discarded',
-          //     //   fn: () => {
-          //     //     console.log('context shuffle');
-          //     //     if (props.onShuffleDiscarded) {
-          //     //       props.onShuffleDiscarded(item.id);
-          //     //     }
-          //     //   },
-          //     // },
-          //     // {
-          //     //   label: 'Discard Played Cards',
-          //     //   fn: () => {
-          //     //     console.log('discard played');
-          //     //     if (props.onDiscardPlayed) {
-          //     //       props.onDiscardPlayed(item.id);
-          //     //     }
-          //     //   },
-          //     // },
-          //   ]);
-          // }
         }}
       />
       <PieceTransformer

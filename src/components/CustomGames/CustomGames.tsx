@@ -3,11 +3,10 @@ import styled from 'styled-components';
 
 import { newGame } from '../../utils/game';
 import { loadAsset } from '../../utils/assets';
-import { Redirect, Link } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import {
   CardOption,
   GameConfig,
-  Config,
   EditorConfig,
   EditorAction,
 } from '../../types';

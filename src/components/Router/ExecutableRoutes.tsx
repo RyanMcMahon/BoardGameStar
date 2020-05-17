@@ -1,19 +1,9 @@
 import React from 'react';
 import slug from 'slugid';
-import { Route, Switch, Redirect } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 import { Editor } from '../Editor';
 import { CustomGames } from '../CustomGames';
-import {
-  Config,
-  EditorAction,
-  EditorConfig,
-  BoardOption,
-  PlayerOption,
-  CardOption,
-  DeckOption,
-  EditorState,
-  AnyPiece,
-} from '../../types';
+import { EditorAction, PlayerOption, EditorState, AnyPiece } from '../../types';
 
 function reducer(state: EditorState, action: EditorAction) {
   switch (action.type) {
@@ -217,7 +207,6 @@ function reducer(state: EditorState, action: EditorAction) {
 }
 
 export function ExecutableRoutes() {
-  const [goToEditor, setGoToEditor] = React.useState(false);
   const [state, dispatch] = React.useReducer<
     React.Reducer<EditorState, EditorAction>,
     EditorState
@@ -234,7 +223,6 @@ export function ExecutableRoutes() {
 
   return (
     <Switch>
-      {/* <Route path="/editor"></Route> */}
       <Route path="/">
         {state.curScenario ? (
           <Editor dispatch={dispatch} state={state} />

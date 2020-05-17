@@ -406,7 +406,7 @@ export const App: React.FC = () => {
                           <PlayArea
                             key={piece.id}
                             piece={piece}
-                            handCount={0}
+                            handCount={handCounts[piece.id]}
                             onChange={p =>
                               handleUpdatePiece({ ...piece, ...p })
                             }
@@ -414,7 +414,7 @@ export const App: React.FC = () => {
                         );
 
                       default:
-                        break;
+                        return null;
                     }
                   })}
                 </Layer>

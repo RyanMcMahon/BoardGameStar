@@ -42,7 +42,7 @@ export interface CardOption extends ImagePieceOption {
 export interface DeckOption extends ImagePieceOption {
   type: 'deck';
   name: string;
-  cards: CardOption[];
+  cards: (CardOption | string)[];
 }
 
 export interface PlayerOption extends RectPieceOption {

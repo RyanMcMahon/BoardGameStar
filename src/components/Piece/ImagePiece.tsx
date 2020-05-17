@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, Image, Label, Tag, Circle, Transformer } from 'react-konva';
+import { Image } from 'react-konva';
 
 import { useAsset } from './utils';
 import { Assets } from '../../utils/game';

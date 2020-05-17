@@ -83,7 +83,20 @@ export function useGameClient(gameId: string) {
         if (Array.isArray(a)) {
           setPendingAssets(a);
         } else {
-          setAssets(a);
+          // Fake loader to give time to read "Facts"
+          setTimeout(
+            () => setPercentLoaded(_.random(20, 30)),
+            _.random(500, 1200)
+          );
+          setTimeout(
+            () => setPercentLoaded(_.random(50, 70)),
+            _.random(1500, 2000)
+          );
+          setTimeout(
+            () => setPercentLoaded(_.random(80, 99)),
+            _.random(2200, 3000)
+          );
+          setTimeout(() => setAssets(a), _.random(3100, 3500));
         }
         break;
       case 'remove_from_board':

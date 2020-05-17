@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import { Button } from '../../utils/style';
 import { Card } from '../../types';
-import { imagePrefix } from '../../utils/meta';
+import { prependPrefix } from '../../utils/assets';
 
 const HandWrapper = styled.div({
   display: 'flex',
@@ -98,7 +98,7 @@ export function Hand(props: Props): JSX.Element {
               card.image && (
                 <CardImage
                   key={card.id}
-                  src={props.assets[card.image]}
+                  src={prependPrefix(props.assets[card.image])}
                   alt=""
                   width="150"
                   onClick={handleSelectCard(card.id)}

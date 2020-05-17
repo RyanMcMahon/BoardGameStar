@@ -3,7 +3,8 @@ import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
 import { primaryColor, primaryHighlightColor } from '../../utils/style';
-import { isWebBuild, imagePrefix } from '../../utils/meta';
+import { isWebBuild } from '../../utils/meta';
+import { imagePrefix } from '../../utils/assets';
 
 interface Props {
   children: React.ReactNode;
