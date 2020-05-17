@@ -105,7 +105,10 @@ export function newGame(
       id: gameId,
       players: {},
       board: [
-        ...config.board,
+        ...config.board.map(piece => ({
+          ...piece,
+          delta: 0,
+        })),
         ...config.decks.map(deck => ({
           ...deck,
           type: 'deck',

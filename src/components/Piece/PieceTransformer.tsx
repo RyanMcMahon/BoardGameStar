@@ -47,7 +47,7 @@ export function PieceTransformer(props: Props) {
       trRef.current.setNode(objectRef.current);
       trRef.current.getLayer().batchDraw();
     }
-  }, [isSelected]);
+  }, [isSelected, trRef, objectRef]);
 
   if (!isSelected) {
     return null;

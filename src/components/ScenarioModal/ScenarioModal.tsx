@@ -1,5 +1,4 @@
 import React from 'react';
-import styled from 'styled-components';
 
 import { Button } from '../../utils/style';
 import { Modal } from '../Modal';

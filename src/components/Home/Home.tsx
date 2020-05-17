@@ -54,10 +54,17 @@ const SectionHeader = styled.h3({
   margin: '6rem 0 0',
 });
 
-const Screenshot = styled.img({
-  margin: '2rem 0',
-  maxWidth: '100%',
-  boxShadow: '0px 3px 7px rgba(0, 0, 0, 0.5)',
+const VideoWrapper = styled.div({
+  position: 'relative',
+  paddingBottom: '56.25%' /* 16:9 */,
+  paddingTop: '25px',
+  iframe: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+  },
 });
 
 export function Home() {
@@ -113,14 +120,18 @@ export function Home() {
       </Hero>
 
       <Content>
-        <SectionHeader>Included Games:</SectionHeader>
-        <Screenshot src="/aviary_demo.png" alt="screenshot" />
-        <strong>Aviary (Compare with Arboretum)</strong>
-        <p>
-          Board Game Star currently includes one built-in game. Aviary is a game
-          which can be played similarly to Arboretum online with up to 4
-          players!
-        </p>
+        <SectionHeader>Create Custom Games</SectionHeader>
+        <VideoWrapper>
+          <iframe
+            title="Editor Tutorial"
+            width="560"
+            height="315"
+            src="https://www.youtube.com/embed/n1-KTxXaAWE"
+            frameBorder="0"
+            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </VideoWrapper>
 
         <SectionHeader>Open Source</SectionHeader>
         <div>

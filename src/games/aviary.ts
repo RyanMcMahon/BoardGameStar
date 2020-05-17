@@ -103,5 +103,3 @@ export const Aviary: Config = [
     config: fourPlayer,
   },
 ];
-
-// export const Aviary = [];

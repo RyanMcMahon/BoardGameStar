@@ -1,7 +1,7 @@
 import React from 'react';
-import { Text, Image, Label, Tag, Circle, Transformer } from 'react-konva';
+import { Text, Label, Tag, Transformer } from 'react-konva';
 import { PlayerOption } from '../../types';
-import { useTransformer, PieceTransformer } from './PieceTransformer';
+import { useTransformer } from './PieceTransformer';
 
 interface Props {
   piece: PlayerOption;
@@ -22,7 +22,7 @@ export function PlayArea(props: Props) {
       trRef.current.setNode(objectRef.current);
       trRef.current.getLayer().batchDraw();
     }
-  }, [isSelected]);
+  }, [isSelected, trRef]);
 
   return (
     <>
