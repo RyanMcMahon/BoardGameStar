@@ -8,7 +8,7 @@ import { WebPage, Content } from '../WebPage';
 import { GameSelector } from '../GameSelector';
 
 const configs: { [key: string]: Config } = {
-  Aviary,
+  'Aviary (Compare with Arboretum)': Aviary,
 };
 
 export function IncludedGames() {
@@ -17,9 +17,9 @@ export function IncludedGames() {
     console.log(config);
     const assets: { [key: string]: string } = {};
 
-    config.board.forEach(item => {
-      if (item.image) {
-        assets[item.image] = item.image;
+    config.board.forEach(piece => {
+      if (piece.image) {
+        assets[piece.image] = piece.image;
       }
     });
 

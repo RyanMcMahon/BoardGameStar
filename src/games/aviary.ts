@@ -1,22 +1,27 @@
 import _ from 'lodash';
-import { Config, GameConfig } from '../types';
+import { Config, GameConfig, PlayerOption } from '../types';
 
 const twoPlayer: GameConfig = {
   players: [
     {
+      type: 'player',
       color: '#e74c3c',
       x: 0,
       y: 500,
-    },
+      layer: 9,
+    } as PlayerOption,
     {
+      type: 'player',
       color: '#f1c40f',
       x: 500,
       y: 500,
-    },
+      layer: 9,
+    } as PlayerOption,
   ],
   board: [],
   decks: [
     {
+      type: 'deck',
       name: 'Birds',
       id: 'Birds',
       image: 'games/aviary/deck.png',
@@ -24,6 +29,8 @@ const twoPlayer: GameConfig = {
       y: 0,
       width: 200,
       height: 300,
+      rotation: 0,
+      layer: 3,
       cards: [
         ...[...Array(8)].map(
           (x, index) => `games/aviary/bearded_tit_${index + 1}.png`
@@ -48,10 +55,12 @@ const twoPlayer: GameConfig = {
 
 const threePlayer: GameConfig = _.cloneDeep(twoPlayer);
 threePlayer.players.push({
+  type: 'player',
   color: '#1abc9c',
   x: 1000,
   y: 500,
-});
+  layer: 9,
+} as PlayerOption);
 
 threePlayer.decks[0].cards.push(
   ...([
@@ -66,10 +75,12 @@ threePlayer.decks[0].cards.push(
 
 const fourPlayer: GameConfig = _.cloneDeep(threePlayer);
 fourPlayer.players.push({
+  type: 'player',
   color: '#3498db',
   x: 1500,
   y: 500,
-});
+  layer: 9,
+} as PlayerOption);
 
 fourPlayer.decks[0].cards.push(
   ...([

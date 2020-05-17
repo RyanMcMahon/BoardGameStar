@@ -9,10 +9,6 @@ interface Props {
   onClose: () => void;
 }
 
-const Wrapper = styled.div({
-  padding: '2rem',
-});
-
 const InviteHeader = styled.h5({
   margin: '1rem 0 0',
 });
@@ -20,7 +16,7 @@ const InviteHeader = styled.h5({
 export function InviteModal(props: Props) {
   return (
     <Modal onClose={props.onClose}>
-      <Wrapper>
+      <Modal.Content>
         <InviteHeader>Game ID:</InviteHeader>
         {props.gameId}
         {isWebBuild && (
@@ -29,7 +25,7 @@ export function InviteModal(props: Props) {
             {`${window.location}`}
           </>
         )}
-      </Wrapper>
+      </Modal.Content>
     </Modal>
   );
 }

@@ -2,11 +2,12 @@ import _ from 'lodash';
 import Peer from 'peerjs';
 import {
   Card,
-  RenderItem,
+  RenderPiece,
   GameConfig,
   CardOption,
   GameEvent,
   ClientEvent,
+  PlayerPiece,
 } from '../types';
 
 import { getHostId } from './playerId';
@@ -30,7 +31,7 @@ interface Player {
 interface Game {
   id: string;
   peer: Peer;
-  board: RenderItem[];
+  board: RenderPiece[];
   decks: {
     [id: string]: Deck;
   };
@@ -82,8 +83,9 @@ export function newGame(
                     id: `card_${idCount++}`,
                     type: 'card',
                     deckId: deck.id,
-                    width: 200,
-                    height: 300,
+                    width: deck.width,
+                    height: deck.height,
+                    layer: deck.layer,
                     x: 0,
                     y: 0,
                     delta: 0,
@@ -103,21 +105,19 @@ export function newGame(
       id: gameId,
       players: {},
       board: [
-        ...config.board,
+        ...config.board.map(piece => ({
+          ...piece,
+          delta: 0,
+        })),
         ...config.decks.map(deck => ({
+          ...deck,
           type: 'deck',
           id: deck.id,
-          name: deck.name,
-          image: deck.image,
-          x: deck.x,
-          y: deck.y,
           delta: 0,
-          width: deck.width,
-          height: deck.height,
           count: decks[deck.id].cards.length,
           total: decks[deck.id].cards.length,
         })),
-      ] as RenderItem[],
+      ] as RenderPiece[],
     };
     const clients: GamePeerDataConnection[] = [];
     const sendToRoom = (event: GameEvent) => {
@@ -125,19 +125,19 @@ export function newGame(
     };
     const updateDeckCount = (deckId: string) => {
       const count = decks[deckId].cards.length;
-      const item = game.board.find(item => item.id === deckId);
-      if (!item) {
+      const piece = game.board.find(piece => piece.id === deckId);
+      if (!piece) {
         return;
       }
-      item.count = count;
-      item.delta++;
-      console.log('update_item', item.delta);
+      piece.count = count;
+      piece.delta++;
+      console.log('update_piece', piece.delta);
       sendToRoom({
-        event: 'update_item',
-        item: {
+        event: 'update_piece',
+        piece: {
           count,
           id: deckId,
-          delta: item.delta,
+          delta: piece.delta,
         },
       });
     };
@@ -172,14 +172,14 @@ export function newGame(
         const playerCount = _.size(game.players);
         const playerConfig = config.players[playerCount - 1];
         const playerArea = {
+          ...playerConfig,
           id: playerId,
           type: 'player',
           name: player.name,
-          x: playerConfig.x,
-          y: playerConfig.y,
-          fill: playerConfig.color,
+          rotation: 0,
+          layer: 9,
           delta: 0,
-        } as RenderItem;
+        };
 
         conn.send({
           assets: sendAssets ? assets : Object.keys(assets),
@@ -191,11 +191,11 @@ export function newGame(
           },
         });
 
-        game.board.push(playerArea);
+        game.board.push(playerArea as RenderPiece);
         sendHandCounts();
         sendToRoom({
           event: 'add_to_board',
-          items: [playerArea],
+          pieces: [playerArea as RenderPiece],
         });
       });
 
@@ -228,19 +228,19 @@ export function newGame(
             }
             break;
 
-          case 'update_item':
+          case 'update_piece':
             try {
-              const { item } = data;
-              const boardItem = game.board.find(({ id }) => item.id === id);
-              console.log('update_item received', item.delta);
-              if (boardItem) {
-                for (let prop in item) {
-                  boardItem[prop] = item[prop];
+              const { piece } = data;
+              const boardPiece = game.board.find(({ id }) => piece.id === id);
+              console.log('update_piece received', piece.delta);
+              if (boardPiece) {
+                for (let prop in piece) {
+                  boardPiece[prop] = piece[prop];
                 }
-                boardItem.delta++;
+                boardPiece.delta++;
                 sendToRoom({
-                  event: 'update_item',
-                  item: boardItem,
+                  event: 'update_piece',
+                  piece: boardPiece,
                 });
               }
             } catch (err) {
@@ -250,11 +250,11 @@ export function newGame(
           case 'pick_up_cards':
             try {
               const { cardIds } = data;
-              const cards = game.board.filter(item =>
-                cardIds.includes(item.id)
+              const cards = game.board.filter(piece =>
+                cardIds.includes(piece.id)
               ) as Card[];
               game.board = game.board.filter(
-                item => !cardIds.includes(item.id)
+                piece => !cardIds.includes(piece.id)
               );
               player.hand.push(...cards);
               conn.send({
@@ -273,14 +273,16 @@ export function newGame(
           case 'rename_player':
             try {
               const { name } = data;
-              const playerArea = game.board.find(item => item.id === playerId);
+              const playerArea = game.board.find(
+                piece => piece.id === playerId
+              ) as PlayerPiece;
               player.name = name;
               if (playerArea) {
                 playerArea.name = name;
                 playerArea.delta++;
                 sendToRoom({
-                  event: 'update_item',
-                  item: {
+                  event: 'update_piece',
+                  piece: {
                     name,
                     id: playerArea.id,
                     delta: playerArea.delta,
@@ -294,7 +296,9 @@ export function newGame(
           case 'play_cards':
             try {
               const { cardIds } = data;
-              const playerArea = game.board.find(item => item.id === playerId);
+              const playerArea = game.board.find(
+                piece => piece.id === playerId
+              );
               if (!playerArea) {
                 return;
               }
@@ -302,9 +306,9 @@ export function newGame(
                 .filter(card => cardIds.includes(card.id))
                 .map((card, index) => ({
                   ...card,
-                  x: playerArea.x + index * 10,
-                  y: playerArea.y + 50 + index * 10,
-                })) as RenderItem[];
+                  x: playerArea.x + index * 20,
+                  y: playerArea.y + 50 + index * 20,
+                })) as RenderPiece[];
               player.hand = player.hand.filter(
                 card => !cardIds.includes(card.id)
               );
@@ -315,7 +319,7 @@ export function newGame(
               });
               sendToRoom({
                 event: 'add_to_board',
-                items: cards,
+                pieces: cards,
               });
               sendHandCounts();
             } catch (err) {
@@ -351,10 +355,12 @@ export function newGame(
             try {
               const { deckId } = data;
               const cards = (game.board.filter(
-                item => item.deckId === deckId
+                piece => (piece as Card).deckId === deckId
               ) as unknown) as Card[];
               decks[deckId].discarded.push(...cards);
-              game.board = game.board.filter(item => item.deckId !== deckId);
+              game.board = game.board.filter(
+                piece => (piece as Card).deckId !== deckId
+              );
               sendToRoom({
                 event: 'remove_from_board',
                 ids: cards.map(x => x.id),

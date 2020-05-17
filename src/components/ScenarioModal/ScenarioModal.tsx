@@ -2,29 +2,36 @@ import React from 'react';
 
 import { Button } from '../../utils/style';
 import { Modal } from '../Modal';
+import { ScenarioOption } from '../../types';
 
 interface Props {
-  onDrawCards: (count: number) => void;
+  onSave: (name: string) => void;
   onClose: () => void;
+  scenario: ScenarioOption;
 }
 
-export function DeckModal(props: Props) {
+export function ScenarioModal(props: Props) {
   const inputRef = React.createRef<HTMLInputElement>();
   const handleSubmit = () => {
     if (inputRef.current) {
-      props.onDrawCards(parseInt(inputRef.current.value, 10));
+      props.onSave(inputRef.current.value);
     }
   };
 
   return (
     <Modal onClose={props.onClose}>
       <Modal.Content>
-        <Modal.Title>Draw Cards</Modal.Title>
+        <Modal.Title>Scenario Name</Modal.Title>
         <form onSubmit={handleSubmit}>
-          <input ref={inputRef} type="number" placeholder="Number" />
+          <input
+            type="text"
+            defaultValue={props.scenario.name}
+            ref={inputRef}
+            placeholder="Name"
+          />
           <br />
           <Button design="success" onClick={handleSubmit}>
-            Draw
+            Save
           </Button>
         </form>
       </Modal.Content>

@@ -43,12 +43,22 @@ const CloseButton = styled.span({
 
 export function Modal(props: Props) {
   return (
-    <React.Fragment>
+    <>
       <ModalOverlay onClick={props.onClose} />
       <ModalWrapper>
         <CloseButton onClick={props.onClose}>&#10005;</CloseButton>
         {props.children}
       </ModalWrapper>
-    </React.Fragment>
+    </>
   );
 }
+
+Modal.Content = styled.div({
+  padding: '2rem',
+});
+
+Modal.Title = styled.h5({
+  fontSize: '3rem',
+  margin: 0,
+  padding: 0,
+});

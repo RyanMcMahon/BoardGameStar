@@ -6,10 +6,10 @@ import { getPlayerId } from './playerId';
 
 import {
   Card,
-  RenderItem,
+  RenderPiece,
   JoinEvent,
   SetHandEvent,
-  UpdateItemEvent,
+  UpdatePieceEvent,
   RemoveFromBoardEvent,
   AddToBoardEvent,
   HandCountEvent,
@@ -35,7 +35,7 @@ export function useGameClient(gameId: string) {
   const [conn, setConn] = React.useState<ClientPeerDataConnection>();
   const [assets, setAssets] = React.useState<{ [key: string]: string }>({});
   const [pendingAssets, setPendingAssets] = React.useState<string[]>([]);
-  const [board, setBoard] = React.useState<RenderItem[]>([]);
+  const [board, setBoard] = React.useState<RenderPiece[]>([]);
   const [myHand, setMyHand] = React.useState<Card[]>([]);
   const [handCounts, setHandCounts] = React.useState<{ [key: string]: number }>(
     {}
@@ -69,8 +69,8 @@ export function useGameClient(gameId: string) {
         });
         break;
       case 'add_to_board':
-        const { items } = data as AddToBoardEvent;
-        setBoard((b: RenderItem[]) => [...b, ...items]);
+        const { pieces } = data as AddToBoardEvent;
+        setBoard((b: RenderPiece[]) => [...b, ...pieces]);
         break;
       case 'hand_count':
         const { counts: c } = data as HandCountEvent;
@@ -83,23 +83,36 @@ export function useGameClient(gameId: string) {
         if (Array.isArray(a)) {
           setPendingAssets(a);
         } else {
-          setAssets(a);
+          // Fake loader to give time to read "Facts"
+          setTimeout(
+            () => setPercentLoaded(_.random(20, 30)),
+            _.random(500, 1200)
+          );
+          setTimeout(
+            () => setPercentLoaded(_.random(50, 70)),
+            _.random(1500, 2000)
+          );
+          setTimeout(
+            () => setPercentLoaded(_.random(80, 99)),
+            _.random(2200, 3000)
+          );
+          setTimeout(() => setAssets(a), _.random(3100, 3500));
         }
         break;
       case 'remove_from_board':
         const { ids } = data as RemoveFromBoardEvent;
-        setBoard((b: RenderItem[]) => {
+        setBoard((b: RenderPiece[]) => {
           const boardCopy = [...b];
           ids.forEach(id => {
-            const index = boardCopy.findIndex(item => item.id === id);
+            const index = boardCopy.findIndex(piece => piece.id === id);
             boardCopy.splice(index, 1, {
               type: 'deleted',
               id: _.uniqueId('deleted_'),
-              image: '',
               delta: 0,
               x: 0,
               y: 0,
-              width: 0,
+              rotation: 0,
+              layer: 0,
             });
           });
           return boardCopy;
@@ -109,18 +122,18 @@ export function useGameClient(gameId: string) {
         const { hand: h } = data as SetHandEvent;
         setMyHand(h);
         break;
-      case 'update_item':
-        const { item } = data as UpdateItemEvent;
-        console.log('update_item', item.delta);
-        setBoard((b: RenderItem[]) => {
+      case 'update_piece':
+        const { piece } = data as UpdatePieceEvent;
+        console.log('update_piece', piece.delta);
+        setBoard((b: RenderPiece[]) => {
           // Preserve render order to maintain drag controls
-          const index = b.findIndex(({ id }) => item.id === id);
+          const index = b.findIndex(({ id }) => piece.id === id);
           const boardCopy = [...b];
-          if (index > -1 && boardCopy[index].delta < item.delta) {
+          if (index > -1 && boardCopy[index].delta < piece.delta) {
             boardCopy.splice(index, 1, {
               ...boardCopy[index],
-              ...item,
-            } as RenderItem);
+              ...piece,
+            } as RenderPiece);
           }
           return boardCopy;
         });
