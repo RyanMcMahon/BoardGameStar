@@ -88,17 +88,17 @@ export function Home() {
             <div className="six columns">
               <DownloadsContainer>
                 {browser?.os === 'Mac OS' && (
-                  <a href="">
+                  <a href="https://github.com/RyanMcMahon/BoardGameStar/releases/download/v0.1.0/boardgamestar-0.1.0-mac.zip">
                     <Button design="success">Download For Mac</Button>
                   </a>
                 )}
                 {browser?.os === 'Linux' && (
-                  <a href="">
+                  <a href="https://github.com/RyanMcMahon/BoardGameStar/releases/download/v0.1.0/boardgamestar-0.1.0.AppImage">
                     <Button design="success">Download For Linux</Button>
                   </a>
                 )}
                 {browser?.os === 'Windows 10' && (
-                  <a href="">
+                  <a href="https://github.com/RyanMcMahon/BoardGameStar/releases/download/v0.1.0/boardgamestar-0.1.0.exe">
                     <Button design="success">Download For Windows</Button>
                   </a>
                 )}

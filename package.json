@@ -57,9 +57,9 @@
     "dist": "npm run build && electron-builder",
     "dist:win": "npm run build && electron-builder -w",
     "dist:mac": "npm run build && electron-builder -m",
-    "publish": "npm run dist -- --publish always",
-    "publish:win": "npm run dist:win -- --publish always",
-    "publish:mac": "npm run dist:mac -- --publish always"
+    "release": "npm run dist -- --publish always",
+    "release:win": "npm run dist:win -- --publish always",
+    "release:mac": "npm run dist:mac -- --publish always"
   },
   "build": {
     "appId": "com.boardgamestar",
@@ -72,7 +72,7 @@
       "category": "Game"
     },
     "mac": {
-      "target": "pkg",
+      "target": "zip",
       "icon": "icon.png"
     },
     "win": {
