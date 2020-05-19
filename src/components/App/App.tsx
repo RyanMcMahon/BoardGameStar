@@ -522,6 +522,7 @@ export const App: React.FC = () => {
         )}
         {showInviteModal && (
           <InviteModal
+            hostId={hostId}
             gameId={gameId}
             onClose={() => setShowInviteModal(false)}
           />

@@ -6,6 +6,7 @@ import { isWebBuild } from '../../utils/meta';
 
 interface Props {
   gameId: string;
+  hostId: string;
   onClose: () => void;
 }
 
@@ -17,12 +18,18 @@ export function InviteModal(props: Props) {
   return (
     <Modal onClose={props.onClose}>
       <Modal.Content>
+        <InviteHeader>Host ID:</InviteHeader>
+        {props.hostId}
         <InviteHeader>Game ID:</InviteHeader>
         {props.gameId}
         {isWebBuild && (
           <>
             <InviteHeader>Invite Link:</InviteHeader>
-            {`${window.location}`}
+            <input
+              type="text"
+              className="u-full-width"
+              value={`${window.location}`}
+            />
           </>
         )}
       </Modal.Content>
