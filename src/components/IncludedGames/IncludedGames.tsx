@@ -1,7 +1,7 @@
 import React from 'react';
 import { Redirect } from 'react-router-dom';
 
-import { newGame } from '../../utils/game';
+import { createNewGame, Game } from '../../utils/game';
 import { CardOption, Config, GameConfig } from '../../types';
 import { Aviary } from '../../games/aviary';
 import { WebPage, Content } from '../WebPage';
@@ -12,7 +12,7 @@ const configs: { [key: string]: Config } = {
 };
 
 export function IncludedGames() {
-  const [newGameId, setNewGameId] = React.useState<string>();
+  const [newGame, setNewGame] = React.useState<Game>();
   const handleGameSelect = (config: GameConfig) => {
     console.log(config);
     const assets: { [key: string]: string } = {};
@@ -32,14 +32,14 @@ export function IncludedGames() {
       });
     });
 
-    newGame(config, { assets, sendAssets: true }, game => {
-      console.log(game.id);
-      setNewGameId(game.id);
+    createNewGame(config, { assets, sendAssets: true }, game => {
+      console.log(game);
+      setNewGame(game);
     });
   };
 
-  if (newGameId) {
-    return <Redirect to={`/play/${newGameId}`} />;
+  if (newGame) {
+    return <Redirect to={`/play/${newGame.hostId}/${newGame.gameId}`} />;
   }
 
   return (

@@ -10,7 +10,7 @@ import {
   PlayerPiece,
 } from '../types';
 
-import { getHostId } from './playerId';
+import { getHostId, getGameId, getInstanceId } from './playerId';
 import { createPeer } from './peer';
 
 interface GamePeerDataConnection extends Peer.DataConnection {
@@ -28,8 +28,9 @@ interface Player {
   conn: GamePeerDataConnection;
 }
 
-interface Game {
-  id: string;
+export interface Game {
+  hostId: string;
+  gameId: string;
   peer: Peer;
   board: RenderPiece[];
   decks: {
@@ -51,7 +52,7 @@ interface GameOptions {
 
 let curGame: Game;
 
-export function newGame(
+export function createNewGame(
   config: GameConfig,
   options: GameOptions,
   cb: (game: Game) => void
@@ -60,10 +61,12 @@ export function newGame(
     curGame.peer.disconnect();
   }
 
-  const peer = createPeer(getHostId());
+  const hostId = getHostId();
+  const gameId = getGameId();
+  const peer = createPeer(getInstanceId(gameId, hostId));
   const { assets, sendAssets } = options;
 
-  peer.on('open', gameId => {
+  peer.on('open', () => {
     let idCount = 0;
     const decks: { [id: string]: Deck } = config.decks.reduce((byId, deck) => {
       return {
@@ -102,7 +105,8 @@ export function newGame(
     const game: Game = {
       peer,
       decks,
-      id: gameId,
+      hostId,
+      gameId,
       players: {},
       board: [
         ...config.board.map(piece => ({
@@ -155,7 +159,7 @@ export function newGame(
     };
 
     curGame = game;
-    console.log(`Started Game: ${gameId}`);
+    console.log(`Started Game: ${hostId}_${gameId}`);
     cb(game);
 
     peer.on('connection', (conn: GamePeerDataConnection) => {

@@ -55,7 +55,7 @@ const PlayerContainer = styled.div({
   top: 0,
   right: 0,
   bottom: 0,
-  maxWidth: '505px',
+  width: '505px',
   display: 'flex',
   flexDirection: 'column',
   backgroundColor: '#fafafa',
@@ -105,13 +105,12 @@ const LoadingPage = styled.div({
   bottom: 0,
   left: 0,
   backgroundColor: '#fff',
-  // padding: '5rem',
   zIndex: 3000,
 });
 
 const LoadingContainer = styled.div({
-  margin: '2rem',
-  // width: '100%',
+  margin: '0 auto',
+  padding: '2rem',
   maxWidth: '600px',
 });
 
@@ -131,7 +130,7 @@ const FailedConnection = styled.h4({
 });
 
 export const App: React.FC = () => {
-  const { gameId = '' } = useParams();
+  const { gameId = '', hostId = '' } = useParams();
   const {
     playerId,
     conn,
@@ -142,7 +141,7 @@ export const App: React.FC = () => {
     handCounts,
     setBoard,
     failedConnection,
-  } = useGameClient(gameId);
+  } = useGameClient(gameId, hostId);
   const fact = React.useMemo(() => _.sample(facts), []);
   const [selectedPieceId, setSelectedPieceId] = React.useState<string | null>();
   const [showPlayerControls, setShowPlayerControls] = React.useState<boolean>(
@@ -159,6 +158,12 @@ export const App: React.FC = () => {
     y: number;
     items: ContextMenuItem[];
   } | null>({ x: 0, y: 0, items: [] });
+
+  React.useLayoutEffect(() => {
+    if (window.innerWidth < 650) {
+      setShowPlayerControls(false);
+    }
+  }, []);
 
   const handleUpdatePieceUnThrottled = (piece: AnyPiece) => {
     if (!conn) {

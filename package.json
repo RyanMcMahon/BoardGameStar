@@ -34,8 +34,10 @@
     "socket.io-client": "^2.3.0",
     "styled-components": "^5.0.1",
     "typescript": "~3.7.2",
+    "unique-names-generator": "^4.2.0",
     "use-image": "^1.0.5",
-    "uuid": "^3.4.0"
+    "uuid": "^3.4.0",
+    "vm2": "^3.9.2"
   },
   "devDependencies": {
     "electron": "^8.1.1",
@@ -55,11 +57,9 @@
     "build": "react-scripts build",
     "start": "nf start -p 3001",
     "dist": "npm run build && electron-builder",
-    "dist:win": "npm run build && electron-builder -w",
-    "dist:mac": "npm run build && electron-builder -m",
+    "dist:all": "npm run build && electron-builder -lmw",
     "release": "npm run dist -- --publish always",
-    "release:win": "npm run dist:win -- --publish always",
-    "release:mac": "npm run dist:mac -- --publish always"
+    "release:all": "npm run dist:all -- --publish always"
   },
   "build": {
     "appId": "com.boardgamestar",

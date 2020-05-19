@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import React from 'react';
 import Peer from 'peerjs';
 
-import { getPlayerId } from './playerId';
+import { getPlayerId, getInstanceId } from './playerId';
 
 import {
   Card,
@@ -27,7 +27,7 @@ interface ClientPeerDataConnection extends Peer.DataConnection {
   send: (event: ClientEvent) => void;
 }
 
-export function useGameClient(gameId: string) {
+export function useGameClient(gameId: string, hostId: string) {
   const [failedConnection, setFailedConnection] = React.useState(false);
   const [checkTimeout, setCheckTimeout] = React.useState(false);
   const [playerId, setPlayerId] = React.useState<string>('');
@@ -156,7 +156,9 @@ export function useGameClient(gameId: string) {
     const peer = createPeer(getPlayerId());
 
     peer.on('open', playerId => {
-      const conn = peer.connect(gameId, { reliable: true });
+      const conn = peer.connect(getInstanceId(gameId, hostId), {
+        reliable: true,
+      });
       conn.on('data', processEvent);
       conn.on('error', err => {
         console.log(err);

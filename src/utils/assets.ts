@@ -2,12 +2,12 @@ import { isWebBuild } from './meta';
 
 window.require = window.require || (() => {});
 const fs = window.require('fs');
+const path = window.require('path');
 
 export const imagePrefix = isWebBuild ? '/' : '';
 
 export function getFilename(file: string) {
-  const [filename] = file.split(/\//g).reverse();
-  return filename;
+  return path.basename(file);
 }
 
 export function isDataAsset(image: string) {

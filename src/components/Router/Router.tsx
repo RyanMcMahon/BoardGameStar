@@ -28,9 +28,8 @@ export function Router() {
 
   React.useEffect(() => {
     if (!isWebBuild) {
-      const fs = window.require('fs');
-      const json = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-      const version = `v${json.version}`;
+      const appVersion = window.require('electron').remote.app.getVersion();
+      const version = `v${appVersion}`;
 
       const checkForUpdate = async () => {
         const data = await fetch(
@@ -53,7 +52,7 @@ export function Router() {
   return (
     <AppRouter>
       <Switch>
-        <Route path="/play/:gameId">
+        <Route path="/play/:hostId/:gameId">
           <App />
         </Route>
         <Route path="/game-select">

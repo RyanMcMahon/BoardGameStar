@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { newGame } from '../../utils/game';
+import { createNewGame, Game } from '../../utils/game';
 import { loadAsset } from '../../utils/assets';
 import { Redirect } from 'react-router-dom';
 import {
@@ -16,6 +16,7 @@ import { Button } from '../../utils/style';
 import { CreateGameModal } from '../CreateGameModal';
 
 const fs = window.require('fs');
+const { NodeVM, VMScript } = window.require('vm2');
 
 interface Props {
   dispatch: React.Dispatch<EditorAction>;
@@ -29,7 +30,7 @@ export function CustomGames(props: Props) {
   const [games, setGames] = React.useState<any>([]);
   const [gameConfigs, setGameConfigs] = React.useState<any>({});
   const [showCreateModal, setShowCreateModal] = React.useState<boolean>(false);
-  const [newGameId, setNewGameId] = React.useState<string>();
+  const [newGame, setNewGame] = React.useState<Game>();
   const handleGameSelect = (gameName: string, config: GameConfig) => () => {
     const assets: { [key: string]: string } = {};
 
@@ -61,9 +62,9 @@ export function CustomGames(props: Props) {
       }
     }
 
-    newGame(config, { assets, sendAssets: false }, game => {
-      console.log(game.id);
-      setNewGameId(game.id);
+    createNewGame(config, { assets, sendAssets: false }, game => {
+      console.log(game);
+      setNewGame(game);
     });
   };
 
@@ -79,20 +80,34 @@ export function CustomGames(props: Props) {
       ? fs.readdirSync('./games').filter((x: string) => x !== '.gitkeep')
       : [];
     const configs: any = {};
+    const vm = new NodeVM();
 
+    // console.log(rootPath);
     for (let i = 0; i < gameNames.length; i++) {
       const gameName = gameNames[i];
-      const config = window.require(`./games/${gameName}/config`) as GameConfig;
-      configs[gameName] = config;
-      console.log(config);
+
+      try {
+        const script = new VMScript(
+          fs.readFileSync(`./games/${gameName}/config.js`)
+        );
+        console.log(script);
+        const config = vm.run(script);
+        // const config = window.require(
+        //   rootPath + `/games/${gameName}/config`
+        // ) as GameConfig;
+        configs[gameName] = config;
+        console.log(config);
+      } catch (err) {
+        console.log(err);
+      }
     }
 
     setGames(gameNames);
     setGameConfigs(configs);
   }, []);
 
-  if (newGameId) {
-    return <Redirect to={`/play/${newGameId}`} />;
+  if (newGame) {
+    return <Redirect to={`/play/${newGame.hostId}/${newGame.gameId}`} />;
   }
 
   return (

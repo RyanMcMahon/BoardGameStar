@@ -1,11 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 import {
   primaryColor,
   primaryHighlightColor,
   breakPoints,
+  Button,
 } from '../../utils/style';
 import { isWebBuild } from '../../utils/meta';
 import { imagePrefix } from '../../utils/assets';
@@ -58,33 +59,53 @@ const MenuSpacer = styled.div({
   flex: 1,
 });
 
-const MenuGameId = styled.div({
-  width: '220px',
+const MenuJoinForm = styled.form({
   margin: '0 0 0 1rem',
+  display: 'flex',
+  flexDirection: 'row',
   '> input': {
     fontSize: '1.2rem',
     color: '#333',
-    margin: 0,
+    margin: '0 1rem 0 0',
+    width: '100px',
+    ':nth-child(1)': {
+      width: '180px',
+    },
   },
   [breakPoints.mobile]: {
-    width: 'auto',
     marginRight: '1rem',
-    boxSizing: 'border-box',
     marginTop: '1rem',
+    '> button': {
+      flex: 1,
+    },
+    '> input': {
+      width: '33%',
+      marginBottom: '.5rem',
+      ':nth-child(1)': {
+        width: '33%',
+      },
+    },
   },
   [breakPoints.tablet]: {
-    width: '140px',
+    '> input': {
+      width: '80px',
+      ':nth-child(1)': {
+        width: '80px',
+      },
+    },
   },
 });
 
 const MenuLink = styled(Link)({
   fontSize: '1.5rem',
+  fontWeight: 'normal',
   textDecoration: 'none',
   margin: '0 1rem',
   backgroundColor: primaryColor,
   color: '#fff',
   padding: '.5rem 1rem',
   borderRadius: '4px',
+  textAlign: 'center',
   ':hover': {
     backgroundColor: primaryHighlightColor,
     color: '#fff',
@@ -101,10 +122,23 @@ export const Content = styled.div({
 });
 
 export function WebPage(props: Props) {
-  const [gameId, setGameId] = React.useState('');
-  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setGameId(e.target.value);
+  const history = useHistory();
+  const hostIdRef = React.createRef<HTMLInputElement>();
+  const gameIdRef = React.createRef<HTMLInputElement>();
+  const handleSubmitJoin = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (
+      hostIdRef.current &&
+      hostIdRef.current.value &&
+      gameIdRef.current &&
+      gameIdRef.current.value
+    ) {
+      const hostId = hostIdRef.current.value;
+      const gameId = gameIdRef.current.value;
+      history.push(`/play/${hostId}/${gameId}`);
+    }
   };
+
   return (
     <Page>
       <Menu>
@@ -113,15 +147,13 @@ export function WebPage(props: Props) {
           Board Game Star
         </MenuHeader>
         <MenuSpacer />
-        <MenuGameId>
-          <input
-            className="u-full-width"
-            type="text"
-            placeholder="Game ID"
-            onChange={handleOnChange}
-          />
-        </MenuGameId>
-        <MenuLink to={`/play/${gameId}`}>Join Game</MenuLink>
+        <MenuJoinForm onSubmit={handleSubmitJoin}>
+          <input type="text" placeholder="Host ID" ref={hostIdRef} />
+          <input type="text" placeholder="Game ID" ref={gameIdRef} />
+          <Button design="primary" type="submit">
+            Join Game
+          </Button>
+        </MenuJoinForm>
         <MenuLink to="/game-select">
           {isWebBuild ? 'Start New Game' : 'Included Games'}
         </MenuLink>

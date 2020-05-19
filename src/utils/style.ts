@@ -13,8 +13,8 @@ export const successHighlightColor = '#27ae60';
 export const disabledColor = '#ccc';
 
 export const breakPoints = {
-  mobile: '@media (max-width: 610px)',
-  tablet: '@media (min-width: 611px) and (max-width: 900px)',
+  mobile: '@media (max-width: 649px)',
+  tablet: '@media (min-width: 650px) and (max-width: 900px)',
 };
 
 const buttonStyles: {

@@ -11,7 +11,7 @@ function createWindow() {
     height: 900,
     webPreferences: {
       nodeIntegration: true,
-      preload: __dirname + '/../src/preload.js',
+      preload: __dirname + '/preload.js',
     },
   });
 
