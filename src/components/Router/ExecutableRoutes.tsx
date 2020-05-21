@@ -87,12 +87,38 @@ function reducer(state: EditorState, action: EditorAction) {
         id: slug.nice(),
         name: `${scenario.name}-duplicate`,
       };
-      const pieces: { [id: string]: AnyPiece } = scenario.pieces
-        .map(id => ({
-          ...state.pieces[id],
-          id: slug.nice(),
-        }))
-        .reduce((agg, piece) => ({ ...agg, [piece.id]: piece }), {});
+      const pieces: { [id: string]: AnyPiece } = {};
+
+      scenario.pieces.forEach(pieceId => {
+        const piece = state.pieces[pieceId];
+        if (piece.type === 'card') {
+          return;
+        }
+
+        const pieceCopy = { ...piece, id: slug.nice() };
+        pieces[pieceCopy.id] = pieceCopy;
+
+        if (piece.type === 'deck') {
+          Object.values(state.pieces).forEach(p => {
+            if (p.type === 'card') {
+              console.log(
+                'attempting card copy',
+                p.deckId === pieceId,
+                !scenario.pieces.includes(p.id)
+              );
+            }
+            if (
+              p.type === 'card' &&
+              p.deckId === pieceId
+              // !scenario.pieces.includes(p.id)
+            ) {
+              const cardCopy = { ...p, id: slug.nice(), deckId: pieceCopy.id };
+              pieces[cardCopy.id] = cardCopy;
+            }
+          });
+        }
+      });
+
       newScenario.pieces = Object.keys(pieces);
       newScenario.players = Object.values(pieces)
         .filter(piece => piece.type === 'player')

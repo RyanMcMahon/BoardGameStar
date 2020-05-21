@@ -1,15 +1,11 @@
+import _ from 'lodash';
 import React from 'react';
 import styled from 'styled-components';
 
 import { createNewGame, Game } from '../../utils/game';
 import { loadAsset } from '../../utils/assets';
 import { Redirect } from 'react-router-dom';
-import {
-  CardOption,
-  GameConfig,
-  EditorConfig,
-  EditorAction,
-} from '../../types';
+import { GameConfig, EditorConfig, EditorAction } from '../../types';
 import { GameSelector } from '../GameSelector';
 import { WebPage, Content } from '../WebPage';
 import { Button } from '../../utils/style';
@@ -33,27 +29,12 @@ export function CustomGames(props: Props) {
   const [newGame, setNewGame] = React.useState<Game>();
   const handleGameSelect = (gameName: string, config: GameConfig) => () => {
     const assets: { [key: string]: string } = {};
+    console.log(config.curScenario);
 
-    config.board.forEach(piece => {
+    Object.values(config.pieces).forEach((piece: any) => {
       if (piece.image) {
         assets[piece.image] = '';
       }
-    });
-
-    config.decks.forEach(deck => {
-      // public image TODO: better check
-      if (deck.image.includes('/')) {
-        assets[deck.image] = deck.image;
-      } else {
-        assets[deck.image] = '';
-      }
-      deck.cards.forEach((card: CardOption | string) => {
-        if (typeof card === 'string') {
-          assets[card] = card;
-        } else {
-          assets[card.image] = '';
-        }
-      });
     });
 
     for (let key in assets) {
@@ -90,11 +71,7 @@ export function CustomGames(props: Props) {
         const script = new VMScript(
           fs.readFileSync(`./games/${gameName}/config.js`)
         );
-        console.log(script);
-        const config = vm.run(script);
-        // const config = window.require(
-        //   rootPath + `/games/${gameName}/config`
-        // ) as GameConfig;
+        const config = _.cloneDeep(vm.run(script));
         configs[gameName] = config;
         console.log(config);
       } catch (err) {

@@ -1,4 +1,4 @@
-// import slug from 'slugid';
+import slug from 'slugid';
 import _ from 'lodash';
 import adjectives from './adjectives';
 import animals from './animals';
@@ -38,4 +38,30 @@ export function getInstanceId(gameId: string, hostId: string) {
   return `${hostId}_${gameId}`.toLowerCase();
 }
 
-export const getPlayerId = () => getInstanceId(getGameId(), getHostId());
+// export const getPlayerId = () => getInstanceId(getGameId(), getHostId());
+
+export function getPlayerId() {
+  const playerId = localStorage.getItem('playerId');
+
+  if (playerId) {
+    return playerId;
+  }
+
+  const id = slug.nice();
+  localStorage.setItem('playerId', id);
+  return id;
+}
+
+export function getName() {
+  return localStorage.getItem('name');
+}
+
+export function setName(name: string) {
+  return localStorage.setItem('name', name);
+}
+
+export const getIdentity = () => ({
+  instanceId: getInstanceId(getGameId(), getHostId()),
+  playerId: getPlayerId(),
+  name: getName(),
+});

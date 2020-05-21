@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import React from 'react';
 import styled from 'styled-components';
 import slug from 'slugid';
@@ -117,34 +116,7 @@ export function Editor(props: Props) {
   const [axisImage] = useImage(`/axis.png`);
 
   const handleSave = () => {
-    const cardsByDeckId = _.groupBy(Object.values(state.pieces), 'deckId');
-    const configs = Object.values(state.scenarios).map(scenario => {
-      const config = {
-        players: scenario.players.map(playerId => state.pieces[playerId]),
-        board: scenario.pieces
-          .map(id => state.pieces[id])
-          .filter(piece => !['deck', 'card', 'player'].includes(piece.type)),
-        decks: scenario.pieces
-          .map(id => state.pieces[id])
-          .filter(piece => piece.type === 'deck')
-          .map(deck => ({
-            ...deck,
-            cards: cardsByDeckId[deck.id],
-          })),
-      };
-      return {
-        config,
-        name: scenario.name,
-      };
-    });
-    console.log(configs);
-
-    const outConfig = configs.length === 1 ? configs[0].config : configs;
-    const configFile = `module.exports = ${JSON.stringify(
-      outConfig,
-      null,
-      '\t'
-    )};`;
+    const configFile = `module.exports = ${JSON.stringify(state, null, '\t')};`;
     const outPath = `./games/${state.gameName}`;
 
     try {

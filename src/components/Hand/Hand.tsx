@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { Button } from '../../utils/style';
-import { Card } from '../../types';
+import { Card, Pieces } from '../../types';
 import { prependPrefix } from '../../utils/assets';
 
 const HandWrapper = styled.div({
@@ -35,7 +35,8 @@ const CardImage = styled.img({
 
 interface Props {
   assets: { [key: string]: string };
-  hand: Card[];
+  pieces: Pieces;
+  hand: string[];
   playCards: (ids: string[]) => void;
   discard: (ids: string[]) => void;
 }
@@ -91,6 +92,7 @@ export function Hand(props: Props): JSX.Element {
       </Controls>
       <CardWrapper>
         {props.hand
+          .map(id => props.pieces[id] as Card)
           .filter(x => x)
           .sort(sortCards)
           .map(

@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import { useParams, Link, Redirect } from 'react-router-dom';
 
 import { useGameClient } from '../../utils/client';
-import { Button, primaryColor, breakPoints } from '../../utils/style';
+import { Button, breakPoints } from '../../utils/style';
 import { Table } from '../Table';
 import { ControlsModal } from '../ControlsModal';
 import { InviteModal } from '../InviteModal';
@@ -14,7 +14,8 @@ import { DeckModal } from '../DeckModal';
 import { RenameModal } from '../RenameModal';
 import { ProgressBar } from '../ProgressBar';
 import { facts } from '../../utils/facts';
-import { RenderPiece, AnyPiece, ContextMenuItem } from '../../types';
+import { setName } from '../../utils/identity';
+import { RenderPiece, ContextMenuItem } from '../../types';
 import { Layer } from 'react-konva';
 import { ImagePiece, Deck, RectPiece, CirclePiece } from '../Piece';
 import { PlayArea } from '../Piece/PlayArea';
@@ -134,12 +135,13 @@ export const App: React.FC = () => {
   const {
     playerId,
     conn,
+    pieces,
     board,
     myHand,
     assets,
     percentLoaded,
     handCounts,
-    setBoard,
+    setPieces,
     failedConnection,
   } = useGameClient(gameId, hostId);
   const fact = React.useMemo(() => _.sample(facts), []);
@@ -165,28 +167,27 @@ export const App: React.FC = () => {
     }
   }, []);
 
-  const handleUpdatePieceUnThrottled = (piece: AnyPiece) => {
+  const handleUpdatePieceUnThrottled = (piece: RenderPiece) => {
     if (!conn) {
       return;
     }
-    setBoard((b: RenderPiece[]) => {
-      const index = b.findIndex(p => p.id === piece.id);
-      const boardCopy = [...b];
-      if (index > -1) {
-        boardCopy.splice(index, 1, {
-          ...boardCopy[index],
-          ...piece,
-          delta: boardCopy[index].delta + 1,
-        } as RenderPiece);
-      }
-      return boardCopy;
-    });
+    const updatedPiece = {
+      ...pieces[piece.id],
+      ...piece,
+      delta: pieces[piece.id].delta + 1,
+    };
+    console.log('updating piece', updatedPiece.delta, updatedPiece);
+
+    setPieces(p => ({
+      ...p,
+      [piece.id]: updatedPiece,
+    }));
+
     conn.send({
       event: 'update_piece',
-      piece: {
-        ...piece,
-        delta: (board.find(p => p.id === piece.id)?.delta || 0) + 1,
-      } as any,
+      pieces: {
+        [piece.id]: updatedPiece,
+      },
     });
   };
 
@@ -207,6 +208,7 @@ export const App: React.FC = () => {
         name,
         event: 'rename_player',
       });
+      setName(name);
       setShowRenameModal(false);
     }
   };
@@ -219,7 +221,9 @@ export const App: React.FC = () => {
       cardIds,
       event: 'play_cards',
     });
-    setShowPlayerControls(false);
+    if (window.innerWidth < 650) {
+      setShowPlayerControls(false);
+    }
   };
 
   const handleDrawCards = (count: number) => {
@@ -274,11 +278,16 @@ export const App: React.FC = () => {
     setShowRenameModal(true);
   };
 
-  const player = board.find(piece => piece.id === playerId);
+  const player = Object.values(pieces).find(
+    p => p.type === 'player' && p.playerId === playerId
+  );
 
-  const layers = board.reduce((agg: RenderPiece[][], piece: RenderPiece) => {
-    agg[piece.layer] = agg[piece.layer] || [];
-    agg[piece.layer].push(piece);
+  const layers = board.reduce((agg: RenderPiece[][], pieceId: string) => {
+    const piece = pieces[pieceId];
+    if (piece) {
+      agg[piece.layer] = agg[piece.layer] || [];
+      agg[piece.layer].push(piece);
+    }
     return agg;
   }, []);
 
@@ -438,16 +447,16 @@ export const App: React.FC = () => {
 
                       // Player
                       case 'player':
-                        return (
+                        return piece.playerId ? (
                           <PlayArea
                             key={piece.id}
                             piece={piece}
-                            handCount={handCounts[piece.id]}
+                            handCount={handCounts[piece.playerId]}
                             onChange={p =>
                               handleUpdatePiece({ ...piece, ...p })
                             }
                           />
-                        );
+                        ) : null;
 
                       default:
                         return null;
@@ -483,6 +492,7 @@ export const App: React.FC = () => {
             <HandContainer>
               <Hand
                 assets={assets}
+                pieces={pieces}
                 hand={myHand}
                 playCards={handlePlayCards}
                 discard={handleDiscard}
