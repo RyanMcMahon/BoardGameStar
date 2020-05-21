@@ -85,6 +85,7 @@ export interface EditorState {
     [id: string]: AnyPiece;
   };
 }
+export type GameConfig = EditorState;
 
 export interface CreateGameAction {
   type: 'create_game';
@@ -162,24 +163,6 @@ export type EditorAction =
   | UpdatePieceAction
   | RemovePieceAction;
 
-export interface GameConfig {
-  players: PlayerOption[];
-  board: BoardOption[];
-  decks: DeckOption[];
-}
-
-// export interface DeckOption {
-//   type: 'deck';
-//   id: string;
-//   name: string;
-//   image: string;
-//   x: number;
-//   y: number;
-//   width: number;
-//   height: number;
-//   cards: CardOption[] | string[];
-// }
-
 export interface CardOption {
   type: 'card';
   id: string;
@@ -187,24 +170,12 @@ export interface CardOption {
   count: number;
 }
 
-export interface ScenarioConfig {
-  name: string;
-  config: GameConfig;
-}
-
-export type Config = GameConfig | ScenarioConfig[];
-
-// interface BasePiece {
-//   id: string;
-//   delta: number;
-//   image: string | undefined;
-//   x: number;
-//   y: number;
-//   width: number;
-//   height?: number;
-//   fill?: string;
-//   [key: string]: any;
+// export interface ScenarioConfig {
+//   name: string;
+//   config: GameConfig;
 // }
+
+// export type Config = GameConfig | ScenarioConfig[];
 
 export interface Piece {
   delta: number;
@@ -212,19 +183,25 @@ export interface Piece {
 }
 export type BoardPiece = BoardOption & Piece;
 export type CardPiece = CardOption & Piece;
-export type PlayerPiece = PlayerOption & Piece;
 export type CircleTokenPiece = CircleTokenOption & Piece;
 export type ImageTokenPiece = ImageTokenOption & Piece;
 export type RectTokenPiece = RectTokenOption & Piece;
 
 export interface DeckPiece extends DeckOption, Piece {
-  cards: CardPiece[];
   count: number;
   total: number;
 }
 
 export interface DeletedPiece extends PieceOption, Piece {
   type: 'deleted';
+}
+
+export interface PlayerPiece extends PlayerOption, Piece {
+  playerId?: string;
+}
+
+export interface Pieces {
+  [id: string]: RenderPiece;
 }
 
 export type RenderPiece =
@@ -252,8 +229,9 @@ export interface ContextMenuItem {
 
 export interface JoinEvent {
   event: 'join';
-  hand: Card[];
-  board: RenderPiece[];
+  hand: string[];
+  board: string[];
+  pieces: Pieces;
   assets:
     | string[]
     | {
@@ -266,14 +244,13 @@ export interface JoinEvent {
 
 export interface SetHandEvent {
   event: 'set_hand';
-  hand: Card[];
+  hand: string[];
 }
 
 export interface UpdatePieceEvent {
   event: 'update_piece';
-  piece: Partial<RenderPiece> & {
-    id: string;
-    delta: number;
+  pieces: {
+    [id: string]: RenderPiece;
   };
 }
 
@@ -284,7 +261,7 @@ export interface RemoveFromBoardEvent {
 
 export interface AddToBoardEvent {
   event: 'add_to_board';
-  pieces: RenderPiece[];
+  pieces: string[];
 }
 
 export interface RollDiceEvent {

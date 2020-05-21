@@ -22,9 +22,11 @@ const ProgressIndicator = styled.div<{ complete: number }>(
 );
 
 export function ProgressBar(props: Props) {
+  const percentage = props.complete <= 100 ? props.complete : 100;
+
   return (
     <Wrapper>
-      <ProgressIndicator complete={props.complete} />
+      <ProgressIndicator complete={percentage} />
     </Wrapper>
   );
 }

@@ -2,13 +2,13 @@ import React from 'react';
 import { Redirect } from 'react-router-dom';
 
 import { createNewGame, Game } from '../../utils/game';
-import { CardOption, Config, GameConfig } from '../../types';
+import { GameConfig } from '../../types';
 import { Aviary } from '../../games/aviary';
 import { WebPage, Content } from '../WebPage';
 import { GameSelector } from '../GameSelector';
 
-const configs: { [key: string]: Config } = {
-  'Aviary (Compare with Arboretum)': Aviary,
+const configs: { [key: string]: GameConfig } = {
+  'Aviary (Compare with Arboretum)': Aviary as any,
 };
 
 export function IncludedGames() {
@@ -17,19 +17,10 @@ export function IncludedGames() {
     console.log(config);
     const assets: { [key: string]: string } = {};
 
-    config.board.forEach(piece => {
+    Object.values(config.pieces).forEach((piece: any) => {
       if (piece.image) {
         assets[piece.image] = piece.image;
       }
-    });
-
-    config.decks.forEach(deck => {
-      assets[deck.image] = deck.image;
-      deck.cards.forEach((card: CardOption | string) => {
-        if (typeof card === 'string') {
-          assets[card] = card;
-        }
-      });
     });
 
     createNewGame(config, { assets, sendAssets: true }, game => {

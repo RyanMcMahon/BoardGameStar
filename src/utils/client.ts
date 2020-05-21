@@ -2,10 +2,9 @@ import * as _ from 'lodash';
 import React from 'react';
 import Peer from 'peerjs';
 
-import { getPlayerId, getInstanceId } from './playerId';
+import { getInstanceId, getIdentity } from './identity';
 
 import {
-  Card,
   RenderPiece,
   JoinEvent,
   SetHandEvent,
@@ -34,9 +33,12 @@ export function useGameClient(gameId: string, hostId: string) {
   const [percentLoaded, setPercentLoaded] = React.useState<number>(5);
   const [conn, setConn] = React.useState<ClientPeerDataConnection>();
   const [assets, setAssets] = React.useState<{ [key: string]: string }>({});
+  const [pieces, setPieces] = React.useState<{ [key: string]: RenderPiece }>(
+    {}
+  );
   const [pendingAssets, setPendingAssets] = React.useState<string[]>([]);
-  const [board, setBoard] = React.useState<RenderPiece[]>([]);
-  const [myHand, setMyHand] = React.useState<Card[]>([]);
+  const [board, setBoard] = React.useState<string[]>([]);
+  const [myHand, setMyHand] = React.useState<string[]>([]);
   const [handCounts, setHandCounts] = React.useState<{ [key: string]: number }>(
     {}
   );
@@ -44,10 +46,10 @@ export function useGameClient(gameId: string, hostId: string) {
   const requestAsset = React.useCallback(
     (asset: string) => {
       if (!conn) {
-        return;
-        // throw new Error(
-        //   'Time Paradox: requesting assets before connection established'
-        // );
+        // return;
+        throw new Error(
+          'Time Paradox: requesting assets before connection established'
+        );
       }
       conn.send({
         asset,
@@ -70,14 +72,15 @@ export function useGameClient(gameId: string, hostId: string) {
         break;
       case 'add_to_board':
         const { pieces } = data as AddToBoardEvent;
-        setBoard((b: RenderPiece[]) => [...b, ...pieces]);
+        setBoard(b => [...b, ...pieces]);
         break;
       case 'hand_count':
         const { counts: c } = data as HandCountEvent;
         setHandCounts(counts => ({ ...counts, ...c }));
         break;
       case 'join':
-        const { assets: a, hand, board: b } = data as JoinEvent;
+        const { assets: a, hand, board: b, pieces: p } = data as JoinEvent;
+        setPieces(p);
         setMyHand(hand);
         setBoard(prevBoard => [...b, ...prevBoard]);
         if (Array.isArray(a)) {
@@ -101,19 +104,11 @@ export function useGameClient(gameId: string, hostId: string) {
         break;
       case 'remove_from_board':
         const { ids } = data as RemoveFromBoardEvent;
-        setBoard((b: RenderPiece[]) => {
+        setBoard(b => {
           const boardCopy = [...b];
           ids.forEach(id => {
-            const index = boardCopy.findIndex(piece => piece.id === id);
-            boardCopy.splice(index, 1, {
-              type: 'deleted',
-              id: _.uniqueId('deleted_'),
-              delta: 0,
-              x: 0,
-              y: 0,
-              rotation: 0,
-              layer: 0,
-            });
+            const index = boardCopy.findIndex(pieceId => pieceId === id);
+            boardCopy.splice(index, 1, 'deleted');
           });
           return boardCopy;
         });
@@ -123,19 +118,19 @@ export function useGameClient(gameId: string, hostId: string) {
         setMyHand(h);
         break;
       case 'update_piece':
-        const { piece } = data as UpdatePieceEvent;
-        console.log('update_piece', piece.delta);
-        setBoard((b: RenderPiece[]) => {
-          // Preserve render order to maintain drag controls
-          const index = b.findIndex(({ id }) => piece.id === id);
-          const boardCopy = [...b];
-          if (index > -1 && boardCopy[index].delta < piece.delta) {
-            boardCopy.splice(index, 1, {
-              ...boardCopy[index],
-              ...piece,
-            } as RenderPiece);
+        const { pieces: updatedPieces } = data as UpdatePieceEvent;
+        setPieces(p => {
+          const u = { ...updatedPieces };
+          console.log(p);
+          for (let i in u) {
+            if (p[i] && u[i].delta <= p[i].delta) {
+              delete u[i];
+            }
           }
-          return boardCopy;
+          return {
+            ...p,
+            ...u,
+          };
         });
         break;
     }
@@ -153,10 +148,15 @@ export function useGameClient(gameId: string, hostId: string) {
   }, [pendingAssets, requestAsset]);
 
   React.useEffect(() => {
-    const peer = createPeer(getPlayerId());
+    const { instanceId, playerId, name } = getIdentity();
+    const peer = createPeer(instanceId);
 
-    peer.on('open', playerId => {
+    peer.on('open', () => {
       const conn = peer.connect(getInstanceId(gameId, hostId), {
+        metadata: {
+          playerId,
+          name,
+        },
         reliable: true,
       });
       conn.on('data', processEvent);
@@ -170,7 +170,7 @@ export function useGameClient(gameId: string, hostId: string) {
     });
 
     setTimeout(() => setCheckTimeout(true), 10 * 1000);
-  }, [gameId, processEvent]);
+  }, [gameId, hostId, processEvent]);
 
   React.useEffect(() => {
     if (checkTimeout && !board.length) {
@@ -182,7 +182,8 @@ export function useGameClient(gameId: string, hostId: string) {
     playerId,
     conn,
     board,
-    setBoard,
+    pieces,
+    setPieces,
     myHand,
     assets,
     percentLoaded,

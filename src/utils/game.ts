@@ -1,44 +1,56 @@
 import _ from 'lodash';
+import slug from 'slugid';
 import Peer from 'peerjs';
 import {
   Card,
   RenderPiece,
   GameConfig,
-  CardOption,
   GameEvent,
   ClientEvent,
   PlayerPiece,
+  Pieces,
+  CardPiece,
+  DeckPiece,
 } from '../types';
 
-import { getHostId, getGameId, getInstanceId } from './playerId';
+import { getHostId, getGameId, getInstanceId } from './identity';
 import { createPeer } from './peer';
 
 interface GamePeerDataConnection extends Peer.DataConnection {
   send: (event: GameEvent) => void;
+  metadata: {
+    playerId: string;
+    name: string;
+  };
 }
 
-interface Deck {
-  cards: Card[];
-  discarded: Card[];
+interface Deck extends DeckPiece {
+  cards: string[];
+  discarded: string[];
 }
 
 interface Player {
   name: string;
-  hand: Card[];
+  hand: string[];
   conn: GamePeerDataConnection;
+}
+
+interface Players {
+  [id: string]: Player;
+}
+
+interface Decks {
+  [id: string]: Deck;
 }
 
 export interface Game {
   hostId: string;
   gameId: string;
   peer: Peer;
-  board: RenderPiece[];
-  decks: {
-    [id: string]: Deck;
-  };
-  players: {
-    [id: string]: Player;
-  };
+  board: string[];
+  pieces: Pieces;
+  // decks: Decks;
+  // players: Players;
 }
 
 export interface Assets {
@@ -67,69 +79,65 @@ export function createNewGame(
   const { assets, sendAssets } = options;
 
   peer.on('open', () => {
-    let idCount = 0;
-    const decks: { [id: string]: Deck } = config.decks.reduce((byId, deck) => {
-      return {
+    let pieces: Pieces = Object.values(config.pieces).reduce(
+      (byId, piece) => ({
         ...byId,
-        [deck.id]: {
-          ...deck,
-          discarded: [],
-          cards: _.shuffle(
-            (deck.cards as []).reduce(
-              (cards: Card[], card: CardOption | string) => {
-                const count = typeof card === 'string' ? 1 : card.count;
-                const image = typeof card === 'string' ? card : card.image;
-                return [
-                  ...cards,
-                  ...[...Array(count)].map(_ => ({
-                    image,
-                    id: `card_${idCount++}`,
-                    type: 'card',
-                    deckId: deck.id,
-                    width: deck.width,
-                    height: deck.height,
-                    layer: deck.layer,
-                    x: 0,
-                    y: 0,
-                    delta: 0,
-                  })),
-                ];
-              },
-              []
-            )
-          ),
-        },
-      };
-    }, {});
-
-    const game: Game = {
-      peer,
-      decks,
-      hostId,
-      gameId,
-      players: {},
-      board: [
-        ...config.board.map(piece => ({
+        [piece.id]: {
           ...piece,
           delta: 0,
-        })),
-        ...config.decks.map(deck => ({
-          ...deck,
-          type: 'deck',
-          id: deck.id,
-          delta: 0,
-          count: decks[deck.id].cards.length,
-          total: decks[deck.id].cards.length,
-        })),
-      ] as RenderPiece[],
+        },
+      }),
+      {}
+    );
+    Object.values(pieces).forEach(piece => {
+      if (piece.type === 'card') {
+        for (let i = 1; i < piece.count; i++) {
+          const cardCopy = { ...piece, id: slug.nice() };
+          console.log('added card', cardCopy);
+          pieces[cardCopy.id] = cardCopy;
+        }
+      }
+    });
+
+    const scenario = config.scenarios[config.curScenario];
+    const decks: Decks = Object.values(pieces)
+      .filter(p => p.type === 'deck')
+      .reduce(
+        (byId, deck) => ({
+          ...byId,
+          [deck.id]: {
+            ...deck,
+            cards: _.shuffle(
+              Object.values(pieces)
+                .filter(p => p.type === 'card' && p.deckId === deck.id)
+                .map(c => c.id)
+            ),
+            discarded: [],
+          },
+        }),
+        {}
+      );
+    Object.values(decks).forEach(deck => {
+      (pieces[deck.id] as DeckPiece).total = deck.cards.length;
+      (pieces[deck.id] as DeckPiece).count = deck.cards.length;
+    });
+
+    const players: Players = {};
+    const game: Game = {
+      peer,
+      hostId,
+      gameId,
+      pieces,
+      board: scenario.pieces.filter(pieceId => pieces[pieceId].type !== 'card'),
     };
     const clients: GamePeerDataConnection[] = [];
     const sendToRoom = (event: GameEvent) => {
       clients.forEach(client => client.send(event));
     };
+
     const updateDeckCount = (deckId: string) => {
       const count = decks[deckId].cards.length;
-      const piece = game.board.find(piece => piece.id === deckId);
+      const piece = pieces[deckId];
       if (!piece) {
         return;
       }
@@ -138,17 +146,16 @@ export function createNewGame(
       console.log('update_piece', piece.delta);
       sendToRoom({
         event: 'update_piece',
-        piece: {
-          count,
-          id: deckId,
-          delta: piece.delta,
+        pieces: {
+          [piece.id]: piece,
         },
       });
     };
+
     const sendHandCounts = () => {
       sendToRoom({
         event: 'hand_count',
-        counts: Object.entries(game.players).reduce(
+        counts: Object.entries(players).reduce(
           (counts, [playerId, player]: [string, Player]) => ({
             ...counts,
             [playerId]: player.hand.length,
@@ -163,231 +170,223 @@ export function createNewGame(
     cb(game);
 
     peer.on('connection', (conn: GamePeerDataConnection) => {
-      const playerId = conn.peer;
-      const player: Player = {
+      const { playerId, name } = conn.metadata;
+      const player: Player = players[playerId] || {
         conn,
-        name: `Player ${Object.keys(game.players).length + 1}`,
+        name: name || `Player ${Object.keys(players).length + 1}`,
         hand: [],
       };
       clients.push(conn);
-      game.players[playerId] = player;
+      players[playerId] = player;
 
       conn.on('open', () => {
-        const playerCount = _.size(game.players);
-        const playerConfig = config.players[playerCount - 1];
-        const playerArea = {
-          ...playerConfig,
-          id: playerId,
-          type: 'player',
-          name: player.name,
-          rotation: 0,
-          layer: 9,
-          delta: 0,
-        };
+        const playAreaId = scenario.players[_.size(players) - 1];
+        const playArea = pieces[playAreaId] as PlayerPiece;
+        playArea.playerId = playerId;
+        playArea.delta++;
+        playArea.name = player.name;
 
         conn.send({
           assets: sendAssets ? assets : Object.keys(assets),
+          pieces,
           event: 'join',
-          hand: [],
+          hand: player.hand,
           board: game.board,
+          // TODO remove
           player: {
             name: player.name,
           },
         });
 
-        game.board.push(playerArea as RenderPiece);
         sendHandCounts();
         sendToRoom({
-          event: 'add_to_board',
-          pieces: [playerArea as RenderPiece],
+          event: 'update_piece',
+          pieces: {
+            [playArea.id]: playArea,
+          },
         });
-      });
 
-      conn.on('data', (data: ClientEvent) => {
-        switch (data.event) {
-          case 'request_asset':
-            const { asset } = data;
-            conn.send({
-              event: 'asset_loaded',
-              asset: {
-                [asset]: assets[asset],
-              },
-            });
-            break;
-          case 'draw_cards':
-            const { deckId, count } = data;
-            try {
-              console.log(`Player ${playerId} drew ${count} cards`);
-              game.players[playerId].hand.push(
-                ...game.decks[deckId].cards.splice(0, count)
-              );
+        conn.on('data', (data: ClientEvent) => {
+          switch (data.event) {
+            case 'request_asset':
+              const { asset } = data;
               conn.send({
-                event: 'set_hand',
-                hand: player.hand,
+                event: 'asset_loaded',
+                asset: {
+                  [asset]: assets[asset],
+                },
               });
-              sendHandCounts();
-              updateDeckCount(deckId);
-            } catch (err) {
-              console.log(err);
-            }
-            break;
+              break;
 
-          case 'update_piece':
-            try {
-              const { piece } = data;
-              const boardPiece = game.board.find(({ id }) => piece.id === id);
-              console.log('update_piece received', piece.delta);
-              if (boardPiece) {
-                for (let prop in piece) {
-                  boardPiece[prop] = piece[prop];
-                }
-                boardPiece.delta++;
-                sendToRoom({
-                  event: 'update_piece',
-                  piece: boardPiece,
+            case 'draw_cards':
+              const { deckId, count } = data;
+              try {
+                console.log(`Player ${playerId} drew ${count} cards`);
+                players[playerId].hand.push(
+                  ...decks[deckId].cards.splice(0, count)
+                );
+                conn.send({
+                  event: 'set_hand',
+                  hand: player.hand,
                 });
+                sendHandCounts();
+                updateDeckCount(deckId);
+              } catch (err) {
+                console.log(err);
               }
-            } catch (err) {
-              console.log(err);
-            }
-            break;
-          case 'pick_up_cards':
-            try {
-              const { cardIds } = data;
-              const cards = game.board.filter(piece =>
-                cardIds.includes(piece.id)
-              ) as Card[];
-              game.board = game.board.filter(
-                piece => !cardIds.includes(piece.id)
-              );
-              player.hand.push(...cards);
-              conn.send({
-                event: 'set_hand',
-                hand: player.hand,
-              });
-              sendToRoom({
-                event: 'remove_from_board',
-                ids: cards.map(x => x.id),
-              });
-              sendHandCounts();
-            } catch (err) {
-              console.log(err);
-            }
-            break;
-          case 'rename_player':
-            try {
-              const { name } = data;
-              const playerArea = game.board.find(
-                piece => piece.id === playerId
-              ) as PlayerPiece;
-              player.name = name;
-              if (playerArea) {
-                playerArea.name = name;
-                playerArea.delta++;
+              break;
+
+            case 'update_piece':
+              try {
+                const { pieces: p } = data;
+                pieces = {
+                  ...pieces,
+                  ...p,
+                };
                 sendToRoom({
                   event: 'update_piece',
-                  piece: {
-                    name,
-                    id: playerArea.id,
-                    delta: playerArea.delta,
+                  pieces: p,
+                });
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'pick_up_cards':
+              try {
+                const { cardIds } = data;
+                game.board = game.board.filter(
+                  pieceId => !cardIds.includes(pieceId)
+                );
+                player.hand.push(...cardIds);
+                conn.send({
+                  event: 'set_hand',
+                  hand: player.hand,
+                });
+                sendToRoom({
+                  event: 'remove_from_board',
+                  ids: cardIds,
+                });
+                sendHandCounts();
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'rename_player':
+              try {
+                const { name } = data;
+                player.name = name;
+                playArea.name = name;
+                playArea.delta++;
+                sendToRoom({
+                  event: 'update_piece',
+                  pieces: {
+                    [playArea.id]: playArea,
                   },
                 });
+              } catch (err) {
+                console.log(err);
               }
-            } catch (err) {
-              console.log(err);
-            }
-            break;
-          case 'play_cards':
-            try {
-              const { cardIds } = data;
-              const playerArea = game.board.find(
-                piece => piece.id === playerId
-              );
-              if (!playerArea) {
-                return;
-              }
-              const cards = player.hand
-                .filter(card => cardIds.includes(card.id))
-                .map((card, index) => ({
-                  ...card,
-                  x: playerArea.x + index * 20,
-                  y: playerArea.y + 50 + index * 20,
-                })) as RenderPiece[];
-              player.hand = player.hand.filter(
-                card => !cardIds.includes(card.id)
-              );
-              game.board.push(...cards);
-              conn.send({
-                event: 'set_hand',
-                hand: player.hand,
-              });
-              sendToRoom({
-                event: 'add_to_board',
-                pieces: cards,
-              });
-              sendHandCounts();
-            } catch (err) {
-              console.log(err);
-            }
-            break;
-          case 'discard':
-            try {
-              const { cardIds } = data;
-              const cards = player.hand
-                .filter(card => cardIds.includes(card.id))
-                .map(card => ({
-                  ...card,
-                  x: 0,
-                  y: 0,
-                }));
-              player.hand = player.hand.filter(
-                card => !cardIds.includes(card.id)
-              );
-              cards.forEach((card: Card) => {
-                decks[card.deckId].discarded.push(card);
-              });
-              conn.send({
-                event: 'set_hand',
-                hand: player.hand,
-              });
-              sendHandCounts();
-            } catch (err) {
-              console.log(err);
-            }
-            break;
-          case 'discard_played':
-            try {
-              const { deckId } = data;
-              const cards = (game.board.filter(
-                piece => (piece as Card).deckId === deckId
-              ) as unknown) as Card[];
-              decks[deckId].discarded.push(...cards);
-              game.board = game.board.filter(
-                piece => (piece as Card).deckId !== deckId
-              );
-              sendToRoom({
-                event: 'remove_from_board',
-                ids: cards.map(x => x.id),
-              });
-            } catch (err) {
-              console.log(err);
-            }
-            break;
-          case 'shuffle_discarded':
-            try {
-              const { deckId } = data;
-              decks[deckId].cards.push(...decks[deckId].discarded.splice(0));
-              decks[deckId].cards = _.shuffle(decks[deckId].cards);
-              updateDeckCount(deckId);
-            } catch (err) {
-              console.log(err);
-            }
-            break;
-        }
-      });
+              break;
 
-      conn.on('error', err => {
-        console.log(err);
+            case 'play_cards':
+              try {
+                const { cardIds } = data;
+                const cards = player.hand
+                  .filter(id => cardIds.includes(id))
+                  .map((cardId, index) => {
+                    const card = pieces[cardId] as CardPiece;
+                    const deck = pieces[card.deckId];
+
+                    return {
+                      ...pieces[cardId],
+                      x: playArea.x + index * 20,
+                      y: playArea.y + 50 + index * 20,
+                      width: deck.width,
+                      height: deck.height,
+                      delta: card.delta + 1,
+                    };
+                  }) as RenderPiece[];
+                pieces = {
+                  ...pieces,
+                  ..._.keyBy(cards, 'id'),
+                };
+                player.hand = player.hand.filter(id => !cardIds.includes(id));
+                game.board.push(...cardIds);
+                conn.send({
+                  event: 'set_hand',
+                  hand: player.hand,
+                });
+                sendToRoom({
+                  event: 'update_piece',
+                  pieces: _.keyBy(cards, 'id'),
+                });
+                sendToRoom({
+                  event: 'add_to_board',
+                  pieces: cardIds,
+                });
+                sendHandCounts();
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'discard':
+              try {
+                const { cardIds } = data;
+                player.hand = player.hand.filter(id => !cardIds.includes(id));
+                cardIds.forEach(id => {
+                  const card = pieces[id] as Card;
+                  if (decks[card.deckId]) {
+                    decks[card.deckId].discarded.push(id);
+                  }
+                });
+                conn.send({
+                  event: 'set_hand',
+                  hand: player.hand,
+                });
+                sendHandCounts();
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'discard_played':
+              try {
+                const { deckId } = data;
+                const cardIds = Object.values(pieces)
+                  .filter(p => p.type === 'card' && p.deckId === deckId)
+                  .map(c => c.id);
+                decks[deckId].discarded.push(...cardIds);
+                game.board = game.board.filter(pieceId =>
+                  cardIds.includes(pieceId)
+                );
+                sendToRoom({
+                  event: 'remove_from_board',
+                  ids: cardIds,
+                });
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'shuffle_discarded':
+              try {
+                const { deckId } = data;
+                decks[deckId].cards.push(...decks[deckId].discarded.splice(0));
+                decks[deckId].cards = _.shuffle(decks[deckId].cards);
+                updateDeckCount(deckId);
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+          }
+        });
+
+        conn.on('error', err => {
+          console.log(err);
+        });
       });
     });
   });
