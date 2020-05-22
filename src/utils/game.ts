@@ -209,18 +209,78 @@ export function createNewGame(
         conn.on('data', (data: ClientEvent) => {
           switch (data.event) {
             case 'request_asset':
-              const { asset } = data;
-              conn.send({
-                event: 'asset_loaded',
-                asset: {
-                  [asset]: assets[asset],
-                },
-              });
+              try {
+                const { asset } = data;
+                conn.send({
+                  event: 'asset_loaded',
+                  asset: {
+                    [asset]: assets[asset],
+                  },
+                });
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'peek_at_deck':
+              try {
+                const { deckId } = data;
+                conn.send({
+                  event: 'deck_peek_results',
+                  cardIds: _.shuffle(decks[deckId].cards),
+                  discardedCardIds: _.shuffle(decks[deckId].discarded),
+                });
+                sendToRoom({
+                  deckId,
+                  playerId,
+                  event: 'deck_peek',
+                });
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'take_cards':
+              try {
+                const { deckId, cardIds } = data;
+                const deck = decks[deckId];
+                const ids = [
+                  ...cardIds.filter(id => deck.cards.includes(id)),
+                  ...cardIds.filter(id => deck.discarded.includes(id)),
+                ];
+                players[playerId].hand.push(...ids);
+                deck.cards = deck.cards.filter(id => !cardIds.includes(id));
+                deck.discarded = deck.discarded.filter(
+                  id => !cardIds.includes(id)
+                );
+                conn.send({
+                  event: 'set_hand',
+                  hand: player.hand,
+                });
+                sendHandCounts();
+                updateDeckCount(deckId);
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'remove_cards':
+              try {
+                const { deckId, cardIds } = data;
+                const deck = decks[deckId];
+                deck.cards = deck.cards.filter(id => !cardIds.includes(id));
+                deck.discarded = deck.discarded.filter(
+                  id => !cardIds.includes(id)
+                );
+                updateDeckCount(deckId);
+              } catch (err) {
+                console.log(err);
+              }
               break;
 
             case 'draw_cards':
-              const { deckId, count } = data;
               try {
+                const { deckId, count } = data;
                 console.log(`Player ${playerId} drew ${count} cards`);
                 players[playerId].hand.push(
                   ...decks[deckId].cards.splice(0, count)
@@ -230,6 +290,42 @@ export function createNewGame(
                   hand: player.hand,
                 });
                 sendHandCounts();
+                updateDeckCount(deckId);
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'draw_cards_to_table':
+              try {
+                const { deckId, count, faceDown } = data;
+                const deckPiece = pieces[deckId];
+                const cardIds = decks[deckId].cards.splice(0, count);
+                game.board.push(...cardIds);
+
+                const p = cardIds
+                  .map((id, index) => ({
+                    ...pieces[id],
+                    faceDown,
+                    x: deckPiece.x + deckPiece.width + 50 + index * 20,
+                    y: deckPiece.y + index * 20,
+                    width: deckPiece.width,
+                    height: deckPiece.height,
+                    delta: pieces[id].delta + 1,
+                  }))
+                  .reduce((agg, piece) => ({ ...agg, [piece.id]: piece }), {});
+                pieces = {
+                  ...pieces,
+                  ...p,
+                };
+                sendToRoom({
+                  event: 'update_piece',
+                  pieces: p,
+                });
+                sendToRoom({
+                  event: 'add_to_board',
+                  pieces: cardIds,
+                });
                 updateDeckCount(deckId);
               } catch (err) {
                 console.log(err);
@@ -273,6 +369,26 @@ export function createNewGame(
               }
               break;
 
+            case 'pass_cards':
+              try {
+                const { cardIds, playerId: receivingPlayerId } = data;
+                const receivingPlayer = players[receivingPlayerId];
+                player.hand = player.hand.filter(id => !cardIds.includes(id));
+                receivingPlayer.hand.push(...cardIds);
+                receivingPlayer.conn.send({
+                  event: 'set_hand',
+                  hand: receivingPlayer.hand,
+                });
+                conn.send({
+                  event: 'set_hand',
+                  hand: player.hand,
+                });
+                sendHandCounts();
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
             case 'rename_player':
               try {
                 const { name } = data;
@@ -292,7 +408,7 @@ export function createNewGame(
 
             case 'play_cards':
               try {
-                const { cardIds } = data;
+                const { cardIds, faceDown } = data;
                 const cards = player.hand
                   .filter(id => cardIds.includes(id))
                   .map((cardId, index) => {
@@ -301,6 +417,7 @@ export function createNewGame(
 
                     return {
                       ...pieces[cardId],
+                      faceDown,
                       x: playArea.x + index * 20,
                       y: playArea.y + 50 + index * 20,
                       width: deck.width,

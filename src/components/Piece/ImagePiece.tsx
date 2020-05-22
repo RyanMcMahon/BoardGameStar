@@ -16,7 +16,7 @@ interface Props {
   piece: BoardPiece | CardPiece | ImageTokenPiece;
 }
 
-export function ImagePiece(props: Props) {
+export const ImagePiece = React.memo((props: Props) => {
   const {
     draggable,
     isSelected,
@@ -55,4 +55,4 @@ export function ImagePiece(props: Props) {
       />
     </>
   );
-}
+});

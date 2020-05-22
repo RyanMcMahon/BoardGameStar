@@ -7,6 +7,7 @@ import {
   primaryHighlightColor,
   breakPoints,
   Button,
+  theShadow,
 } from '../../utils/style';
 import { isWebBuild } from '../../utils/meta';
 import { imagePrefix } from '../../utils/assets';
@@ -33,7 +34,7 @@ const Menu = styled.div({
   padding: '1rem 0',
   backgroundColor: '#f5f5f5',
   fontWeight: 'bold',
-  boxShadow: '0px 3px 7px rgba(0, 0, 0, 0.5)',
+  boxShadow: theShadow,
   zIndex: 1000,
   [breakPoints.mobile]: {
     flexDirection: 'column',

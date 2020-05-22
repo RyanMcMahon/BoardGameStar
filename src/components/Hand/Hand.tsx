@@ -1,8 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { Button } from '../../utils/style';
-import { Card, Pieces } from '../../types';
+import { DropdownButton } from '../DropdownButton';
+import { PlayerSelectModal } from '../PlayerSelectModal';
+import { Button, ButtonGroup } from '../../utils/style';
+import { Card, Pieces, PlayerPiece } from '../../types';
 import { prependPrefix } from '../../utils/assets';
 
 const HandWrapper = styled.div({
@@ -37,7 +39,9 @@ interface Props {
   assets: { [key: string]: string };
   pieces: Pieces;
   hand: string[];
-  playCards: (ids: string[]) => void;
+  playCards: (ids: string[], faceDown: boolean) => void;
+  passCards: (ids: string[], playerId: string) => void;
+  players: PlayerPiece[];
   discard: (ids: string[]) => void;
 }
 
@@ -52,6 +56,9 @@ function sortCards(a: Card, b: Card) {
 }
 
 export function Hand(props: Props): JSX.Element {
+  const [showPlayerSelectModal, setShowPlayerSelectModal] = React.useState(
+    false
+  );
   const [selectedCards, setSelectedCards] = React.useState<string[]>([]);
 
   const handleSelectCard = (id: string) => () => {
@@ -62,9 +69,20 @@ export function Hand(props: Props): JSX.Element {
     }
   };
 
-  const handlePlayCards = () => {
-    props.playCards(selectedCards);
+  const handlePlayCardsFaceUp = () => {
+    props.playCards(selectedCards, false);
     setSelectedCards([]);
+  };
+
+  const handlePlayCardsFaceDown = () => {
+    props.playCards(selectedCards, true);
+    setSelectedCards([]);
+  };
+
+  const handlePassCards = (playerId: string) => {
+    props.passCards(selectedCards, playerId);
+    setSelectedCards([]);
+    setShowPlayerSelectModal(false);
   };
 
   const handleDiscard = () => {
@@ -73,44 +91,67 @@ export function Hand(props: Props): JSX.Element {
   };
 
   return (
-    <HandWrapper>
-      <Controls>
-        <Button
-          design="primary"
-          onClick={handlePlayCards}
-          disabled={!selectedCards.length}
-        >
-          Play
-        </Button>
-        <Button
-          design="primary"
-          onClick={handleDiscard}
-          disabled={!selectedCards.length}
-        >
-          discard
-        </Button>
-      </Controls>
-      <CardWrapper>
-        {props.hand
-          .map(id => props.pieces[id] as Card)
-          .filter(x => x)
-          .sort(sortCards)
-          .map(
-            card =>
-              card.image && (
-                <CardImage
-                  key={card.id}
-                  src={prependPrefix(props.assets[card.image])}
-                  alt=""
-                  width="150"
-                  onClick={handleSelectCard(card.id)}
-                  style={{
-                    opacity: selectedCards.includes(card.id) ? 0.6 : 1,
-                  }}
-                />
-              )
-          )}
-      </CardWrapper>
-    </HandWrapper>
+    <>
+      <HandWrapper>
+        <Controls>
+          <DropdownButton
+            items={[
+              {
+                label: 'Play Face Down',
+                fn: handlePlayCardsFaceDown,
+              },
+              {
+                label: 'Pass to Player',
+                fn: () => setShowPlayerSelectModal(true),
+              },
+            ]}
+            disabled={!selectedCards.length}
+          >
+            <Button
+              design="primary"
+              onClick={handlePlayCardsFaceUp}
+              disabled={!selectedCards.length}
+            >
+              Play
+            </Button>
+          </DropdownButton>
+          <Button
+            design="primary"
+            onClick={handleDiscard}
+            disabled={!selectedCards.length}
+          >
+            discard
+          </Button>
+        </Controls>
+        <CardWrapper>
+          {props.hand
+            .map(id => props.pieces[id] as Card)
+            .filter(x => x)
+            .sort(sortCards)
+            .map(
+              card =>
+                card.image && (
+                  <CardImage
+                    key={card.id}
+                    src={prependPrefix(props.assets[card.image])}
+                    alt=""
+                    width="150"
+                    onClick={handleSelectCard(card.id)}
+                    style={{
+                      opacity: selectedCards.includes(card.id) ? 0.6 : 1,
+                    }}
+                  />
+                )
+            )}
+        </CardWrapper>
+      </HandWrapper>
+      {showPlayerSelectModal && (
+        <PlayerSelectModal
+          players={props.players}
+          onSelect={handlePassCards}
+          onClose={() => setShowPlayerSelectModal(false)}
+        />
+      )}
+    </>
   );
 }

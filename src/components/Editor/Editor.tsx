@@ -284,9 +284,6 @@ export function Editor(props: Props) {
     setSelectedPieceId(null);
   };
 
-  console.log(state);
-  // console.log(decks);
-
   const layers = curScenario.pieces.reduce(
     (agg: RenderPiece[][], id: string) => {
       const piece = state.pieces[id];

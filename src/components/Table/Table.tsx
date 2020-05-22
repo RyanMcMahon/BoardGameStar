@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { MutableRefObject } from 'react';
 import { Stage } from 'react-konva';
 import styled from 'styled-components';
 
@@ -29,7 +29,7 @@ const CircleButton = styled.div({
   lineHeight: '28px',
 });
 
-export function Table(props: Props) {
+export const Table = React.forwardRef((props: Props, ref: any) => {
   const stageRef = React.createRef<Stage>();
   const [dimensions, setDimensions] = React.useState({
     width: 200,
@@ -80,21 +80,22 @@ export function Table(props: Props) {
     }
   };
 
+  if (ref) {
+    ref.current = {
+      zoomIn: handleZoom(1.1),
+      zoomOut: handleZoom(0.9),
+    };
+  }
+
   return (
-    <>
-      <ZoomControls>
-        <CircleButton onClick={handleZoom(1.1)}>+</CircleButton>
-        <CircleButton onClick={handleZoom(0.9)}>-</CircleButton>
-      </ZoomControls>
-      <Stage
-        ref={stageRef}
-        width={dimensions.width}
-        height={dimensions.height}
-        draggable
-        onWheel={handleOnWheel}
-      >
-        {props.children}
-      </Stage>
-    </>
+    <Stage
+      ref={stageRef}
+      width={dimensions.width}
+      height={dimensions.height}
+      draggable
+      onWheel={handleOnWheel}
+    >
+      {props.children}
+    </Stage>
   );
-}
+});

@@ -37,6 +37,7 @@ export interface BoardOption extends ImagePieceOption {
 export interface CardOption extends ImagePieceOption {
   type: 'card';
   deckId: string;
+  faceDown: boolean;
 }
 
 export interface DeckOption extends ImagePieceOption {
@@ -170,13 +171,6 @@ export interface CardOption {
   count: number;
 }
 
-// export interface ScenarioConfig {
-//   name: string;
-//   config: GameConfig;
-// }
-
-// export type Config = GameConfig | ScenarioConfig[];
-
 export interface Piece {
   delta: number;
   [key: string]: any;
@@ -286,6 +280,7 @@ export interface RenamePlayerEvent {
 export interface PlayCardsEvent {
   event: 'play_cards';
   cardIds: string[];
+  faceDown: boolean;
 }
 
 export interface DiscardEvent {
@@ -313,6 +308,36 @@ export interface DrawCardsEvent {
   count: number;
 }
 
+export interface DrawCardsToTableEvent {
+  event: 'draw_cards_to_table';
+  deckId: string;
+  count: number;
+  faceDown: boolean;
+}
+
+export interface PassCardsEvent {
+  event: 'pass_cards';
+  cardIds: string[];
+  playerId: string;
+}
+
+export interface PeekAtDeckEvent {
+  event: 'peek_at_deck';
+  deckId: string;
+}
+
+export interface TakeCardsEvent {
+  event: 'take_cards';
+  deckId: string;
+  cardIds: string[];
+}
+
+export interface RemoveCardsEvent {
+  event: 'remove_cards';
+  deckId: string;
+  cardIds: string[];
+}
+
 export interface RequestAssetEvent {
   event: 'request_asset';
   asset: string;
@@ -325,9 +350,26 @@ export interface AssetLoadedEvent {
   };
 }
 
+export interface DeckPeekEvent {
+  event: 'deck_peek';
+  deckId: string;
+  playerId: string;
+}
+
+export interface DeckPeekResultsEvent {
+  event: 'deck_peek_results';
+  cardIds: string[];
+  discardedCardIds: string[];
+}
+
 export type ClientEvent =
   | DrawCardsEvent
+  | DrawCardsToTableEvent
   | PickUpCardsEvent
+  | PassCardsEvent
+  | PeekAtDeckEvent
+  | TakeCardsEvent
+  | RemoveCardsEvent
   | RenamePlayerEvent
   | PlayCardsEvent
   | DiscardEvent
@@ -340,27 +382,10 @@ export type ClientEvent =
 export type GameEvent =
   | AddToBoardEvent
   | HandCountEvent
+  | DeckPeekEvent
+  | DeckPeekResultsEvent
   | JoinEvent
   | RemoveFromBoardEvent
   | SetHandEvent
-  | AssetLoadedEvent
-  | UpdatePieceEvent;
-
-export type Event =
-  | AddToBoardEvent
-  | HandCountEvent
-  | JoinEvent
-  | RemoveFromBoardEvent
-  | RollDiceEvent
-  | SetHandEvent
-  | DrawCardsEvent
-  | PickUpCardsEvent
-  | RenamePlayerEvent
-  | PlayCardsEvent
-  | DiscardEvent
-  | ShuffleDeckEvent
-  | ShuffleDiscardedEvent
-  | DiscardPlayedEvent
-  | RequestAssetEvent
   | AssetLoadedEvent
   | UpdatePieceEvent;

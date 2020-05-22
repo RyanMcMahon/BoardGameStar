@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import { useParams, Link, Redirect } from 'react-router-dom';
 
 import { useGameClient } from '../../utils/client';
-import { Button, breakPoints } from '../../utils/style';
+import { Button, breakPoints, maxMobileWidth } from '../../utils/style';
 import { Table } from '../Table';
 import { ControlsModal } from '../ControlsModal';
 import { InviteModal } from '../InviteModal';
@@ -15,10 +15,11 @@ import { RenameModal } from '../RenameModal';
 import { ProgressBar } from '../ProgressBar';
 import { facts } from '../../utils/facts';
 import { setName } from '../../utils/identity';
-import { RenderPiece, ContextMenuItem } from '../../types';
+import { RenderPiece, PlayerPiece } from '../../types';
 import { Layer } from 'react-konva';
 import { ImagePiece, Deck, RectPiece, CirclePiece } from '../Piece';
 import { PlayArea } from '../Piece/PlayArea';
+import { ControlsMenu, ControlsMenuItem } from '../ControlsMenu';
 
 const MainContainer = styled.div({
   height: '100%',
@@ -33,22 +34,6 @@ const AppContainer = styled.div({
   // Light Gray
   backgroundColor: '#dbdfe5',
   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%23bdc5ca' fill-opacity='0.50' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-});
-
-const ContextMenu = styled.ul({
-  padding: '1rem',
-  listStyle: 'none',
-  background: '#fff',
-  position: 'absolute',
-  zIndex: 1000,
-  border: '1px solid #333',
-  li: {
-    padding: '.5rem',
-    ':hover': {
-      cursor: 'pointer',
-      color: '#6E48AA',
-    },
-  },
 });
 
 const PlayerContainer = styled.div({
@@ -155,19 +140,79 @@ export const App: React.FC = () => {
   const [showControlsModal, setShowControlsModal] = React.useState<boolean>(
     false
   );
-  const [contextMenu, setContextMenu] = React.useState<{
-    x: number;
-    y: number;
-    items: ContextMenuItem[];
-  } | null>({ x: 0, y: 0, items: [] });
+  const tableRef = React.createRef<{
+    zoomIn: () => void;
+    zoomOut: () => void;
+  }>();
 
   React.useLayoutEffect(() => {
-    if (window.innerWidth < 650) {
+    if (window.innerWidth < maxMobileWidth) {
       setShowPlayerControls(false);
     }
   }, []);
 
-  const handleUpdatePieceUnThrottled = (piece: RenderPiece) => {
+  const pieceControls = (
+    piece: RenderPiece | undefined
+  ): ControlsMenuItem[] => {
+    const items = [];
+
+    if (piece) {
+      switch (piece.type) {
+        case 'card':
+          items.push(
+            ...[
+              {
+                icon: '⟳',
+                label: 'Flip Card',
+                fn: () =>
+                  handleUpdatePiece({ ...piece, faceDown: !piece.faceDown }),
+              },
+            ]
+          );
+          break;
+
+        case 'deck':
+          items.push(
+            ...[
+              {
+                icon: '⤴',
+                label: 'Draw Cards',
+                fn: () => setDrawModalId(piece.id),
+              },
+              {
+                icon: '🗘',
+                label: 'Shuffle Discarded',
+                fn: () => handleShuffleDiscarded(piece.id),
+              },
+              {
+                icon: '🞪',
+                label: 'Discard Played Cards',
+                fn: () => handleDiscardPlayed(piece.id),
+              },
+            ]
+          );
+          break;
+      }
+    }
+
+    items.push(
+      ...[
+        {
+          icon: '🞤',
+          label: 'Zoom In',
+          fn: () => tableRef.current && tableRef.current.zoomIn(),
+        },
+        {
+          icon: '‒',
+          label: 'Zoom Out',
+          fn: () => tableRef.current && tableRef.current.zoomOut(),
+        },
+      ]
+    );
+    return items;
+  };
+
+  const handleUpdatePieceUnthrottled = (piece: RenderPiece) => {
     if (!conn) {
       return;
     }
@@ -176,7 +221,6 @@ export const App: React.FC = () => {
       ...piece,
       delta: pieces[piece.id].delta + 1,
     };
-    console.log('updating piece', updatedPiece.delta, updatedPiece);
 
     setPieces(p => ({
       ...p,
@@ -191,7 +235,7 @@ export const App: React.FC = () => {
     });
   };
 
-  const handleUpdatePiece = _.throttle(handleUpdatePieceUnThrottled, 50);
+  const handleUpdatePiece = _.throttle(handleUpdatePieceUnthrottled, 200);
 
   const handlePickUpCard = (id: string) => () => {
     if (conn) {
@@ -213,17 +257,45 @@ export const App: React.FC = () => {
     }
   };
 
-  const handlePlayCards = (cardIds: string[]) => {
+  const handlePlayCards = (cardIds: string[], faceDown: boolean) => {
     if (!conn) {
       return;
     }
     conn.send({
       cardIds,
+      faceDown,
       event: 'play_cards',
     });
-    if (window.innerWidth < 650) {
+    if (window.innerWidth < maxMobileWidth) {
       setShowPlayerControls(false);
     }
+  };
+
+  const handlePassCards = (cardIds: string[], playerId: string) => {
+    if (!conn) {
+      return;
+    }
+    conn.send({
+      cardIds,
+      playerId,
+      event: 'pass_cards',
+    });
+    if (window.innerWidth < maxMobileWidth) {
+      setShowPlayerControls(false);
+    }
+  };
+
+  const handleDrawCardsToTable = (faceDown: boolean) => (count: number) => {
+    if (!conn) {
+      return;
+    }
+    conn.send({
+      faceDown,
+      count,
+      deckId: drawModalId,
+      event: 'draw_cards_to_table',
+    });
+    setDrawModalId('');
   };
 
   const handleDrawCards = (count: number) => {
@@ -298,27 +370,7 @@ export const App: React.FC = () => {
   return (
     <MainContainer>
       <AppContainer>
-        {contextMenu && contextMenu.items.length > 0 && (
-          <ContextMenu
-            style={{
-              left: contextMenu.x,
-              top: contextMenu.y - 10, // TODO why is this off by 10?
-            }}
-          >
-            {contextMenu.items.map(piece => (
-              <li
-                onClick={() => {
-                  setContextMenu(null);
-                  piece.fn();
-                }}
-              >
-                {piece.label}
-              </li>
-            ))}
-            <li onClick={() => setContextMenu(null)}>Cancel</li>
-          </ContextMenu>
-        )}
-        <Table>
+        <Table ref={tableRef}>
           {layers.map(
             (layer, layerDepth) =>
               layer &&
@@ -346,45 +398,9 @@ export const App: React.FC = () => {
                             onChange={p =>
                               handleUpdatePiece({ ...piece, ...p })
                             }
+                            isSelected={piece.id === selectedPieceId}
+                            onSelect={handleSelectPiece(piece.id)}
                             onDblClick={() => setDrawModalId(piece.id)}
-                            onContextMenu={e =>
-                              setContextMenu({
-                                x: e.evt.clientX,
-                                y: e.evt.clientY,
-                                items: [
-                                  {
-                                    label: 'Draw Cards',
-                                    fn: () => setDrawModalId(piece.id),
-                                  },
-                                  // {
-                                  //   label: "Play Face Up",
-                                  //   fn: () => {
-                                  //     console.log("face down");
-                                  //   }
-                                  // },
-                                  // {
-                                  //   label: "Play Face Down",
-                                  //   fn: () => {
-                                  //     console.log("face up");
-                                  //   }
-                                  // },
-                                  {
-                                    label: 'Shuffle Discarded',
-                                    fn: () => {
-                                      console.log('context shuffle');
-                                      handleShuffleDiscarded(piece.id);
-                                    },
-                                  },
-                                  {
-                                    label: 'Discard Played Cards',
-                                    fn: () => {
-                                      console.log('discard played');
-                                      handleDiscardPlayed(piece.id);
-                                    },
-                                  },
-                                ],
-                              })
-                            }
                           />
                         );
 
@@ -394,7 +410,14 @@ export const App: React.FC = () => {
                           <ImagePiece
                             key={piece.id}
                             assets={assets}
-                            piece={piece}
+                            piece={
+                              piece.faceDown
+                                ? {
+                                    ...piece,
+                                    image: pieces[piece.deckId].image,
+                                  }
+                                : piece
+                            }
                             draggable={true}
                             isSelected={piece.id === selectedPieceId}
                             onSelect={handleSelectPiece(piece.id)}
@@ -495,7 +518,16 @@ export const App: React.FC = () => {
                 pieces={pieces}
                 hand={myHand}
                 playCards={handlePlayCards}
+                passCards={handlePassCards}
                 discard={handleDiscard}
+                players={
+                  Object.values(pieces).filter(
+                    p =>
+                      p.type === 'player' &&
+                      p.playerId &&
+                      p.playerId !== (player || {}).playerId
+                  ) as PlayerPiece[]
+                }
               />
             </HandContainer>
             <PlayerLinksContainer>
@@ -515,9 +547,12 @@ export const App: React.FC = () => {
             </PlayerLinksContainer>
           </PlayerContainer>
         )}
+
         {drawModalId && (
           <DeckModal
             onDrawCards={handleDrawCards}
+            onPlayFaceUp={handleDrawCardsToTable(false)}
+            onPlayFaceDown={handleDrawCardsToTable(true)}
             onClose={() => setDrawModalId('')}
           />
         )}
@@ -538,6 +573,9 @@ export const App: React.FC = () => {
           />
         )}
       </AppContainer>
+
+      <ControlsMenu items={pieceControls(pieces[selectedPieceId || ''])} />
+
       {_.size(assets) === 0 && (
         <LoadingPage>
           <LoadingContainer>

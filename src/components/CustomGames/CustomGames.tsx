@@ -29,7 +29,6 @@ export function CustomGames(props: Props) {
   const [newGame, setNewGame] = React.useState<Game>();
   const handleGameSelect = (gameName: string, config: GameConfig) => () => {
     const assets: { [key: string]: string } = {};
-    console.log(config.curScenario);
 
     Object.values(config.pieces).forEach((piece: any) => {
       if (piece.image) {
@@ -44,7 +43,6 @@ export function CustomGames(props: Props) {
     }
 
     createNewGame(config, { assets, sendAssets: false }, game => {
-      console.log(game);
       setNewGame(game);
     });
   };
@@ -63,7 +61,6 @@ export function CustomGames(props: Props) {
     const configs: any = {};
     const vm = new NodeVM();
 
-    // console.log(rootPath);
     for (let i = 0; i < gameNames.length; i++) {
       const gameName = gameNames[i];
 
@@ -73,7 +70,6 @@ export function CustomGames(props: Props) {
         );
         const config = _.cloneDeep(vm.run(script));
         configs[gameName] = config;
-        console.log(config);
       } catch (err) {
         console.log(err);
       }
@@ -91,9 +87,6 @@ export function CustomGames(props: Props) {
     <WebPage>
       <Content>
         <Container>
-          {/* <Link to="/editor">
-            <Button design="primary">Create New Game</Button>
-          </Link> */}
           <Button design="primary" onClick={() => setShowCreateModal(true)}>
             Create New Game
           </Button>

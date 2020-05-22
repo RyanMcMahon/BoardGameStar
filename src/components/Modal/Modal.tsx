@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { theShadow } from '../../utils/style';
 
 interface Props {
   children: React.ReactNode;
@@ -26,7 +27,7 @@ const ModalWrapper = styled.div({
   backgroundColor: '#fff',
   borderRadius: '10px',
   border: '1px solid rgba(0, 0, 0, 0.3)',
-  boxShadow: '0px 3px 7px rgba(0, 0, 0, 0.3)',
+  boxShadow: theShadow,
   zIndex: 9999,
 });
 

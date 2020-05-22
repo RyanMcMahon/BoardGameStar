@@ -2,6 +2,7 @@ import styled from 'styled-components';
 
 interface ButtonOptions {
   design: 'primary' | 'danger' | 'success';
+  block?: boolean;
 }
 
 export const primaryColor = '#6E48AA';
@@ -12,9 +13,14 @@ export const successColor = '#2ecc71';
 export const successHighlightColor = '#27ae60';
 export const disabledColor = '#ccc';
 
+export const theShadow = `0px 3px 7px rgba(0, 0, 0, 0.5)`;
+
+export const maxMobileWidth = 650;
+export const minTabletWidth = maxMobileWidth + 1;
+export const maxTabletWidth = 900;
 export const breakPoints = {
-  mobile: '@media (max-width: 649px)',
-  tablet: '@media (min-width: 650px) and (max-width: 900px)',
+  mobile: `@media (max-width: ${maxMobileWidth}px)`,
+  tablet: `@media (min-width: ${minTabletWidth}px) and (max-width: ${maxTabletWidth}px)`,
 };
 
 const buttonStyles: {
@@ -47,6 +53,13 @@ export const Button = styled.button((options: ButtonOptions) => ({
   paddingLeft: '1.5rem',
   paddingRight: '1.5rem',
   color: '#fff',
+  ...((options.block
+    ? {
+        display: 'block',
+        width: '100%',
+        boxSizing: 'border-box',
+      }
+    : {}) as any),
   ':disabled': {
     backgroundColor: disabledColor,
     borderColor: disabledColor,
@@ -68,3 +81,17 @@ export const Button = styled.button((options: ButtonOptions) => ({
     color: '#fff',
   },
 }));
+
+export const ButtonGroup = styled.div({
+  display: 'inline-block',
+  position: 'relative',
+  button: {
+    borderRadius: 0,
+  },
+  'button:first-child': {
+    borderRadius: '4px 0 0 4px',
+  },
+  'button:last-child': {
+    borderRadius: '0 4px 4px 0',
+  },
+});

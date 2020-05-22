@@ -14,7 +14,6 @@ const configs: { [key: string]: GameConfig } = {
 export function IncludedGames() {
   const [newGame, setNewGame] = React.useState<Game>();
   const handleGameSelect = (config: GameConfig) => {
-    console.log(config);
     const assets: { [key: string]: string } = {};
 
     Object.values(config.pieces).forEach((piece: any) => {
@@ -24,7 +23,6 @@ export function IncludedGames() {
     });
 
     createNewGame(config, { assets, sendAssets: true }, game => {
-      console.log(game);
       setNewGame(game);
     });
   };

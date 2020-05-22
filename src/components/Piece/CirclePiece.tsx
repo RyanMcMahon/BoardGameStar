@@ -10,7 +10,7 @@ interface Props {
   piece: CircleTokenPiece;
 }
 
-export function CirclePiece(props: Props) {
+export const CirclePiece = React.memo((props: Props) => {
   const { isSelected, piece, onSelect, onChange } = props;
   const objectRef = React.useRef<any>();
   const trRef = React.createRef<any>();
@@ -84,4 +84,4 @@ export function CirclePiece(props: Props) {
       )}
     </>
   );
-}
+});

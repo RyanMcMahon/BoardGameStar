@@ -36,10 +36,7 @@ export function Router() {
           `https://api.github.com/repos/RyanMcMahon/BoardGameStar/releases/latest`
         );
         const release = await data.json();
-        console.log('version', version);
-        console.log('version', release);
         if (release.tag_name && release.tag_name !== version) {
-          console.log('needs update');
           setRelease(release);
           setShowUpdateModal(true);
         }

@@ -100,18 +100,7 @@ function reducer(state: EditorState, action: EditorAction) {
 
         if (piece.type === 'deck') {
           Object.values(state.pieces).forEach(p => {
-            if (p.type === 'card') {
-              console.log(
-                'attempting card copy',
-                p.deckId === pieceId,
-                !scenario.pieces.includes(p.id)
-              );
-            }
-            if (
-              p.type === 'card' &&
-              p.deckId === pieceId
-              // !scenario.pieces.includes(p.id)
-            ) {
+            if (p.type === 'card' && p.deckId === pieceId) {
               const cardCopy = { ...p, id: slug.nice(), deckId: pieceCopy.id };
               pieces[cardCopy.id] = cardCopy;
             }

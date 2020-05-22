@@ -46,7 +46,6 @@ export function useGameClient(gameId: string, hostId: string) {
   const requestAsset = React.useCallback(
     (asset: string) => {
       if (!conn) {
-        // return;
         throw new Error(
           'Time Paradox: requesting assets before connection established'
         );
@@ -61,7 +60,6 @@ export function useGameClient(gameId: string, hostId: string) {
 
   const processEvent = React.useCallback((data: GameEvent) => {
     const { event } = data;
-    console.log(data);
     switch (event) {
       case 'asset_loaded':
         const { asset } = data as AssetLoadedEvent;
@@ -121,7 +119,6 @@ export function useGameClient(gameId: string, hostId: string) {
         const { pieces: updatedPieces } = data as UpdatePieceEvent;
         setPieces(p => {
           const u = { ...updatedPieces };
-          console.log(p);
           for (let i in u) {
             if (p[i] && u[i].delta <= p[i].delta) {
               delete u[i];
