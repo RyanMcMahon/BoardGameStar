@@ -14,12 +14,18 @@ interface ObjectUpdate {
   rotation: number;
 }
 
-export function useTransformer(
-  objectRef: React.MutableRefObject<any>,
-  fn: (o: ObjectUpdate) => void
-) {
+export function useTransformer({
+  objectRef,
+  groupRef,
+  fn,
+}: {
+  objectRef: React.MutableRefObject<any>;
+  groupRef?: React.MutableRefObject<any>;
+  fn: (o: ObjectUpdate) => void;
+}) {
   return () => {
     const node = objectRef.current;
+    const groupNode = groupRef && groupRef.current;
     const rotation = node.rotation();
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
@@ -30,10 +36,10 @@ export function useTransformer(
 
     fn({
       rotation,
-      x: node.x(),
-      y: node.y(),
       width: Math.max(5, node.width() * scaleX),
       height: Math.max(5, node.height() * scaleY),
+      x: groupNode ? groupNode.x() : node.x(),
+      y: groupNode ? groupNode.y() : node.y(),
     });
   };
 }

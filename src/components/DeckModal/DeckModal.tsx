@@ -15,9 +15,6 @@ const Wrapper = styled.div({
   input: {
     marginBottom: '.5rem',
   },
-  button: {
-    marginBottom: '.5rem',
-  },
 });
 
 export function DeckModal(props: Props) {

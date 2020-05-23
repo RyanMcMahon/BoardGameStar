@@ -2,6 +2,10 @@ export interface Assets {
   [key: string]: string;
 }
 
+export interface DiceSet {
+  [sides: number]: number;
+}
+
 export interface EditorConfig {
   gameName: string;
 }
@@ -67,7 +71,7 @@ export interface RectTokenOption extends RectPieceOption {
   color: string;
 }
 
-export type AnyPiece =
+export type AnyPieceOption =
   | BoardOption
   | CardOption
   | DeckOption
@@ -78,12 +82,13 @@ export type AnyPiece =
 
 export interface EditorState {
   gameName: string;
+  description?: string;
   curScenario: string;
   scenarios: {
     [id: string]: ScenarioOption;
   };
   pieces: {
-    [id: string]: AnyPiece;
+    [id: string]: AnyPieceOption;
   };
 }
 export type GameConfig = EditorState;
@@ -181,6 +186,17 @@ export type CircleTokenPiece = CircleTokenOption & Piece;
 export type ImageTokenPiece = ImageTokenOption & Piece;
 export type RectTokenPiece = RectTokenOption & Piece;
 
+export interface DicePiece extends Piece {
+  id: string;
+  type: 'die';
+  faces: number;
+  value: number;
+  x: number;
+  y: number;
+  hidden: boolean;
+  layer: number;
+}
+
 export interface DeckPiece extends DeckOption, Piece {
   count: number;
   total: number;
@@ -199,6 +215,7 @@ export interface Pieces {
 }
 
 export type RenderPiece =
+  | DicePiece
   | BoardPiece
   | CardPiece
   | DeckPiece
@@ -260,6 +277,22 @@ export interface AddToBoardEvent {
 
 export interface RollDiceEvent {
   event: 'roll_dice';
+  dice: DiceSet;
+  hidden: boolean;
+}
+export interface RevealPieceEvent {
+  event: 'reveal_pieces';
+  pieceIds: string[];
+}
+
+export interface SetDiceEvent {
+  event: 'set_dice';
+  diceIds: string[];
+}
+
+export interface DiceCountEvent {
+  event: 'dice_counts';
+  counts: { [playerId: string]: number };
 }
 
 export interface HandCountEvent {
@@ -324,6 +357,7 @@ export interface PassCardsEvent {
 export interface PeekAtDeckEvent {
   event: 'peek_at_deck';
   deckId: string;
+  peeking: boolean;
 }
 
 export interface TakeCardsEvent {
@@ -354,6 +388,7 @@ export interface DeckPeekEvent {
   event: 'deck_peek';
   deckId: string;
   playerId: string;
+  peeking: boolean;
 }
 
 export interface DeckPeekResultsEvent {
@@ -363,6 +398,7 @@ export interface DeckPeekResultsEvent {
 }
 
 export type ClientEvent =
+  | RollDiceEvent
   | DrawCardsEvent
   | DrawCardsToTableEvent
   | PickUpCardsEvent
@@ -377,10 +413,13 @@ export type ClientEvent =
   | ShuffleDiscardedEvent
   | DiscardPlayedEvent
   | RequestAssetEvent
+  | RevealPieceEvent
   | UpdatePieceEvent;
 
 export type GameEvent =
   | AddToBoardEvent
+  | DiceCountEvent
+  | SetDiceEvent
   | HandCountEvent
   | DeckPeekEvent
   | DeckPeekResultsEvent

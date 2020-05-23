@@ -15,11 +15,24 @@ import { RenameModal } from '../RenameModal';
 import { ProgressBar } from '../ProgressBar';
 import { facts } from '../../utils/facts';
 import { setName } from '../../utils/identity';
-import { RenderPiece, PlayerPiece } from '../../types';
+import {
+  RenderPiece,
+  PlayerPiece,
+  DiceSet,
+  DicePiece,
+  CircleTokenPiece,
+  BoardPiece,
+  CardPiece,
+  ImageTokenPiece,
+  RectTokenPiece,
+  DeckPiece,
+} from '../../types';
 import { Layer } from 'react-konva';
-import { ImagePiece, Deck, RectPiece, CirclePiece } from '../Piece';
+import { ImagePiece, Deck, RectPiece, CirclePiece, Die } from '../Piece';
 import { PlayArea } from '../Piece/PlayArea';
 import { ControlsMenu, ControlsMenuItem } from '../ControlsMenu';
+import { DiceModal } from '../DiceModal';
+// import { DeckPeekModal } from '../DeckPeekModal/DeckPeekModal';
 
 const MainContainer = styled.div({
   height: '100%',
@@ -128,6 +141,12 @@ export const App: React.FC = () => {
     handCounts,
     setPieces,
     failedConnection,
+    // TODO
+    // myDice,
+    // diceCounts,
+    // peekingPlayers,
+    // peekingCards,
+    // peekingDiscardedCards,
   } = useGameClient(gameId, hostId);
   const fact = React.useMemo(() => _.sample(facts), []);
   const [selectedPieceId, setSelectedPieceId] = React.useState<string | null>();
@@ -137,6 +156,7 @@ export const App: React.FC = () => {
   const [drawModalId, setDrawModalId] = React.useState<string>('');
   const [showRenameModal, setShowRenameModal] = React.useState<boolean>(false);
   const [showInviteModal, setShowInviteModal] = React.useState<boolean>(false);
+  const [showDiceModal, setShowDiceModal] = React.useState<boolean>(false);
   const [showControlsModal, setShowControlsModal] = React.useState<boolean>(
     false
   );
@@ -158,6 +178,31 @@ export const App: React.FC = () => {
 
     if (piece) {
       switch (piece.type) {
+        case 'die':
+          if (piece.hidden) {
+            items.push(
+              ...[
+                {
+                  icon: '👁',
+                  label: 'Reveal',
+                  fn: () => {}, // TODO
+                },
+              ]
+            );
+          } else {
+            items.push(
+              ...[
+                {
+                  icon: '🞪',
+                  label: 'Remove',
+                  fn: () =>
+                    handleUpdatePiece({ id: piece.id, type: 'deleted' }),
+                },
+              ]
+            );
+          }
+          break;
+
         case 'card':
           items.push(
             ...[
@@ -179,6 +224,14 @@ export const App: React.FC = () => {
                 label: 'Draw Cards',
                 fn: () => setDrawModalId(piece.id),
               },
+              // TODO
+              // {
+              //   icon: '👁',
+              //   label: 'Peek At Deck',
+              //   fn: () => {
+              //     handlePeekAtDeck(piece.id, true);
+              //   },
+              // },
               {
                 icon: '🗘',
                 label: 'Shuffle Discarded',
@@ -193,6 +246,16 @@ export const App: React.FC = () => {
           );
           break;
       }
+    } else {
+      items.push(
+        ...[
+          {
+            icon: '⚄',
+            label: 'Roll Dice',
+            fn: () => setShowDiceModal(true),
+          },
+        ]
+      );
     }
 
     items.push(
@@ -207,35 +270,62 @@ export const App: React.FC = () => {
           label: 'Zoom Out',
           fn: () => tableRef.current && tableRef.current.zoomOut(),
         },
+        // TODO
+        // {
+        //   icon: '⌖',
+        //   label: 'Reset Zoom',
+        //   fn: () => tableRef.current && tableRef.current.resetZoom(),
+        // },
       ]
     );
     return items;
   };
 
-  const handleUpdatePieceUnthrottled = (piece: RenderPiece) => {
-    if (!conn) {
-      return;
+  // const handleRevealPieces = (pieceIds: string[]) => {
+  //   if (conn) {
+  //     conn.send({
+  //       pieceIds,
+  //       event: 'reveal_pieces',
+  //     });
+  //   }
+  // };
+
+  const handleUpdatePieceUnthrottled = React.useCallback(
+    (piece: RenderPiece) => {
+      if (!conn) {
+        return;
+      }
+      setPieces(p => ({
+        ...p,
+        [piece.id]: piece,
+      }));
+
+      conn.send({
+        event: 'update_piece',
+        pieces: {
+          [piece.id]: piece,
+        },
+      });
+    },
+    [conn, setPieces]
+  );
+  let handleUpdatePieceRef = React.useRef<(piece: RenderPiece) => void>();
+  const handleUpdatePiece = (piece: Partial<RenderPiece> & { id: string }) => {
+    if (handleUpdatePieceRef.current) {
+      if (!pieces[piece.id]) {
+        console.log('piece not found');
+        return;
+      }
+      const curPiece = pieces[piece.id];
+      const updatedPiece = {
+        ...curPiece,
+        ...piece,
+        delta: curPiece.delta + 1,
+      } as RenderPiece;
+
+      handleUpdatePieceRef.current(updatedPiece);
     }
-    const updatedPiece = {
-      ...pieces[piece.id],
-      ...piece,
-      delta: pieces[piece.id].delta + 1,
-    };
-
-    setPieces(p => ({
-      ...p,
-      [piece.id]: updatedPiece,
-    }));
-
-    conn.send({
-      event: 'update_piece',
-      pieces: {
-        [piece.id]: updatedPiece,
-      },
-    });
   };
-
-  const handleUpdatePiece = _.throttle(handleUpdatePieceUnthrottled, 200);
 
   const handlePickUpCard = (id: string) => () => {
     if (conn) {
@@ -243,6 +333,28 @@ export const App: React.FC = () => {
         event: 'pick_up_cards',
         cardIds: [id],
       });
+    }
+  };
+
+  // TODO
+  // const handlePeekAtDeck = (deckId: string, peeking: boolean) => {
+  //   if (conn) {
+  //     conn.send({
+  //       deckId,
+  //       peeking,
+  //       event: 'peek_at_deck',
+  //     });
+  //   }
+  // };
+
+  const handleRollDice = (dice: DiceSet, hidden: boolean) => {
+    if (conn) {
+      conn.send({
+        hidden,
+        dice,
+        event: 'roll_dice',
+      });
+      setShowDiceModal(false);
     }
   };
 
@@ -350,6 +462,16 @@ export const App: React.FC = () => {
     setShowRenameModal(true);
   };
 
+  React.useEffect(() => {
+    if (conn && !handleUpdatePieceRef.current) {
+      handleUpdatePieceRef.current = _.throttle(
+        handleUpdatePieceUnthrottled,
+        100,
+        { leading: false }
+      );
+    }
+  }, [conn, handleUpdatePieceUnthrottled]);
+
   const player = Object.values(pieces).find(
     p => p.type === 'player' && p.playerId === playerId
   );
@@ -384,7 +506,7 @@ export const App: React.FC = () => {
                           <ImagePiece
                             key={piece.id}
                             assets={assets}
-                            piece={piece}
+                            piece={piece as BoardPiece}
                           />
                         );
 
@@ -394,7 +516,7 @@ export const App: React.FC = () => {
                           <Deck
                             key={piece.id}
                             assets={assets}
-                            piece={piece}
+                            piece={piece as DeckPiece}
                             onChange={p =>
                               handleUpdatePiece({ ...piece, ...p })
                             }
@@ -411,12 +533,12 @@ export const App: React.FC = () => {
                             key={piece.id}
                             assets={assets}
                             piece={
-                              piece.faceDown
+                              (piece.faceDown
                                 ? {
                                     ...piece,
                                     image: pieces[piece.deckId].image,
                                   }
-                                : piece
+                                : piece) as CardPiece
                             }
                             draggable={true}
                             isSelected={piece.id === selectedPieceId}
@@ -434,7 +556,7 @@ export const App: React.FC = () => {
                           <ImagePiece
                             key={piece.id}
                             assets={assets}
-                            piece={piece}
+                            piece={piece as ImageTokenPiece}
                             draggable={true}
                             isSelected={piece.id === selectedPieceId}
                             onSelect={handleSelectPiece(piece.id)}
@@ -449,7 +571,7 @@ export const App: React.FC = () => {
                         return (
                           <RectPiece
                             key={piece.id}
-                            piece={piece}
+                            piece={piece as RectTokenPiece}
                             onChange={p =>
                               handleUpdatePiece({ ...piece, ...p })
                             }
@@ -461,7 +583,7 @@ export const App: React.FC = () => {
                         return (
                           <CirclePiece
                             key={piece.id}
-                            piece={piece}
+                            piece={piece as CircleTokenPiece}
                             onChange={p =>
                               handleUpdatePiece({ ...piece, ...p })
                             }
@@ -473,13 +595,28 @@ export const App: React.FC = () => {
                         return piece.playerId ? (
                           <PlayArea
                             key={piece.id}
-                            piece={piece}
+                            piece={piece as PlayerPiece}
                             handCount={handCounts[piece.playerId]}
                             onChange={p =>
                               handleUpdatePiece({ ...piece, ...p })
                             }
                           />
                         ) : null;
+
+                      // Dice
+                      case 'die':
+                        return (
+                          <Die
+                            key={piece.id}
+                            draggable={true}
+                            piece={piece as DicePiece}
+                            isSelected={piece.id === selectedPieceId}
+                            onSelect={handleSelectPiece(piece.id)}
+                            onChange={p =>
+                              handleUpdatePiece({ ...piece, ...p })
+                            }
+                          />
+                        );
 
                       default:
                         return null;
@@ -547,34 +684,55 @@ export const App: React.FC = () => {
             </PlayerLinksContainer>
           </PlayerContainer>
         )}
-
-        {drawModalId && (
-          <DeckModal
-            onDrawCards={handleDrawCards}
-            onPlayFaceUp={handleDrawCardsToTable(false)}
-            onPlayFaceDown={handleDrawCardsToTable(true)}
-            onClose={() => setDrawModalId('')}
-          />
-        )}
-        {showRenameModal && (
-          <RenameModal
-            onSave={handleRename}
-            onClose={() => setShowRenameModal(false)}
-          />
-        )}
-        {showControlsModal && (
-          <ControlsModal onClose={() => setShowControlsModal(false)} />
-        )}
-        {showInviteModal && (
-          <InviteModal
-            hostId={hostId}
-            gameId={gameId}
-            onClose={() => setShowInviteModal(false)}
-          />
-        )}
       </AppContainer>
 
       <ControlsMenu items={pieceControls(pieces[selectedPieceId || ''])} />
+
+      {drawModalId && (
+        <DeckModal
+          onDrawCards={handleDrawCards}
+          onPlayFaceUp={handleDrawCardsToTable(false)}
+          onPlayFaceDown={handleDrawCardsToTable(true)}
+          onClose={() => setDrawModalId('')}
+        />
+      )}
+
+      {showRenameModal && (
+        <RenameModal
+          onSave={handleRename}
+          onClose={() => setShowRenameModal(false)}
+        />
+      )}
+
+      {showControlsModal && (
+        <ControlsModal onClose={() => setShowControlsModal(false)} />
+      )}
+
+      {showInviteModal && (
+        <InviteModal
+          hostId={hostId}
+          gameId={gameId}
+          onClose={() => setShowInviteModal(false)}
+        />
+      )}
+
+      {showDiceModal && (
+        <DiceModal
+          onClose={() => setShowDiceModal(false)}
+          onRollDice={handleRollDice}
+        />
+      )}
+
+      {/* {(peekingCards.length || peekingDiscardedCards.length) && (
+        <DeckPeekModal
+          pieces={pieces}
+          assets={assets}
+          cards={peekingCards}
+          discarded={peekingDiscardedCards}
+          onTakeCards={() => {}}
+          onClose={() => handlePeekAtDeck('', false)}
+        />
+      )} */}
 
       {_.size(assets) === 0 && (
         <LoadingPage>

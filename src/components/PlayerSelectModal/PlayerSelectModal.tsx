@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { Button } from '../../utils/style';
 import { Modal } from '../Modal';
 import { PlayerPiece } from '../../types';
 import styled from 'styled-components';

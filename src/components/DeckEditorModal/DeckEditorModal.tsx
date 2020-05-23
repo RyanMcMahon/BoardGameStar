@@ -10,7 +10,7 @@ import {
   EditorState,
   Assets,
   CardPiece,
-  AnyPiece,
+  AnyPieceOption,
 } from '../../types';
 import { loadAsset, getAssetDimensions, getFilename } from '../../utils/assets';
 
@@ -98,7 +98,7 @@ export function DeckEditorModal(props: Props) {
                   piece: {
                     ...card,
                     count,
-                  } as AnyPiece,
+                  } as AnyPieceOption,
                 })
               }
               card={card as CardPiece}

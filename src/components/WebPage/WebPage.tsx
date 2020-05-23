@@ -122,6 +122,15 @@ export const Content = styled.div({
   padding: '0 2rem',
 });
 
+const Footer = styled.div({
+  maxWidth: '960px',
+  margin: '2rem auto',
+  padding: '2rem',
+  textAlign: 'center',
+  color: '#ccc',
+  borderTop: '1px solid #ddd',
+});
+
 export function WebPage(props: Props) {
   const history = useHistory();
   const hostIdRef = React.createRef<HTMLInputElement>();
@@ -161,6 +170,7 @@ export function WebPage(props: Props) {
         {!isWebBuild && <MenuLink to="/">Custom Games</MenuLink>}
       </Menu>
       {props.children}
+      <Footer>&copy; Copyright {new Date().getFullYear()}</Footer>
     </Page>
   );
 }

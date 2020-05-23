@@ -1,33 +1,11 @@
-import React, { MutableRefObject } from 'react';
+import React from 'react';
 import { Stage } from 'react-konva';
-import styled from 'styled-components';
 
 interface Props {
   children: React.ReactNode;
 }
 
 const ZOOM_RATE = 1.02;
-
-const ZoomControls = styled.div({
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  padding: '1rem',
-  zIndex: 500,
-});
-
-const CircleButton = styled.div({
-  borderRadius: '50px',
-  background: '#fff',
-  height: '30px',
-  width: '30px',
-  textAlign: 'center',
-  fontSize: '30px',
-  fontWeight: 'bold',
-  marginTop: '1rem',
-  cursor: 'pointer',
-  lineHeight: '28px',
-});
 
 export const Table = React.forwardRef((props: Props, ref: any) => {
   const stageRef = React.createRef<Stage>();

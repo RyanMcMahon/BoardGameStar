@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import { DropdownButton } from '../DropdownButton';
 import { PlayerSelectModal } from '../PlayerSelectModal';
-import { Button, ButtonGroup } from '../../utils/style';
+import { Button } from '../../utils/style';
 import { Card, Pieces, PlayerPiece } from '../../types';
 import { prependPrefix } from '../../utils/assets';
 

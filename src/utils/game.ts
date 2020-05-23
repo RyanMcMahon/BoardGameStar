@@ -9,6 +9,7 @@ import {
   ClientEvent,
   PlayerPiece,
   Pieces,
+  DicePiece,
   CardPiece,
   DeckPiece,
 } from '../types';
@@ -49,8 +50,6 @@ export interface Game {
   peer: Peer;
   board: string[];
   pieces: Pieces;
-  // decks: Decks;
-  // players: Players;
 }
 
 export interface Assets {
@@ -79,6 +78,7 @@ export function createNewGame(
   const { assets, sendAssets } = options;
 
   peer.on('open', () => {
+    let hiddenPieces: Pieces = {};
     let pieces: Pieces = Object.values(config.pieces).reduce(
       (byId, piece) => ({
         ...byId,
@@ -222,17 +222,95 @@ export function createNewGame(
               }
               break;
 
+            case 'roll_dice':
+              try {
+                const { dice, hidden } = data;
+                const dicePieces: DicePiece[] = Object.entries(dice)
+                  .filter(([faces, count]) => count > 0)
+                  .reduce((agg, [faces, count], setIndex) => {
+                    const d: DicePiece[] = [...Array(count)].map(
+                      (x, index) => ({
+                        hidden,
+                        id: slug.nice(),
+                        type: 'die',
+                        faces: parseInt(faces, 10),
+                        value: _.random(1, parseInt(faces, 10)),
+                        delta: 0,
+                        x: playArea.x + index * 150,
+                        y: playArea.y + 50 + setIndex * 150,
+                        layer: 6,
+                      })
+                    );
+                    return [...agg, ...d];
+                  }, [] as DicePiece[]);
+                const diceById = (_.keyBy(
+                  dicePieces,
+                  'id'
+                ) as unknown) as Pieces;
+
+                conn.send({
+                  event: 'set_dice',
+                  diceIds: Object.keys(diceById),
+                });
+
+                const send = hidden ? conn.send : sendToRoom;
+                send({
+                  event: 'update_piece',
+                  pieces: diceById,
+                });
+                send({
+                  event: 'add_to_board',
+                  pieces: Object.keys(diceById),
+                });
+
+                if (hidden) {
+                  hiddenPieces = {
+                    ...hiddenPieces,
+                    ...diceById,
+                  };
+                } else {
+                  pieces = {
+                    ...pieces,
+                    ...diceById,
+                  };
+                  game.board.push(...Object.keys(diceById));
+                }
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            // TODO
+            // case 'reveal_pieces':
+            //   try {
+            //     const { pieceIds } = data;
+
+            //     // TODO
+            //   } catch (err) {
+            //     console.log(err);
+            //   }
+            //   break;
+
             case 'peek_at_deck':
               try {
-                const { deckId } = data;
-                conn.send({
-                  event: 'deck_peek_results',
-                  cardIds: _.shuffle(decks[deckId].cards),
-                  discardedCardIds: _.shuffle(decks[deckId].discarded),
-                });
+                const { deckId, peeking } = data;
+                if (peeking) {
+                  conn.send({
+                    event: 'deck_peek_results',
+                    cardIds: _.shuffle(decks[deckId].cards),
+                    discardedCardIds: _.shuffle(decks[deckId].discarded),
+                  });
+                } else {
+                  conn.send({
+                    event: 'deck_peek_results',
+                    cardIds: [],
+                    discardedCardIds: [],
+                  });
+                }
                 sendToRoom({
                   deckId,
                   playerId,
+                  peeking,
                   event: 'deck_peek',
                 });
               } catch (err) {
@@ -313,7 +391,13 @@ export function createNewGame(
                     height: deckPiece.height,
                     delta: pieces[id].delta + 1,
                   }))
-                  .reduce((agg, piece) => ({ ...agg, [piece.id]: piece }), {});
+                  .reduce(
+                    (agg, piece) => ({
+                      ...agg,
+                      [(piece as RenderPiece).id]: piece,
+                    }),
+                    {}
+                  );
                 pieces = {
                   ...pieces,
                   ...p,
@@ -472,7 +556,8 @@ export function createNewGame(
             case 'discard_played':
               try {
                 const { deckId } = data;
-                const cardIds = Object.values(pieces)
+                const cardIds = game.board
+                  .map(id => pieces[id])
                   .filter(p => p.type === 'card' && p.deckId === deckId)
                   .map(c => c.id);
                 decks[deckId].discarded.push(...cardIds);

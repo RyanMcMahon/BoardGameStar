@@ -58,6 +58,7 @@ export const Button = styled.button((options: ButtonOptions) => ({
         display: 'block',
         width: '100%',
         boxSizing: 'border-box',
+        marginBottom: '.5rem',
       }
     : {}) as any),
   ':disabled': {

@@ -11,9 +11,15 @@ import {
   EditorAction,
   EditorState,
   PlayerOption,
-  AnyPiece,
+  AnyPieceOption,
   RectPieceOption,
   CircleTokenOption,
+  BoardPiece,
+  DeckPiece,
+  ImageTokenPiece,
+  RectTokenPiece,
+  CircleTokenPiece,
+  PlayerPiece,
 } from '../../types';
 import { ImagePiece, Deck, CirclePiece, RectPiece } from '../Piece';
 import useImage from 'use-image';
@@ -165,7 +171,7 @@ export function Editor(props: Props) {
       y: 50,
       rotation: 0,
       layer: 9,
-    } as AnyPiece;
+    } as AnyPieceOption;
     dispatch({
       piece,
       type: 'add_piece',
@@ -314,7 +320,7 @@ export function Editor(props: Props) {
                           <ImagePiece
                             key={piece.id}
                             assets={assets}
-                            piece={piece}
+                            piece={piece as BoardPiece}
                             draggable={true}
                             isSelected={piece.id === selectedPieceId}
                             onChange={b => {
@@ -336,7 +342,7 @@ export function Editor(props: Props) {
                           <Deck
                             key={piece.id}
                             assets={assets}
-                            piece={piece}
+                            piece={piece as DeckPiece}
                             isSelected={piece.id === selectedPieceId}
                             onSelect={handleSelectPiece(piece.id)}
                             onChange={b => {
@@ -358,7 +364,7 @@ export function Editor(props: Props) {
                           <ImagePiece
                             key={piece.id}
                             assets={assets}
-                            piece={piece}
+                            piece={piece as ImageTokenPiece}
                             draggable={true}
                             isSelected={piece.id === selectedPieceId}
                             onChange={b => {
@@ -379,7 +385,7 @@ export function Editor(props: Props) {
                         return (
                           <RectPiece
                             key={piece.id}
-                            piece={piece}
+                            piece={piece as RectTokenPiece}
                             isSelected={piece.id === selectedPieceId}
                             onChange={b => {
                               dispatch({
@@ -399,7 +405,7 @@ export function Editor(props: Props) {
                         return (
                           <CirclePiece
                             key={piece.id}
-                            piece={piece}
+                            piece={piece as CircleTokenPiece}
                             isSelected={piece.id === selectedPieceId}
                             onChange={b => {
                               dispatch({
@@ -419,12 +425,14 @@ export function Editor(props: Props) {
                         return (
                           <PlayArea
                             key={piece.id}
-                            piece={{
-                              ...piece,
-                              name: `Player ${curScenario.players.findIndex(
-                                id => id === piece.id
-                              ) + 1}`,
-                            }}
+                            piece={
+                              {
+                                ...piece,
+                                name: `Player ${curScenario.players.findIndex(
+                                  id => id === piece.id
+                                ) + 1}`,
+                              } as PlayerPiece
+                            }
                             handCount={0}
                             isSelected={piece.id === selectedPieceId}
                             onChange={b => {
@@ -542,7 +550,7 @@ export function Editor(props: Props) {
                       piece: {
                         id: selectedPieceId,
                         color,
-                      } as AnyPiece,
+                      } as AnyPieceOption,
                     });
                   }}
                 />
@@ -562,7 +570,7 @@ export function Editor(props: Props) {
                               id: selectedPieceId,
                               color: (state.pieces[playerId] as PlayerOption)
                                 .color,
-                            } as AnyPiece,
+                            } as AnyPieceOption,
                           })
                         }
                       >

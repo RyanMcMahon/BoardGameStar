@@ -28,7 +28,10 @@ export const ImagePiece = React.memo((props: Props) => {
   } = props;
   const image = useAsset(assets, piece);
   const objectRef = React.useRef<any>();
-  const handleTransform = useTransformer(objectRef, onChange || (() => {}));
+  const handleTransform = useTransformer({
+    objectRef,
+    fn: onChange || (() => {}),
+  });
 
   return (
     <>

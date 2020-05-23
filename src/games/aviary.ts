@@ -1,5 +1,10 @@
 export const Aviary = {
   gameName: 'Aviary',
+  description: `
+  *(Compare with Arboretum)*
+
+  Arrange your birds!
+  `,
   curScenario: 'B0vIUEMQR4COSQdSQlg-jw',
   scenarios: {
     'B0vIUEMQR4COSQdSQlg-jw': {

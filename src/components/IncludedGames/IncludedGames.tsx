@@ -8,7 +8,7 @@ import { WebPage, Content } from '../WebPage';
 import { GameSelector } from '../GameSelector';
 
 const configs: { [key: string]: GameConfig } = {
-  'Aviary (Compare with Arboretum)': Aviary as any,
+  Aviary: Aviary as any,
 };
 
 export function IncludedGames() {

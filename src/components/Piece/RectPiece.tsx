@@ -14,7 +14,10 @@ interface Props {
 export function RectPiece(props: Props) {
   const { isSelected, piece, onSelect, onChange } = props;
   const objectRef = React.useRef<any>();
-  const handleTransform = useTransformer(objectRef, onChange);
+  const handleTransform = useTransformer({
+    objectRef,
+    fn: onChange || (() => {}),
+  });
 
   return (
     <>
