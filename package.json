@@ -28,6 +28,7 @@
     "peerjs": "^1.2.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
+    "react-icons": "^3.10.0",
     "react-konva": "^16.12.0-0",
     "react-markdown": "^4.3.1",
     "react-router-dom": "^5.1.2",
