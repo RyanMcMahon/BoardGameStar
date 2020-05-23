@@ -69,7 +69,7 @@ export function ControlsMenu(props: Props) {
         {isExpanded && <>Collapse</>}
       </ControlsItem>
       {items.map(item => (
-        <ControlsItem onClick={item.fn}>
+        <ControlsItem key={item.label} onClick={item.fn}>
           <Icon>{item.icon}</Icon>
           {isExpanded && <>{item.label}</>}
         </ControlsItem>

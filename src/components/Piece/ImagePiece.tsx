@@ -54,6 +54,7 @@ export const ImagePiece = React.memo((props: Props) => {
       />
       <PieceTransformer
         isSelected={isSelected || false}
+        rotateEnabled={true}
         objectRef={objectRef}
       />
     </>

@@ -3,6 +3,7 @@ import { Transformer } from 'react-konva';
 
 interface Props {
   isSelected: boolean;
+  rotateEnabled?: boolean;
   objectRef: React.MutableRefObject<any>;
 }
 
@@ -34,6 +35,13 @@ export function useTransformer({
     node.scaleX(1);
     node.scaleY(1);
 
+    // Reset sub-node positions
+    if (groupNode && (scaleX !== 1 || scaleY !== 1)) {
+      // console.log(rotation, scaleX, scaleY);
+      node.x(0);
+      node.y(0);
+    }
+
     fn({
       rotation,
       width: Math.max(5, node.width() * scaleX),
@@ -63,6 +71,7 @@ export function PieceTransformer(props: Props) {
     <Transformer
       ref={trRef}
       borderStrokeWidth={2}
+      rotateEnabled={props.rotateEnabled}
       boundBoxFunc={(oldBox: any, newBox: any) => {
         // limit resize
         if (newBox.width < 5 || newBox.height < 5) {

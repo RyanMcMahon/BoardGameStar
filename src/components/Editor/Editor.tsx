@@ -343,6 +343,7 @@ export function Editor(props: Props) {
                             key={piece.id}
                             assets={assets}
                             piece={piece as DeckPiece}
+                            editingEnabled={true}
                             isSelected={piece.id === selectedPieceId}
                             onSelect={handleSelectPiece(piece.id)}
                             onChange={b => {

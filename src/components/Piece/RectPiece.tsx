@@ -38,6 +38,7 @@ export function RectPiece(props: Props) {
       />
       <PieceTransformer
         isSelected={isSelected || false}
+        rotateEnabled={true}
         objectRef={objectRef}
       />
     </>
