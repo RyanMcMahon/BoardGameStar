@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 
 import { GameConfig } from '../../types';
 import { Button } from '../../utils/style';
@@ -40,6 +41,7 @@ export function GameSelector(props: Props) {
   return (
     <>
       <GameHeader>{gameName}</GameHeader>
+      <ReactMarkdown source={config.description} />
       {_.size(config.scenarios) > 1 && (
         <Select defaultValue={config.curScenario} ref={scenarioRef}>
           {Object.values(config.scenarios).map(scenario => (

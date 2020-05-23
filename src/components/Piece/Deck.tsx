@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, Image, Label, Tag } from 'react-konva';
+import { Text, Image, Label, Tag, Group, Transformer } from 'react-konva';
 
 import { useAsset } from './utils';
 import { Assets } from '../../utils/game';
@@ -9,6 +9,7 @@ import { DeckPiece } from '../../types';
 interface Props {
   assets: Assets;
   piece: DeckPiece;
+  editingEnabled?: boolean;
   isSelected?: boolean;
   onSelect?: () => void;
   onChange: (o: any) => void;
@@ -22,6 +23,7 @@ export function Deck(props: Props) {
     onSelect,
     assets,
     isSelected,
+    editingEnabled,
     onChange,
     onDblClick,
     onContextMenu,
@@ -30,7 +32,21 @@ export function Deck(props: Props) {
   const [checkForHolding, setCheckForHolding] = React.useState(false);
   const image = useAsset(assets, piece);
   const objectRef = React.useRef<any>();
-  const handleTransform = useTransformer(objectRef, onChange);
+  const groupRef = React.useRef<any>();
+  const handleTransform = useTransformer({
+    groupRef,
+    objectRef,
+    fn: onChange,
+  });
+
+  const trRef = React.createRef<any>();
+
+  React.useEffect(() => {
+    if (isSelected && !editingEnabled && trRef.current) {
+      trRef.current.setNode(objectRef.current);
+      trRef.current.getLayer().batchDraw();
+    }
+  }, [isSelected, editingEnabled, trRef]);
 
   if (isHolding && checkForHolding && onContextMenu) {
     onContextMenu({
@@ -43,31 +59,38 @@ export function Deck(props: Props) {
   }
 
   return (
-    <>
-      <Label x={piece.x} y={piece.y - 40}>
-        <Tag fill="#111" lineJoin="round" />
-        <Text
-          text={`${piece.count || 0} of ${piece.total || 0} cards remaining`}
-          fontSize={22}
-          padding={5}
-          fill="white"
-        />
-      </Label>
+    <Group
+      x={piece.x}
+      y={piece.y}
+      draggable
+      onDragMove={handleTransform}
+      ref={groupRef}
+    >
+      {true && (
+        <Label x={0} y={-40}>
+          <Tag fill="#111" lineJoin="round" />
+          <Text
+            text={`${piece.count || 0} of ${piece.total || 0} cards remaining`}
+            fontSize={22}
+            padding={5}
+            fill="white"
+          />
+        </Label>
+      )}
 
       <Image
         id={piece.id}
         ref={objectRef}
+        x={0}
+        y={0}
         image={image}
-        x={piece.x}
-        y={piece.y}
         width={piece.width}
         height={piece.height}
-        draggable
         onClick={onSelect}
         onTap={onSelect}
-        onDragMove={handleTransform}
         onDblClick={onDblClick}
         onDblTap={onDblClick}
+        onTransform={handleTransform}
         onTouchStart={() => {
           setCheckForHolding(false);
           setIsHolding(true);
@@ -84,10 +107,21 @@ export function Deck(props: Props) {
           }
         }}
       />
-      <PieceTransformer
-        isSelected={isSelected || false}
-        objectRef={objectRef}
-      />
-    </>
+      {isSelected && !editingEnabled && (
+        <Transformer
+          ref={trRef}
+          rotateEnabled={false}
+          resizeEnabled={false}
+          borderStrokeWidth={2}
+        />
+      )}
+      {editingEnabled && (
+        <PieceTransformer
+          isSelected={isSelected || false}
+          rotateEnabled={false}
+          objectRef={objectRef}
+        />
+      )}
+    </Group>
   );
 }

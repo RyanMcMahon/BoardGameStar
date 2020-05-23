@@ -3,7 +3,12 @@ import slug from 'slugid';
 import { Route, Switch } from 'react-router-dom';
 import { Editor } from '../Editor';
 import { CustomGames } from '../CustomGames';
-import { EditorAction, PlayerOption, EditorState, AnyPiece } from '../../types';
+import {
+  EditorAction,
+  PlayerOption,
+  EditorState,
+  AnyPieceOption,
+} from '../../types';
 
 function reducer(state: EditorState, action: EditorAction) {
   switch (action.type) {
@@ -87,7 +92,7 @@ function reducer(state: EditorState, action: EditorAction) {
         id: slug.nice(),
         name: `${scenario.name}-duplicate`,
       };
-      const pieces: { [id: string]: AnyPiece } = {};
+      const pieces: { [id: string]: AnyPieceOption } = {};
 
       scenario.pieces.forEach(pieceId => {
         const piece = state.pieces[pieceId];
@@ -100,18 +105,7 @@ function reducer(state: EditorState, action: EditorAction) {
 
         if (piece.type === 'deck') {
           Object.values(state.pieces).forEach(p => {
-            if (p.type === 'card') {
-              console.log(
-                'attempting card copy',
-                p.deckId === pieceId,
-                !scenario.pieces.includes(p.id)
-              );
-            }
-            if (
-              p.type === 'card' &&
-              p.deckId === pieceId
-              // !scenario.pieces.includes(p.id)
-            ) {
+            if (p.type === 'card' && p.deckId === pieceId) {
               const cardCopy = { ...p, id: slug.nice(), deckId: pieceCopy.id };
               pieces[cardCopy.id] = cardCopy;
             }

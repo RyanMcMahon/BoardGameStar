@@ -4,18 +4,7 @@ import Peer from 'peerjs';
 
 import { getInstanceId, getIdentity } from './identity';
 
-import {
-  RenderPiece,
-  JoinEvent,
-  SetHandEvent,
-  UpdatePieceEvent,
-  RemoveFromBoardEvent,
-  AddToBoardEvent,
-  HandCountEvent,
-  AssetLoadedEvent,
-  GameEvent,
-  ClientEvent,
-} from '../types';
+import { RenderPiece, GameEvent, ClientEvent } from '../types';
 import { createPeer } from './peer';
 
 let tempAssets: {
@@ -42,11 +31,21 @@ export function useGameClient(gameId: string, hostId: string) {
   const [handCounts, setHandCounts] = React.useState<{ [key: string]: number }>(
     {}
   );
+  const [myDice, setMyDice] = React.useState<string[]>([]);
+  const [diceCounts, setDiceCounts] = React.useState<{ [key: string]: number }>(
+    {}
+  );
+  const [peekingPlayers, setPeekingPlayers] = React.useState<{
+    [key: string]: string;
+  }>({});
+  const [peekingCards, setPeekingCards] = React.useState<string[]>([]);
+  const [peekingDiscardedCards, setPeekingDiscardedCards] = React.useState<
+    string[]
+  >([]);
 
   const requestAsset = React.useCallback(
     (asset: string) => {
       if (!conn) {
-        // return;
         throw new Error(
           'Time Paradox: requesting assets before connection established'
         );
@@ -60,26 +59,18 @@ export function useGameClient(gameId: string, hostId: string) {
   );
 
   const processEvent = React.useCallback((data: GameEvent) => {
-    const { event } = data;
-    console.log(data);
-    switch (event) {
-      case 'asset_loaded':
-        const { asset } = data as AssetLoadedEvent;
+    switch (data.event) {
+      case 'asset_loaded': {
+        const { asset } = data;
         Object.entries(asset).forEach(([key, value]) => {
           setPendingAssets(pending => pending.filter(a => a !== key));
           tempAssets[key] = value;
         });
         break;
-      case 'add_to_board':
-        const { pieces } = data as AddToBoardEvent;
-        setBoard(b => [...b, ...pieces]);
-        break;
-      case 'hand_count':
-        const { counts: c } = data as HandCountEvent;
-        setHandCounts(counts => ({ ...counts, ...c }));
-        break;
-      case 'join':
-        const { assets: a, hand, board: b, pieces: p } = data as JoinEvent;
+      }
+
+      case 'join': {
+        const { assets: a, hand, board: b, pieces: p } = data;
         setPieces(p);
         setMyHand(hand);
         setBoard(prevBoard => [...b, ...prevBoard]);
@@ -102,8 +93,49 @@ export function useGameClient(gameId: string, hostId: string) {
           setTimeout(() => setAssets(a), _.random(3100, 3500));
         }
         break;
-      case 'remove_from_board':
-        const { ids } = data as RemoveFromBoardEvent;
+      }
+
+      case 'add_to_board': {
+        const { pieces } = data;
+        setBoard(b => [...b, ...pieces]);
+        break;
+      }
+
+      case 'hand_count': {
+        const { counts: c } = data;
+        setHandCounts(counts => ({ ...counts, ...c }));
+        break;
+      }
+
+      case 'set_dice': {
+        const { diceIds } = data;
+        setMyDice(diceIds);
+        break;
+      }
+
+      case 'dice_counts': {
+        const { counts: c } = data;
+        setDiceCounts(counts => ({ ...counts, ...c }));
+        break;
+      }
+
+      case 'deck_peek': {
+        const { deckId, playerId, peeking } = data;
+        setPeekingPlayers(p => ({
+          [playerId]: peeking ? deckId : '',
+        }));
+        break;
+      }
+
+      case 'deck_peek_results': {
+        const { cardIds, discardedCardIds } = data;
+        setPeekingCards(cardIds);
+        setPeekingDiscardedCards(discardedCardIds);
+        break;
+      }
+
+      case 'remove_from_board': {
+        const { ids } = data;
         setBoard(b => {
           const boardCopy = [...b];
           ids.forEach(id => {
@@ -113,15 +145,18 @@ export function useGameClient(gameId: string, hostId: string) {
           return boardCopy;
         });
         break;
-      case 'set_hand':
-        const { hand: h } = data as SetHandEvent;
+      }
+
+      case 'set_hand': {
+        const { hand: h } = data;
         setMyHand(h);
         break;
-      case 'update_piece':
-        const { pieces: updatedPieces } = data as UpdatePieceEvent;
+      }
+
+      case 'update_piece': {
+        const { pieces: updatedPieces } = data;
         setPieces(p => {
           const u = { ...updatedPieces };
-          console.log(p);
           for (let i in u) {
             if (p[i] && u[i].delta <= p[i].delta) {
               delete u[i];
@@ -133,6 +168,7 @@ export function useGameClient(gameId: string, hostId: string) {
           };
         });
         break;
+      }
     }
   }, []);
 
@@ -189,5 +225,10 @@ export function useGameClient(gameId: string, hostId: string) {
     percentLoaded,
     handCounts,
     failedConnection,
+    myDice,
+    diceCounts,
+    peekingPlayers,
+    peekingCards,
+    peekingDiscardedCards,
   };
 }

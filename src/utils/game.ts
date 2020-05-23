@@ -9,6 +9,7 @@ import {
   ClientEvent,
   PlayerPiece,
   Pieces,
+  DicePiece,
   CardPiece,
   DeckPiece,
 } from '../types';
@@ -49,8 +50,6 @@ export interface Game {
   peer: Peer;
   board: string[];
   pieces: Pieces;
-  // decks: Decks;
-  // players: Players;
 }
 
 export interface Assets {
@@ -79,6 +78,7 @@ export function createNewGame(
   const { assets, sendAssets } = options;
 
   peer.on('open', () => {
+    let hiddenPieces: Pieces = {};
     let pieces: Pieces = Object.values(config.pieces).reduce(
       (byId, piece) => ({
         ...byId,
@@ -209,18 +209,156 @@ export function createNewGame(
         conn.on('data', (data: ClientEvent) => {
           switch (data.event) {
             case 'request_asset':
-              const { asset } = data;
-              conn.send({
-                event: 'asset_loaded',
-                asset: {
-                  [asset]: assets[asset],
-                },
-              });
+              try {
+                const { asset } = data;
+                conn.send({
+                  event: 'asset_loaded',
+                  asset: {
+                    [asset]: assets[asset],
+                  },
+                });
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'roll_dice':
+              try {
+                const { dice, hidden } = data;
+                const dicePieces: DicePiece[] = Object.entries(dice)
+                  .filter(([faces, count]) => count > 0)
+                  .reduce((agg, [faces, count], setIndex) => {
+                    const d: DicePiece[] = [...Array(count)].map(
+                      (x, index) => ({
+                        hidden,
+                        id: slug.nice(),
+                        type: 'die',
+                        faces: parseInt(faces, 10),
+                        value: _.random(1, parseInt(faces, 10)),
+                        delta: 0,
+                        x: playArea.x + index * 150,
+                        y: playArea.y + 50 + setIndex * 150,
+                        layer: 6,
+                      })
+                    );
+                    return [...agg, ...d];
+                  }, [] as DicePiece[]);
+                const diceById = (_.keyBy(
+                  dicePieces,
+                  'id'
+                ) as unknown) as Pieces;
+
+                conn.send({
+                  event: 'set_dice',
+                  diceIds: Object.keys(diceById),
+                });
+
+                const send = hidden ? conn.send : sendToRoom;
+                send({
+                  event: 'update_piece',
+                  pieces: diceById,
+                });
+                send({
+                  event: 'add_to_board',
+                  pieces: Object.keys(diceById),
+                });
+
+                if (hidden) {
+                  hiddenPieces = {
+                    ...hiddenPieces,
+                    ...diceById,
+                  };
+                } else {
+                  pieces = {
+                    ...pieces,
+                    ...diceById,
+                  };
+                  game.board.push(...Object.keys(diceById));
+                }
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            // TODO
+            // case 'reveal_pieces':
+            //   try {
+            //     const { pieceIds } = data;
+
+            //     // TODO
+            //   } catch (err) {
+            //     console.log(err);
+            //   }
+            //   break;
+
+            case 'peek_at_deck':
+              try {
+                const { deckId, peeking } = data;
+                if (peeking) {
+                  conn.send({
+                    event: 'deck_peek_results',
+                    cardIds: _.shuffle(decks[deckId].cards),
+                    discardedCardIds: _.shuffle(decks[deckId].discarded),
+                  });
+                } else {
+                  conn.send({
+                    event: 'deck_peek_results',
+                    cardIds: [],
+                    discardedCardIds: [],
+                  });
+                }
+                sendToRoom({
+                  deckId,
+                  playerId,
+                  peeking,
+                  event: 'deck_peek',
+                });
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'take_cards':
+              try {
+                const { deckId, cardIds } = data;
+                const deck = decks[deckId];
+                const ids = [
+                  ...cardIds.filter(id => deck.cards.includes(id)),
+                  ...cardIds.filter(id => deck.discarded.includes(id)),
+                ];
+                players[playerId].hand.push(...ids);
+                deck.cards = deck.cards.filter(id => !cardIds.includes(id));
+                deck.discarded = deck.discarded.filter(
+                  id => !cardIds.includes(id)
+                );
+                conn.send({
+                  event: 'set_hand',
+                  hand: player.hand,
+                });
+                sendHandCounts();
+                updateDeckCount(deckId);
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'remove_cards':
+              try {
+                const { deckId, cardIds } = data;
+                const deck = decks[deckId];
+                deck.cards = deck.cards.filter(id => !cardIds.includes(id));
+                deck.discarded = deck.discarded.filter(
+                  id => !cardIds.includes(id)
+                );
+                updateDeckCount(deckId);
+              } catch (err) {
+                console.log(err);
+              }
               break;
 
             case 'draw_cards':
-              const { deckId, count } = data;
               try {
+                const { deckId, count } = data;
                 console.log(`Player ${playerId} drew ${count} cards`);
                 players[playerId].hand.push(
                   ...decks[deckId].cards.splice(0, count)
@@ -230,6 +368,48 @@ export function createNewGame(
                   hand: player.hand,
                 });
                 sendHandCounts();
+                updateDeckCount(deckId);
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'draw_cards_to_table':
+              try {
+                const { deckId, count, faceDown } = data;
+                const deckPiece = pieces[deckId];
+                const cardIds = decks[deckId].cards.splice(0, count);
+                game.board.push(...cardIds);
+
+                const p = cardIds
+                  .map((id, index) => ({
+                    ...pieces[id],
+                    faceDown,
+                    x: deckPiece.x + deckPiece.width + 50 + index * 20,
+                    y: deckPiece.y + index * 20,
+                    width: deckPiece.width,
+                    height: deckPiece.height,
+                    delta: pieces[id].delta + 1,
+                  }))
+                  .reduce(
+                    (agg, piece) => ({
+                      ...agg,
+                      [(piece as RenderPiece).id]: piece,
+                    }),
+                    {}
+                  );
+                pieces = {
+                  ...pieces,
+                  ...p,
+                };
+                sendToRoom({
+                  event: 'update_piece',
+                  pieces: p,
+                });
+                sendToRoom({
+                  event: 'add_to_board',
+                  pieces: cardIds,
+                });
                 updateDeckCount(deckId);
               } catch (err) {
                 console.log(err);
@@ -273,6 +453,26 @@ export function createNewGame(
               }
               break;
 
+            case 'pass_cards':
+              try {
+                const { cardIds, playerId: receivingPlayerId } = data;
+                const receivingPlayer = players[receivingPlayerId];
+                player.hand = player.hand.filter(id => !cardIds.includes(id));
+                receivingPlayer.hand.push(...cardIds);
+                receivingPlayer.conn.send({
+                  event: 'set_hand',
+                  hand: receivingPlayer.hand,
+                });
+                conn.send({
+                  event: 'set_hand',
+                  hand: player.hand,
+                });
+                sendHandCounts();
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
             case 'rename_player':
               try {
                 const { name } = data;
@@ -292,7 +492,7 @@ export function createNewGame(
 
             case 'play_cards':
               try {
-                const { cardIds } = data;
+                const { cardIds, faceDown } = data;
                 const cards = player.hand
                   .filter(id => cardIds.includes(id))
                   .map((cardId, index) => {
@@ -301,6 +501,7 @@ export function createNewGame(
 
                     return {
                       ...pieces[cardId],
+                      faceDown,
                       x: playArea.x + index * 20,
                       y: playArea.y + 50 + index * 20,
                       width: deck.width,
@@ -355,7 +556,8 @@ export function createNewGame(
             case 'discard_played':
               try {
                 const { deckId } = data;
-                const cardIds = Object.values(pieces)
+                const cardIds = game.board
+                  .map(id => pieces[id])
                   .filter(p => p.type === 'card' && p.deckId === deckId)
                   .map(c => c.id);
                 decks[deckId].discarded.push(...cardIds);

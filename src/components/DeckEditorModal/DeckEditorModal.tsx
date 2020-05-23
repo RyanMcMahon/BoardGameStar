@@ -10,7 +10,7 @@ import {
   EditorState,
   Assets,
   CardPiece,
-  AnyPiece,
+  AnyPieceOption,
 } from '../../types';
 import { loadAsset, getAssetDimensions, getFilename } from '../../utils/assets';
 
@@ -53,6 +53,7 @@ export function DeckEditorModal(props: Props) {
           image: filename,
           x: 50,
           y: 50,
+          faceDown: false,
           rotation: 0,
           count: 1,
           layer: 3,
@@ -97,7 +98,7 @@ export function DeckEditorModal(props: Props) {
                   piece: {
                     ...card,
                     count,
-                  } as AnyPiece,
+                  } as AnyPieceOption,
                 })
               }
               card={card as CardPiece}

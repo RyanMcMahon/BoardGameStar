@@ -16,7 +16,7 @@ interface Props {
   piece: BoardPiece | CardPiece | ImageTokenPiece;
 }
 
-export function ImagePiece(props: Props) {
+export const ImagePiece = React.memo((props: Props) => {
   const {
     draggable,
     isSelected,
@@ -28,7 +28,10 @@ export function ImagePiece(props: Props) {
   } = props;
   const image = useAsset(assets, piece);
   const objectRef = React.useRef<any>();
-  const handleTransform = useTransformer(objectRef, onChange || (() => {}));
+  const handleTransform = useTransformer({
+    objectRef,
+    fn: onChange || (() => {}),
+  });
 
   return (
     <>
@@ -51,8 +54,9 @@ export function ImagePiece(props: Props) {
       />
       <PieceTransformer
         isSelected={isSelected || false}
+        rotateEnabled={true}
         objectRef={objectRef}
       />
     </>
   );
-}
+});

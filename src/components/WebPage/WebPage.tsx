@@ -7,6 +7,7 @@ import {
   primaryHighlightColor,
   breakPoints,
   Button,
+  theShadow,
 } from '../../utils/style';
 import { isWebBuild } from '../../utils/meta';
 import { imagePrefix } from '../../utils/assets';
@@ -33,7 +34,7 @@ const Menu = styled.div({
   padding: '1rem 0',
   backgroundColor: '#f5f5f5',
   fontWeight: 'bold',
-  boxShadow: '0px 3px 7px rgba(0, 0, 0, 0.5)',
+  boxShadow: theShadow,
   zIndex: 1000,
   [breakPoints.mobile]: {
     flexDirection: 'column',
@@ -121,6 +122,15 @@ export const Content = styled.div({
   padding: '0 2rem',
 });
 
+const Footer = styled.div({
+  maxWidth: '960px',
+  margin: '2rem auto',
+  padding: '2rem',
+  textAlign: 'center',
+  color: '#ccc',
+  borderTop: '1px solid #ddd',
+});
+
 export function WebPage(props: Props) {
   const history = useHistory();
   const hostIdRef = React.createRef<HTMLInputElement>();
@@ -160,6 +170,7 @@ export function WebPage(props: Props) {
         {!isWebBuild && <MenuLink to="/">Custom Games</MenuLink>}
       </Menu>
       {props.children}
+      <Footer>&copy; Copyright {new Date().getFullYear()}</Footer>
     </Page>
   );
 }

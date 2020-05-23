@@ -3,6 +3,7 @@ import { Transformer } from 'react-konva';
 
 interface Props {
   isSelected: boolean;
+  rotateEnabled?: boolean;
   objectRef: React.MutableRefObject<any>;
 }
 
@@ -14,12 +15,18 @@ interface ObjectUpdate {
   rotation: number;
 }
 
-export function useTransformer(
-  objectRef: React.MutableRefObject<any>,
-  fn: (o: ObjectUpdate) => void
-) {
+export function useTransformer({
+  objectRef,
+  groupRef,
+  fn,
+}: {
+  objectRef: React.MutableRefObject<any>;
+  groupRef?: React.MutableRefObject<any>;
+  fn: (o: ObjectUpdate) => void;
+}) {
   return () => {
     const node = objectRef.current;
+    const groupNode = groupRef && groupRef.current;
     const rotation = node.rotation();
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
@@ -28,12 +35,19 @@ export function useTransformer(
     node.scaleX(1);
     node.scaleY(1);
 
+    // Reset sub-node positions
+    if (groupNode && (scaleX !== 1 || scaleY !== 1)) {
+      // console.log(rotation, scaleX, scaleY);
+      node.x(0);
+      node.y(0);
+    }
+
     fn({
       rotation,
-      x: node.x(),
-      y: node.y(),
       width: Math.max(5, node.width() * scaleX),
       height: Math.max(5, node.height() * scaleY),
+      x: groupNode ? groupNode.x() : node.x(),
+      y: groupNode ? groupNode.y() : node.y(),
     });
   };
 }
@@ -57,6 +71,7 @@ export function PieceTransformer(props: Props) {
     <Transformer
       ref={trRef}
       borderStrokeWidth={2}
+      rotateEnabled={props.rotateEnabled}
       boundBoxFunc={(oldBox: any, newBox: any) => {
         // limit resize
         if (newBox.width < 5 || newBox.height < 5) {

@@ -14,7 +14,11 @@ interface Props {
 export function PlayArea(props: Props) {
   const { piece, handCount, isSelected, onChange, onSelect } = props;
   const objectRef = React.useRef<any>();
-  const handleTransform = useTransformer(objectRef, onChange);
+  const handleTransform = useTransformer({
+    objectRef,
+    fn: onChange || (() => {}),
+  });
+
   const trRef = React.createRef<any>();
 
   React.useEffect(() => {
@@ -38,7 +42,7 @@ export function PlayArea(props: Props) {
         <Tag fill={piece.color} lineJoin="round" />
         <Text
           text={`${piece.name} (${handCount} cards in hand)`}
-          fontSize={22}
+          fontSize={32}
           padding={5}
           fill="white"
         />
