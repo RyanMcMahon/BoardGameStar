@@ -183,7 +183,7 @@ export const App: React.FC = () => {
             items.push(
               ...[
                 {
-                  icon: '👁',
+                  icon: 'FaEye',
                   label: 'Reveal',
                   fn: () => {}, // TODO
                 },
@@ -193,7 +193,7 @@ export const App: React.FC = () => {
             items.push(
               ...[
                 {
-                  icon: '🞪',
+                  icon: 'FaTimes',
                   label: 'Remove',
                   fn: () =>
                     handleUpdatePiece({ id: piece.id, type: 'deleted' }),
@@ -207,7 +207,7 @@ export const App: React.FC = () => {
           items.push(
             ...[
               {
-                icon: '⟳',
+                icon: 'FaSync',
                 label: 'Flip Card',
                 fn: () =>
                   handleUpdatePiece({ ...piece, faceDown: !piece.faceDown }),
@@ -220,25 +220,25 @@ export const App: React.FC = () => {
           items.push(
             ...[
               {
-                icon: '⤴',
+                icon: 'FaLevelUpAlt',
                 label: 'Draw Cards',
                 fn: () => setDrawModalId(piece.id),
               },
               // TODO
               // {
-              //   icon: '👁',
+              //   icon: 'FaEye',
               //   label: 'Peek At Deck',
               //   fn: () => {
               //     handlePeekAtDeck(piece.id, true);
               //   },
               // },
               {
-                icon: '🗘',
+                icon: 'FaRandom',
                 label: 'Shuffle Discarded',
                 fn: () => handleShuffleDiscarded(piece.id),
               },
               {
-                icon: '🞪',
+                icon: 'FaTimes',
                 label: 'Discard Played Cards',
                 fn: () => handleDiscardPlayed(piece.id),
               },
@@ -250,7 +250,7 @@ export const App: React.FC = () => {
       items.push(
         ...[
           {
-            icon: '⚄',
+            icon: 'FaDiceFive',
             label: 'Roll Dice',
             fn: () => setShowDiceModal(true),
           },
@@ -261,18 +261,18 @@ export const App: React.FC = () => {
     items.push(
       ...[
         {
-          icon: '🞤',
+          icon: 'FaPlus',
           label: 'Zoom In',
           fn: () => tableRef.current && tableRef.current.zoomIn(),
         },
         {
-          icon: '‒',
+          icon: 'FaMinus',
           label: 'Zoom Out',
           fn: () => tableRef.current && tableRef.current.zoomOut(),
         },
         // TODO
         // {
-        //   icon: '⌖',
+        //   icon: 'FaCrosshair',
         //   label: 'Reset Zoom',
         //   fn: () => tableRef.current && tableRef.current.resetZoom(),
         // },
