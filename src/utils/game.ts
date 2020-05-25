@@ -12,6 +12,7 @@ import {
   DicePiece,
   CardPiece,
   DeckPiece,
+  ChatEvent,
 } from '../types';
 
 import { getHostId, getGameId, getInstanceId } from './identity';
@@ -78,6 +79,7 @@ export function createNewGame(
   const { assets, sendAssets } = options;
 
   peer.on('open', () => {
+    const chat: ChatEvent[] = [];
     let hiddenPieces: Pieces = {};
     let pieces: Pieces = Object.values(config.pieces).reduce(
       (byId, piece) => ({
@@ -187,9 +189,10 @@ export function createNewGame(
         playArea.name = player.name;
 
         conn.send({
-          assets: sendAssets ? assets : Object.keys(assets),
           pieces,
+          chat,
           event: 'join',
+          assets: sendAssets ? assets : Object.keys(assets),
           hand: player.hand,
           board: game.board,
           // TODO remove
@@ -217,6 +220,15 @@ export function createNewGame(
                     [asset]: assets[asset],
                   },
                 });
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'chat':
+              try {
+                chat.push(data);
+                sendToRoom(data);
               } catch (err) {
                 console.log(err);
               }

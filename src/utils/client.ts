@@ -4,7 +4,7 @@ import Peer from 'peerjs';
 
 import { getInstanceId, getIdentity } from './identity';
 
-import { RenderPiece, GameEvent, ClientEvent } from '../types';
+import { RenderPiece, GameEvent, ClientEvent, ChatEvent } from '../types';
 import { createPeer } from './peer';
 
 let tempAssets: {
@@ -26,6 +26,7 @@ export function useGameClient(gameId: string, hostId: string) {
     {}
   );
   const [pendingAssets, setPendingAssets] = React.useState<string[]>([]);
+  const [chat, setChat] = React.useState<ChatEvent[]>([]);
   const [board, setBoard] = React.useState<string[]>([]);
   const [myHand, setMyHand] = React.useState<string[]>([]);
   const [handCounts, setHandCounts] = React.useState<{ [key: string]: number }>(
@@ -70,9 +71,10 @@ export function useGameClient(gameId: string, hostId: string) {
       }
 
       case 'join': {
-        const { assets: a, hand, board: b, pieces: p } = data;
+        const { assets: a, hand, board: b, pieces: p, chat: c } = data;
         setPieces(p);
         setMyHand(hand);
+        setChat(c);
         setBoard(prevBoard => [...b, ...prevBoard]);
         if (Array.isArray(a)) {
           setPendingAssets(a);
@@ -92,6 +94,11 @@ export function useGameClient(gameId: string, hostId: string) {
           );
           setTimeout(() => setAssets(a), _.random(3100, 3500));
         }
+        break;
+      }
+
+      case 'chat': {
+        setChat(c => [...c, data]);
         break;
       }
 
@@ -217,6 +224,7 @@ export function useGameClient(gameId: string, hostId: string) {
   return {
     playerId,
     conn,
+    chat,
     board,
     pieces,
     setPieces,

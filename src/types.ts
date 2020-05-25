@@ -243,6 +243,7 @@ export interface JoinEvent {
   hand: string[];
   board: string[];
   pieces: Pieces;
+  chat: ChatEvent[];
   assets:
     | string[]
     | {
@@ -397,7 +398,14 @@ export interface DeckPeekResultsEvent {
   discardedCardIds: string[];
 }
 
+export interface ChatEvent {
+  event: 'chat';
+  playerId: string;
+  message: string;
+}
+
 export type ClientEvent =
+  | ChatEvent
   | RollDiceEvent
   | DrawCardsEvent
   | DrawCardsToTableEvent
@@ -417,6 +425,7 @@ export type ClientEvent =
   | UpdatePieceEvent;
 
 export type GameEvent =
+  | ChatEvent
   | AddToBoardEvent
   | DiceCountEvent
   | SetDiceEvent

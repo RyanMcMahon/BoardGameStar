@@ -2,6 +2,17 @@ import React from 'react';
 import styled from 'styled-components';
 import * as _ from 'lodash';
 import { useParams, Link, Redirect } from 'react-router-dom';
+import {
+  FaCommentDots,
+  FaEye,
+  FaTimes,
+  FaLevelUpAlt,
+  FaPlus,
+  FaMinus,
+  FaDiceFive,
+  FaRandom,
+  FaSync,
+} from 'react-icons/fa';
 
 import { useGameClient } from '../../utils/client';
 import { Button, breakPoints, maxMobileWidth } from '../../utils/style';
@@ -32,6 +43,7 @@ import { ImagePiece, Deck, RectPiece, CirclePiece, Die } from '../Piece';
 import { PlayArea } from '../Piece/PlayArea';
 import { ControlsMenu, ControlsMenuItem } from '../ControlsMenu';
 import { DiceModal } from '../DiceModal';
+import { Chat } from '../Chat';
 // import { DeckPeekModal } from '../DeckPeekModal/DeckPeekModal';
 
 const MainContainer = styled.div({
@@ -128,11 +140,22 @@ const FailedConnection = styled.h4({
   color: '#e74c3c',
 });
 
+const UnreadIcon = styled(FaCommentDots)({
+  // display: 'inline-block',
+  // textAlign: 'center',
+  color: '#e74c3c',
+  // color: '#fff',
+  // height: '20px',
+  // width: '20px',
+  // borderRadius: '20px',
+});
+
 export const App: React.FC = () => {
   const { gameId = '', hostId = '' } = useParams();
   const {
     playerId,
     conn,
+    chat,
     pieces,
     board,
     myHand,
@@ -157,6 +180,8 @@ export const App: React.FC = () => {
   const [showRenameModal, setShowRenameModal] = React.useState<boolean>(false);
   const [showInviteModal, setShowInviteModal] = React.useState<boolean>(false);
   const [showDiceModal, setShowDiceModal] = React.useState<boolean>(false);
+  const [lastReadChat, setLastReadChat] = React.useState<number>(0);
+  const [showChat, setShowChat] = React.useState<boolean>(false);
   const [showControlsModal, setShowControlsModal] = React.useState<boolean>(
     false
   );
@@ -171,10 +196,25 @@ export const App: React.FC = () => {
     }
   }, []);
 
+  React.useEffect(() => {
+    if (showChat) {
+      setLastReadChat(chat.length);
+    }
+  }, [chat.length, showChat]);
+
   const pieceControls = (
     piece: RenderPiece | undefined
   ): ControlsMenuItem[] => {
-    const items = [];
+    const items = [
+      {
+        icon: chat.length > lastReadChat ? <UnreadIcon /> : <FaCommentDots />,
+        label:
+          chat.length > lastReadChat
+            ? `Chat (${chat.length - lastReadChat})`
+            : `Chat`,
+        fn: () => setShowChat(true),
+      },
+    ];
 
     if (piece) {
       switch (piece.type) {
@@ -183,7 +223,7 @@ export const App: React.FC = () => {
             items.push(
               ...[
                 {
-                  icon: 'FaEye',
+                  icon: <FaEye />,
                   label: 'Reveal',
                   fn: () => {}, // TODO
                 },
@@ -193,7 +233,7 @@ export const App: React.FC = () => {
             items.push(
               ...[
                 {
-                  icon: 'FaTimes',
+                  icon: <FaTimes />,
                   label: 'Remove',
                   fn: () =>
                     handleUpdatePiece({ id: piece.id, type: 'deleted' }),
@@ -207,7 +247,7 @@ export const App: React.FC = () => {
           items.push(
             ...[
               {
-                icon: 'FaSync',
+                icon: <FaSync />,
                 label: 'Flip Card',
                 fn: () =>
                   handleUpdatePiece({ ...piece, faceDown: !piece.faceDown }),
@@ -220,7 +260,7 @@ export const App: React.FC = () => {
           items.push(
             ...[
               {
-                icon: 'FaLevelUpAlt',
+                icon: <FaLevelUpAlt />,
                 label: 'Draw Cards',
                 fn: () => setDrawModalId(piece.id),
               },
@@ -233,12 +273,12 @@ export const App: React.FC = () => {
               //   },
               // },
               {
-                icon: 'FaRandom',
+                icon: <FaRandom />,
                 label: 'Shuffle Discarded',
                 fn: () => handleShuffleDiscarded(piece.id),
               },
               {
-                icon: 'FaTimes',
+                icon: <FaTimes />,
                 label: 'Discard Played Cards',
                 fn: () => handleDiscardPlayed(piece.id),
               },
@@ -250,7 +290,7 @@ export const App: React.FC = () => {
       items.push(
         ...[
           {
-            icon: 'FaDiceFive',
+            icon: <FaDiceFive />,
             label: 'Roll Dice',
             fn: () => setShowDiceModal(true),
           },
@@ -261,12 +301,12 @@ export const App: React.FC = () => {
     items.push(
       ...[
         {
-          icon: 'FaPlus',
+          icon: <FaPlus />,
           label: 'Zoom In',
           fn: () => tableRef.current && tableRef.current.zoomIn(),
         },
         {
-          icon: 'FaMinus',
+          icon: <FaMinus />,
           label: 'Zoom Out',
           fn: () => tableRef.current && tableRef.current.zoomOut(),
         },
@@ -450,6 +490,16 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleOnChat = (message: string) => {
+    if (conn) {
+      conn.send({
+        playerId,
+        message,
+        event: 'chat',
+      });
+    }
+  };
+
   const handleSelectPiece = (id: string) => () => {
     if (id === selectedPieceId) {
       setSelectedPieceId(null);
@@ -472,9 +522,10 @@ export const App: React.FC = () => {
     }
   }, [conn, handleUpdatePieceUnthrottled]);
 
-  const player = Object.values(pieces).find(
-    p => p.type === 'player' && p.playerId === playerId
-  );
+  const players = Object.values(pieces).filter(
+    p => p.type === 'player'
+  ) as PlayerPiece[];
+  const player = players.find(p => p.playerId === playerId);
 
   const layers = board.reduce((agg: RenderPiece[][], pieceId: string) => {
     const piece = pieces[pieceId];
@@ -720,6 +771,15 @@ export const App: React.FC = () => {
         <DiceModal
           onClose={() => setShowDiceModal(false)}
           onRollDice={handleRollDice}
+        />
+      )}
+
+      {showChat && (
+        <Chat
+          players={players}
+          chat={chat}
+          onChat={handleOnChat}
+          onClose={() => setShowChat(false)}
         />
       )}
 

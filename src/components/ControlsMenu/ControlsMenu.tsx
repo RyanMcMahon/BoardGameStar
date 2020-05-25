@@ -1,20 +1,10 @@
 import React, { ReactNode } from 'react';
-import {
-  FaEye,
-  FaTimes,
-  FaLevelUpAlt,
-  FaPlus,
-  FaMinus,
-  FaDiceFive,
-  FaRandom,
-  FaSync,
-} from 'react-icons/fa';
 import styled from 'styled-components';
 
 import { maxMobileWidth, theShadow } from '../../utils/style';
 
 export interface ControlsMenuItem {
-  icon: string | ReactNode;
+  icon: ReactNode;
   label: string;
   fn: () => void;
 }
@@ -24,16 +14,17 @@ interface Props {
   // piece: AnyPiece | DeletedPiece | undefined;
 }
 
-const icons: { [key: string]: any } = {
-  FaEye: <FaEye />,
-  FaTimes: <FaTimes />,
-  FaLevelUpAlt: <FaLevelUpAlt />,
-  FaDiceFive: <FaDiceFive />,
-  FaPlus: <FaPlus />,
-  FaMinus: <FaMinus />,
-  FaRandom: <FaRandom />,
-  FaSync: <FaSync />,
-};
+// const icons: { [key: string]: any } = {
+//   FaCommentDots: <FaCommentDots />,
+//   FaEye: <FaEye />,
+//   FaTimes: <FaTimes />,
+//   FaLevelUpAlt: <FaLevelUpAlt />,
+//   FaDiceFive: <FaDiceFive />,
+//   FaPlus: <FaPlus />,
+//   FaMinus: <FaMinus />,
+//   FaRandom: <FaRandom />,
+//   FaSync: <FaSync />,
+// };
 
 const ControlsContainer = styled.div({
   position: 'absolute',
@@ -93,7 +84,7 @@ export function ControlsMenu(props: Props) {
       </ControlsItem>
       {items.map(item => (
         <ControlsItem key={item.label} onClick={item.fn}>
-          <Icon>{icons[item.icon as string]}</Icon>
+          <Icon>{item.icon}</Icon>
           {isExpanded && <>{item.label}</>}
         </ControlsItem>
       ))}
