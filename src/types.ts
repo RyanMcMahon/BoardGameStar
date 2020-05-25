@@ -81,6 +81,7 @@ export type AnyPieceOption =
   | RectTokenOption;
 
 export interface EditorState {
+  id?: string;
   gameName: string;
   description?: string;
   curScenario: string;
@@ -91,7 +92,10 @@ export interface EditorState {
     [id: string]: AnyPieceOption;
   };
 }
-export type GameConfig = EditorState;
+export interface GameConfig extends EditorState {
+  sendAssets: boolean;
+  loadAssets: () => Assets;
+}
 
 export interface CreateGameAction {
   type: 'create_game';

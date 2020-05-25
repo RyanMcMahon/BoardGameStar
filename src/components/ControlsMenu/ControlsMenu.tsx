@@ -11,20 +11,7 @@ export interface ControlsMenuItem {
 
 interface Props {
   items: ControlsMenuItem[];
-  // piece: AnyPiece | DeletedPiece | undefined;
 }
-
-// const icons: { [key: string]: any } = {
-//   FaCommentDots: <FaCommentDots />,
-//   FaEye: <FaEye />,
-//   FaTimes: <FaTimes />,
-//   FaLevelUpAlt: <FaLevelUpAlt />,
-//   FaDiceFive: <FaDiceFive />,
-//   FaPlus: <FaPlus />,
-//   FaMinus: <FaMinus />,
-//   FaRandom: <FaRandom />,
-//   FaSync: <FaSync />,
-// };
 
 const ControlsContainer = styled.div({
   position: 'absolute',

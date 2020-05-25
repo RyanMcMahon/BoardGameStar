@@ -82,15 +82,15 @@ export function useGameClient(gameId: string, hostId: string) {
           // Fake loader to give time to read "Facts"
           setTimeout(
             () => setPercentLoaded(_.random(20, 30)),
-            _.random(500, 1200)
+            _.random(200, 600)
           );
           setTimeout(
             () => setPercentLoaded(_.random(50, 70)),
-            _.random(1500, 2000)
+            _.random(800, 1200)
           );
           setTimeout(
             () => setPercentLoaded(_.random(80, 99)),
-            _.random(2200, 3000)
+            _.random(1200, 2000)
           );
           setTimeout(() => setAssets(a), _.random(3100, 3500));
         }

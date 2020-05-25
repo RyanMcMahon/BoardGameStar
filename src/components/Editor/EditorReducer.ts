@@ -1,8 +1,5 @@
-import React from 'react';
 import slug from 'slugid';
-import { Route, Switch } from 'react-router-dom';
-import { Editor } from '../Editor';
-import { CustomGames } from '../CustomGames';
+
 import {
   EditorAction,
   PlayerOption,
@@ -10,7 +7,7 @@ import {
   AnyPieceOption,
 } from '../../types';
 
-function reducer(state: EditorState, action: EditorAction) {
+export function editorReducer(state: EditorState, action: EditorAction) {
   switch (action.type) {
     case 'create_game': {
       const { editorConfig } = action;
@@ -225,33 +222,3 @@ function reducer(state: EditorState, action: EditorAction) {
       throw Error('unhandled EditorAction');
   }
 }
-
-export function ExecutableRoutes() {
-  const [state, dispatch] = React.useReducer<
-    React.Reducer<EditorState, EditorAction>,
-    EditorState
-  >(
-    reducer,
-    {
-      gameName: '',
-      curScenario: '',
-      scenarios: {},
-      pieces: {},
-    },
-    (state: EditorState) => state
-  );
-
-  return (
-    <Switch>
-      <Route path="/">
-        {state.curScenario ? (
-          <Editor dispatch={dispatch} state={state} />
-        ) : (
-          <CustomGames dispatch={dispatch} />
-        )}
-      </Route>
-    </Switch>
-  );
-}
-
-export default ExecutableRoutes;

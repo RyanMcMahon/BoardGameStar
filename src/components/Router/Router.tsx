@@ -1,18 +1,28 @@
 import React from 'react';
-import { BrowserRouter, HashRouter, Switch, Route } from 'react-router-dom';
+import {
+  BrowserRouter,
+  HashRouter,
+  Switch,
+  Route,
+  Redirect,
+} from 'react-router-dom';
 
 import { App } from '../App';
-import { IncludedGames } from '../IncludedGames';
 import { UpdateModal } from '../UpdateModal';
 import { isWebBuild } from '../../utils/meta';
+import { Games } from '../Games';
+import { Home } from '../Home';
+import { Editor, editorReducer } from '../Editor';
+import {
+  EditorAction,
+  PlayerOption,
+  EditorState,
+  AnyPieceOption,
+} from '../../types';
 
 interface Props {
   children: React.ReactNode;
 }
-
-const BaseRoute = React.lazy(() =>
-  isWebBuild ? import('../Home/Home') : import('./ExecutableRoutes')
-);
 
 function AppRouter(props: Props) {
   return isWebBuild ? (
@@ -25,6 +35,19 @@ function AppRouter(props: Props) {
 export function Router() {
   const [showUpdateModal, setShowUpdateModal] = React.useState(false);
   const [release, setRelease] = React.useState();
+  const [state, dispatch] = React.useReducer<
+    React.Reducer<EditorState, EditorAction>,
+    EditorState
+  >(
+    editorReducer,
+    {
+      gameName: '',
+      curScenario: '',
+      scenarios: {},
+      pieces: {},
+    },
+    (state: EditorState) => state
+  );
 
   React.useEffect(() => {
     if (!isWebBuild) {
@@ -52,13 +75,15 @@ export function Router() {
         <Route path="/play/:hostId/:gameId">
           <App />
         </Route>
-        <Route path="/game-select">
-          <IncludedGames />
+        <Route path="/games">
+          {state.curScenario ? (
+            <Editor dispatch={dispatch} state={state} />
+          ) : (
+            <Games dispatch={dispatch} />
+          )}
         </Route>
         <Route path="/">
-          <React.Suspense fallback={null}>
-            <BaseRoute />
-          </React.Suspense>
+          {isWebBuild ? <Home /> : <Redirect to="games" />}
         </Route>
       </Switch>
       {showUpdateModal && (

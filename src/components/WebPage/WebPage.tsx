@@ -61,7 +61,7 @@ const MenuSpacer = styled.div({
 });
 
 const MenuJoinForm = styled.form({
-  margin: '0 0 0 1rem',
+  margin: '0 1rem 0 1rem',
   display: 'flex',
   flexDirection: 'row',
   '> input': {
@@ -101,7 +101,7 @@ const MenuLink = styled(Link)({
   fontSize: '1.5rem',
   fontWeight: 'normal',
   textDecoration: 'none',
-  margin: '0 1rem',
+  margin: '0 1rem 0 0',
   backgroundColor: primaryColor,
   color: '#fff',
   padding: '.5rem 1rem',
@@ -164,10 +164,7 @@ export function WebPage(props: Props) {
             Join Game
           </Button>
         </MenuJoinForm>
-        <MenuLink to="/game-select">
-          {isWebBuild ? 'Start New Game' : 'Included Games'}
-        </MenuLink>
-        {!isWebBuild && <MenuLink to="/">Custom Games</MenuLink>}
+        {isWebBuild && <MenuLink to="/games">Start New Game</MenuLink>}
       </Menu>
       {props.children}
       <Footer>&copy; Copyright {new Date().getFullYear()}</Footer>
