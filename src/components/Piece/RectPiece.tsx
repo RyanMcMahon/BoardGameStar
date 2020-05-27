@@ -7,12 +7,13 @@ import { RectTokenPiece } from '../../types';
 interface Props {
   onSelect?: () => void;
   onChange: (o: any) => void;
+  draggable?: boolean;
   isSelected?: boolean;
   piece: RectTokenPiece;
 }
 
 export function RectPiece(props: Props) {
-  const { isSelected, piece, onSelect, onChange } = props;
+  const { draggable, isSelected, piece, onSelect, onChange } = props;
   const objectRef = React.useRef<any>();
   const handleTransform = useTransformer({
     objectRef,
@@ -25,6 +26,7 @@ export function RectPiece(props: Props) {
         id={piece.id}
         x={piece.x}
         y={piece.y}
+        zIndex={piece.layer}
         width={piece.width}
         height={piece.height}
         rotation={piece.rotation}
@@ -32,7 +34,7 @@ export function RectPiece(props: Props) {
         onClick={onSelect}
         onTap={onSelect}
         ref={objectRef}
-        draggable
+        draggable={draggable}
         onDragMove={handleTransform}
         onTransform={handleTransform}
       />

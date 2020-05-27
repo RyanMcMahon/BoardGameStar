@@ -10,6 +10,7 @@ interface Props {
   assets: Assets;
   piece: DeckPiece;
   editingEnabled?: boolean;
+  draggable?: boolean;
   isSelected?: boolean;
   onSelect?: () => void;
   onChange: (o: any) => void;
@@ -22,6 +23,7 @@ export function Deck(props: Props) {
     piece,
     onSelect,
     assets,
+    draggable,
     isSelected,
     editingEnabled,
     onChange,
@@ -62,7 +64,8 @@ export function Deck(props: Props) {
     <Group
       x={piece.x}
       y={piece.y}
-      draggable
+      zIndex={piece.layer}
+      draggable={draggable}
       onDragMove={handleTransform}
       ref={groupRef}
     >

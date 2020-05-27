@@ -47,6 +47,7 @@ import { ControlsMenu, ControlsMenuItem } from '../ControlsMenu';
 import { DiceModal } from '../DiceModal';
 import { Chat } from '../Chat';
 import { SettingsModal } from '../SettingsModal';
+import { AppContext, initialState, appReducer } from './AppContext';
 // import { DeckPeekModal } from '../DeckPeekModal/DeckPeekModal';
 
 const MainContainer = styled.div({
@@ -154,6 +155,7 @@ const UnreadIcon = styled(FaCommentDots)({
 });
 
 export const App: React.FC = () => {
+  const [state, dispatch] = React.useReducer(appReducer, initialState);
   const { gameId = '', hostId = '' } = useParams();
   const {
     playerId,
@@ -552,14 +554,7 @@ export const App: React.FC = () => {
   ) as PlayerPiece[];
   const player = players.find(p => p.playerId === playerId);
 
-  const layers = board.reduce((agg: RenderPiece[][], pieceId: string) => {
-    const piece = pieces[pieceId];
-    if (piece) {
-      agg[piece.layer] = agg[piece.layer] || [];
-      agg[piece.layer].push(piece);
-    }
-    return agg;
-  }, []);
+  const boardPieces = board.map(id => pieces[id]);
 
   if (!gameId) {
     return <Redirect to="/" />;
@@ -568,140 +563,109 @@ export const App: React.FC = () => {
   return (
     <MainContainer>
       <AppContainer>
-        <Table ref={tableRef}>
-          {layers.map(
-            (layer, layerDepth) =>
-              layer &&
-              layer.length && (
-                <Layer key={layerDepth}>
-                  {layer.map(piece => {
-                    switch (piece.type) {
-                      // Board
-                      case 'board':
-                        return (
-                          <ImagePiece
-                            key={piece.id}
-                            assets={assets}
-                            piece={piece as BoardPiece}
-                          />
-                        );
+        <AppContext.Provider value={{ state, dispatch }}>
+          <Table ref={tableRef}>
+            <Layer>
+              {boardPieces.map(piece => (
+                <>
+                  {piece.type === 'board' && (
+                    <ImagePiece
+                      key={piece.id}
+                      assets={assets}
+                      piece={piece as BoardPiece}
+                    />
+                  )}
 
-                      // Deck
-                      case 'deck':
-                        return (
-                          <Deck
-                            key={piece.id}
-                            assets={assets}
-                            piece={piece as DeckPiece}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                            isSelected={piece.id === selectedPieceId}
-                            onSelect={handleSelectPiece(piece.id)}
-                            onDblClick={() => setDrawModalId(piece.id)}
-                          />
-                        );
+                  {piece.type === 'deck' && (
+                    <Deck
+                      key={piece.id}
+                      assets={assets}
+                      piece={piece as DeckPiece}
+                      draggable={state.globalDragEnabled}
+                      onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                      isSelected={piece.id === selectedPieceId}
+                      onSelect={handleSelectPiece(piece.id)}
+                      onDblClick={() => setDrawModalId(piece.id)}
+                    />
+                  )}
 
-                      // Board
-                      case 'card':
-                        return (
-                          <ImagePiece
-                            key={piece.id}
-                            assets={assets}
-                            piece={
-                              (piece.faceDown
-                                ? {
-                                    ...piece,
-                                    image: pieces[piece.deckId].image,
-                                  }
-                                : piece) as CardPiece
+                  {piece.type === 'card' && (
+                    <ImagePiece
+                      key={piece.id}
+                      assets={assets}
+                      piece={
+                        (piece.faceDown
+                          ? {
+                              ...piece,
+                              image: pieces[piece.deckId].image,
                             }
-                            draggable={true}
-                            isSelected={piece.id === selectedPieceId}
-                            onSelect={handleSelectPiece(piece.id)}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                            onDblClick={handlePickUpCard(piece.id)}
-                          />
-                        );
+                          : piece) as CardPiece
+                      }
+                      draggable={state.globalDragEnabled}
+                      isSelected={piece.id === selectedPieceId}
+                      onSelect={handleSelectPiece(piece.id)}
+                      onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                      onDblClick={handlePickUpCard(piece.id)}
+                    />
+                  )}
 
-                      // Image Token
-                      case 'image':
-                        return (
-                          <ImagePiece
-                            key={piece.id}
-                            assets={assets}
-                            piece={piece as ImageTokenPiece}
-                            draggable={true}
-                            isSelected={piece.id === selectedPieceId}
-                            onSelect={handleSelectPiece(piece.id)}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                          />
-                        );
+                  {piece.type === 'image' && (
+                    <ImagePiece
+                      key={piece.id}
+                      assets={assets}
+                      piece={piece as ImageTokenPiece}
+                      draggable={state.globalDragEnabled}
+                      isSelected={piece.id === selectedPieceId}
+                      onSelect={handleSelectPiece(piece.id)}
+                      onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                    />
+                  )}
 
-                      // Rectangle
-                      case 'rect':
-                        return (
-                          <RectPiece
-                            key={piece.id}
-                            piece={piece as RectTokenPiece}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                          />
-                        );
+                  {piece.type === 'rect' && (
+                    <RectPiece
+                      key={piece.id}
+                      piece={piece as RectTokenPiece}
+                      draggable={state.globalDragEnabled}
+                      onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                    />
+                  )}
 
-                      // Circle
-                      case 'circle':
-                        return (
-                          <CirclePiece
-                            key={piece.id}
-                            piece={piece as CircleTokenPiece}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                          />
-                        );
+                  {piece.type === 'circle' && (
+                    <CirclePiece
+                      key={piece.id}
+                      piece={piece as CircleTokenPiece}
+                      draggable={state.globalDragEnabled}
+                      onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                    />
+                  )}
 
-                      // Player
-                      case 'player':
-                        return piece.playerId ? (
-                          <PlayArea
-                            key={piece.id}
-                            piece={piece as PlayerPiece}
-                            handCount={handCounts[piece.playerId]}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                          />
-                        ) : null;
+                  {piece.type === 'player' && piece.playerId && (
+                    <PlayArea
+                      key={piece.id}
+                      piece={piece as PlayerPiece}
+                      handCount={handCounts[piece.playerId]}
+                      draggable={state.globalDragEnabled}
+                      onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                    />
+                  )}
 
-                      // Dice
-                      case 'die':
-                        return (
-                          <Die
-                            key={piece.id}
-                            draggable={true}
-                            piece={piece as DicePiece}
-                            isSelected={piece.id === selectedPieceId}
-                            onSelect={handleSelectPiece(piece.id)}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                          />
-                        );
-
-                      default:
-                        return null;
-                    }
-                  })}
-                </Layer>
-              )
-          )}
-        </Table>
+                  {piece.type === 'die' && (
+                    <Die
+                      key={piece.id}
+                      draggable={state.globalDragEnabled}
+                      piece={piece as DicePiece}
+                      isSelected={piece.id === selectedPieceId}
+                      onSelect={handleSelectPiece(piece.id)}
+                      onChange={(p: any) =>
+                        handleUpdatePiece({ ...piece, ...p })
+                      }
+                    />
+                  )}
+                </>
+              ))}
+            </Layer>
+          </Table>
+        </AppContext.Provider>
 
         <TogglePlayerContainerButton
           onClick={() => setShowPlayerControls(!showPlayerControls)}

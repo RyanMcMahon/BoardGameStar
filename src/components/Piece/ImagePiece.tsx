@@ -40,6 +40,7 @@ export const ImagePiece = React.memo((props: Props) => {
         image={image}
         x={piece.x}
         y={piece.y}
+        zIndex={piece.layer}
         width={piece.width}
         height={piece.height}
         rotation={piece.rotation}

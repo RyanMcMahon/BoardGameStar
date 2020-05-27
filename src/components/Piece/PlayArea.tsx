@@ -6,13 +6,14 @@ import { useTransformer } from './PieceTransformer';
 interface Props {
   piece: PlayerOption;
   handCount: number;
+  draggable?: boolean;
   isSelected?: boolean;
   onChange: (o: any) => void;
   onSelect?: () => void;
 }
 
 export function PlayArea(props: Props) {
-  const { piece, handCount, isSelected, onChange, onSelect } = props;
+  const { piece, handCount, draggable, isSelected, onChange, onSelect } = props;
   const objectRef = React.useRef<any>();
   const handleTransform = useTransformer({
     objectRef,
@@ -34,7 +35,7 @@ export function PlayArea(props: Props) {
         ref={objectRef}
         x={piece.x}
         y={piece.y}
-        draggable
+        draggable={draggable}
         onDragMove={handleTransform}
         onClick={onSelect}
         onTap={onSelect}

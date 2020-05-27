@@ -13,12 +13,7 @@ import { isWebBuild } from '../../utils/meta';
 import { Games } from '../Games';
 import { Home } from '../Home';
 import { Editor, editorReducer } from '../Editor';
-import {
-  EditorAction,
-  PlayerOption,
-  EditorState,
-  AnyPieceOption,
-} from '../../types';
+import { EditorAction, EditorState } from '../../types';
 
 interface Props {
   children: React.ReactNode;
