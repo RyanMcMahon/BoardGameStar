@@ -4,7 +4,13 @@ import Peer from 'peerjs';
 
 import { getInstanceId, getIdentity } from './identity';
 
-import { RenderPiece, GameEvent, ClientEvent, ChatEvent } from '../types';
+import {
+  RenderPiece,
+  GameEvent,
+  ClientEvent,
+  ChatEvent,
+  EditorState,
+} from '../types';
 import { createPeer } from './peer';
 
 let tempAssets: {
@@ -26,6 +32,7 @@ export function useGameClient(gameId: string, hostId: string) {
     {}
   );
   const [pendingAssets, setPendingAssets] = React.useState<string[]>([]);
+  const [config, setConfig] = React.useState<EditorState>();
   const [chat, setChat] = React.useState<ChatEvent[]>([]);
   const [board, setBoard] = React.useState<string[]>([]);
   const [myHand, setMyHand] = React.useState<string[]>([]);
@@ -71,7 +78,15 @@ export function useGameClient(gameId: string, hostId: string) {
       }
 
       case 'join': {
-        const { assets: a, hand, board: b, pieces: p, chat: c } = data;
+        const {
+          assets: a,
+          config: cfg,
+          hand,
+          board: b,
+          pieces: p,
+          chat: c,
+        } = data;
+        setConfig(cfg);
         setPieces(p);
         setMyHand(hand);
         setChat(c);
@@ -224,6 +239,7 @@ export function useGameClient(gameId: string, hostId: string) {
   return {
     playerId,
     conn,
+    config,
     chat,
     board,
     pieces,

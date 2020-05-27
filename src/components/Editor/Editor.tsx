@@ -123,7 +123,7 @@ export function Editor(props: Props) {
 
   const handleSave = () => {
     const configFile = `module.exports = ${JSON.stringify(state, null, '\t')};`;
-    const outPath = `./games/${state.gameName}`;
+    const outPath = `./games/${state.name}`;
 
     try {
       fs.mkdirSync(outPath, { recursive: true });
@@ -155,7 +155,7 @@ export function Editor(props: Props) {
   const handleUpdateGameName = (e: React.FormEvent<HTMLInputElement>) => {
     dispatch({
       type: 'update_game_name',
-      gameName: e.currentTarget.value || state.gameName,
+      name: e.currentTarget.value || state.name,
     });
   };
 
@@ -461,11 +461,7 @@ export function Editor(props: Props) {
 
       <ControlsContainer>
         <label>New Game</label>
-        <input
-          type="text"
-          value={state.gameName}
-          onChange={handleUpdateGameName}
-        />
+        <input type="text" value={state.name} onChange={handleUpdateGameName} />
 
         <label>Scenarios</label>
         {Object.values(state.scenarios).length > 1 && (
@@ -509,7 +505,7 @@ export function Editor(props: Props) {
         {/* <input
           type="number"
           min={2}
-          value={state.gameName}
+          value={state.name}
           onChange={handleUpdatePlayerCount}
         /> */}
 

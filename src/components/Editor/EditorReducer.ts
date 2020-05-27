@@ -7,11 +7,14 @@ import {
   AnyPieceOption,
 } from '../../types';
 
-export function editorReducer(state: EditorState, action: EditorAction) {
+export function editorReducer(
+  state: EditorState,
+  action: EditorAction
+): EditorState {
   switch (action.type) {
     case 'create_game': {
       const { editorConfig } = action;
-      const { gameName } = editorConfig;
+      const { name } = editorConfig;
       const player1: PlayerOption = {
         id: slug.nice(),
         type: 'player' as const,
@@ -43,7 +46,9 @@ export function editorReducer(state: EditorState, action: EditorAction) {
         players: [player1.id, player2.id],
       };
       return {
-        gameName,
+        name,
+        version: 1,
+        id: slug.nice(),
         curScenario: scenario.id,
         scenarios: {
           [scenario.id]: scenario,
@@ -58,7 +63,7 @@ export function editorReducer(state: EditorState, action: EditorAction) {
     case 'update_game_name': {
       return {
         ...state,
-        gameName: action.gameName,
+        name: action.name,
       };
     }
 

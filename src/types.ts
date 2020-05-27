@@ -7,7 +7,7 @@ export interface DiceSet {
 }
 
 export interface EditorConfig {
-  gameName: string;
+  name: string;
 }
 
 export interface ScenarioOption {
@@ -81,8 +81,11 @@ export type AnyPieceOption =
   | RectTokenOption;
 
 export interface EditorState {
-  id?: string;
-  gameName: string;
+  id: string;
+  playerId?: string;
+  version: number;
+  disableSync?: boolean;
+  name: string;
   description?: string;
   curScenario: string;
   scenarios: {
@@ -93,6 +96,7 @@ export interface EditorState {
   };
 }
 export interface GameConfig extends EditorState {
+  store: 'included' | 'file' | 'browser';
   sendAssets: boolean;
   loadAssets: () => Assets;
 }
@@ -129,7 +133,7 @@ export interface RemoveScenarioAction {
 
 export interface UpdateGameNameAction {
   type: 'update_game_name';
-  gameName: string;
+  name: string;
 }
 
 export interface AddPieceAction {
@@ -244,6 +248,7 @@ export interface ContextMenuItem {
 
 export interface JoinEvent {
   event: 'join';
+  config: EditorState;
   hand: string[];
   board: string[];
   pieces: Pieces;

@@ -1,5 +1,10 @@
-export const Checkers = {
-  gameName: 'Checkers',
+import { EditorState } from '../types';
+
+export const Checkers: EditorState = {
+  version: 1,
+  id: 'checkers',
+  disableSync: true,
+  name: 'Checkers',
   description: `
   Sometimes called "The thinking man's chutes and ladders", checkers is simulated genocide that's fun for the whole family!
   `,

@@ -188,10 +188,15 @@ export function createNewGame(
         playArea.delta++;
         playArea.name = player.name;
 
+        const syncConfig = { ...config };
+        delete syncConfig.loadAssets;
+        delete syncConfig.store;
+
         conn.send({
           pieces,
           chat,
           event: 'join',
+          config: syncConfig,
           assets: sendAssets ? assets : Object.keys(assets),
           hand: player.hand,
           board: game.board,

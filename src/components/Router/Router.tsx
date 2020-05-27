@@ -41,7 +41,9 @@ export function Router() {
   >(
     editorReducer,
     {
-      gameName: '',
+      version: 1,
+      id: '',
+      name: '',
       curScenario: '',
       scenarios: {},
       pieces: {},

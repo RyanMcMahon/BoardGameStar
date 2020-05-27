@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import * as _ from 'lodash';
 import { useParams, Link, Redirect } from 'react-router-dom';
 import {
+  FaSlidersH,
   FaCommentDots,
   FaEye,
   FaTimes,
@@ -44,6 +45,7 @@ import { PlayArea } from '../Piece/PlayArea';
 import { ControlsMenu, ControlsMenuItem } from '../ControlsMenu';
 import { DiceModal } from '../DiceModal';
 import { Chat } from '../Chat';
+import { SettingsModal } from '../SettingsModal';
 // import { DeckPeekModal } from '../DeckPeekModal/DeckPeekModal';
 
 const MainContainer = styled.div({
@@ -155,6 +157,7 @@ export const App: React.FC = () => {
   const {
     playerId,
     conn,
+    config,
     chat,
     pieces,
     board,
@@ -177,6 +180,9 @@ export const App: React.FC = () => {
     true
   );
   const [drawModalId, setDrawModalId] = React.useState<string>('');
+  const [showSettingsModal, setShowSettingsModal] = React.useState<boolean>(
+    false
+  );
   const [showRenameModal, setShowRenameModal] = React.useState<boolean>(false);
   const [showInviteModal, setShowInviteModal] = React.useState<boolean>(false);
   const [showDiceModal, setShowDiceModal] = React.useState<boolean>(false);
@@ -316,6 +322,11 @@ export const App: React.FC = () => {
         //   label: 'Reset Zoom',
         //   fn: () => tableRef.current && tableRef.current.resetZoom(),
         // },
+        {
+          icon: <FaSlidersH />,
+          label: 'Settings',
+          fn: () => setShowSettingsModal(true),
+        },
       ]
     );
     return items;
@@ -729,7 +740,7 @@ export const App: React.FC = () => {
                 Invite
               </Button>
 
-              <Link to="/" className="u-pull-right">
+              <Link to="/games" className="u-pull-right">
                 <Button design="danger">Leave Game</Button>
               </Link>
             </PlayerLinksContainer>
@@ -783,6 +794,15 @@ export const App: React.FC = () => {
         />
       )}
 
+      {showSettingsModal && (
+        <SettingsModal
+          playerId={playerId}
+          config={config}
+          assets={assets}
+          onClose={() => setShowSettingsModal(false)}
+        />
+      )}
+
       {/* {(peekingCards.length || peekingDiscardedCards.length) && (
         <DeckPeekModal
           pieces={pieces}
@@ -808,7 +828,7 @@ export const App: React.FC = () => {
                 </LoadingFactSubheader>
               </>
             )}
-            <Link to="/">Leave Game</Link>
+            <Link to="/games">Leave Game</Link>
           </LoadingContainer>
         </LoadingPage>
       )}

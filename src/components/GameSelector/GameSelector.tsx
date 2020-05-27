@@ -3,13 +3,16 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 
 import { GameConfig } from '../../types';
+import { deleteGame } from '../../utils/store';
 import { Button } from '../../utils/style';
 import styled from 'styled-components';
+import { useHistory } from 'react-router-dom';
 
 interface Props {
-  gameName: string;
+  name: string;
   config: GameConfig;
   onGameSelect: (config: GameConfig) => void;
+  onReloadConfigs: () => void;
 }
 
 const GameHeader = styled.h3({
@@ -23,8 +26,12 @@ const Select = styled.select({
   top: '1px',
 });
 
+const DeleteButton = styled(Button)({
+  marginLeft: '1rem',
+});
+
 export function GameSelector(props: Props) {
-  const { config, gameName } = props;
+  const { config, name, onReloadConfigs } = props;
   const scenarioRef = React.createRef<HTMLSelectElement>();
 
   const handleGameSelect = () => {
@@ -40,7 +47,7 @@ export function GameSelector(props: Props) {
 
   return (
     <>
-      <GameHeader>{gameName}</GameHeader>
+      <GameHeader>{name}</GameHeader>
       <ReactMarkdown source={config.description} />
       {_.size(config.scenarios) > 1 && (
         <Select defaultValue={config.curScenario} ref={scenarioRef}>
@@ -54,6 +61,17 @@ export function GameSelector(props: Props) {
       <Button design="primary" onClick={handleGameSelect}>
         Play
       </Button>
+      {config.store === 'browser' && (
+        <DeleteButton
+          design="danger"
+          onClick={() => {
+            deleteGame(config.id);
+            onReloadConfigs();
+          }}
+        >
+          Delete
+        </DeleteButton>
+      )}
     </>
   );
 }
