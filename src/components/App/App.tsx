@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import * as _ from 'lodash';
 import { useParams, Link, Redirect } from 'react-router-dom';
 import {
+  FaExpand,
   FaSlidersH,
   FaCommentDots,
   FaEye,
@@ -322,6 +323,19 @@ export const App: React.FC = () => {
         //   label: 'Reset Zoom',
         //   fn: () => tableRef.current && tableRef.current.resetZoom(),
         // },
+        {
+          icon: <FaExpand />,
+          label: 'Toggle Fullscreen',
+          fn: () => {
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen();
+            } else {
+              if (document.exitFullscreen) {
+                document.exitFullscreen();
+              }
+            }
+          },
+        },
         {
           icon: <FaSlidersH />,
           label: 'Settings',
