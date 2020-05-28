@@ -7,7 +7,7 @@ export interface DiceSet {
 }
 
 export interface EditorConfig {
-  gameName: string;
+  name: string;
 }
 
 export interface ScenarioOption {
@@ -81,7 +81,11 @@ export type AnyPieceOption =
   | RectTokenOption;
 
 export interface EditorState {
-  gameName: string;
+  id: string;
+  playerId?: string;
+  version: number;
+  disableSync?: boolean;
+  name: string;
   description?: string;
   curScenario: string;
   scenarios: {
@@ -91,7 +95,11 @@ export interface EditorState {
     [id: string]: AnyPieceOption;
   };
 }
-export type GameConfig = EditorState;
+export interface GameConfig extends EditorState {
+  store: 'included' | 'file' | 'browser';
+  sendAssets: boolean;
+  loadAssets: () => Assets;
+}
 
 export interface CreateGameAction {
   type: 'create_game';
@@ -125,7 +133,7 @@ export interface RemoveScenarioAction {
 
 export interface UpdateGameNameAction {
   type: 'update_game_name';
-  gameName: string;
+  name: string;
 }
 
 export interface AddPieceAction {
@@ -240,9 +248,11 @@ export interface ContextMenuItem {
 
 export interface JoinEvent {
   event: 'join';
+  config: EditorState;
   hand: string[];
   board: string[];
   pieces: Pieces;
+  chat: ChatEvent[];
   assets:
     | string[]
     | {
@@ -397,7 +407,14 @@ export interface DeckPeekResultsEvent {
   discardedCardIds: string[];
 }
 
+export interface ChatEvent {
+  event: 'chat';
+  playerId: string;
+  message: string;
+}
+
 export type ClientEvent =
+  | ChatEvent
   | RollDiceEvent
   | DrawCardsEvent
   | DrawCardsToTableEvent
@@ -417,6 +434,7 @@ export type ClientEvent =
   | UpdatePieceEvent;
 
 export type GameEvent =
+  | ChatEvent
   | AddToBoardEvent
   | DiceCountEvent
   | SetDiceEvent

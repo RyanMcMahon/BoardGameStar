@@ -105,7 +105,7 @@ export function Home() {
                 {!['Mac OS', 'Linux', 'Windows 10'].includes(
                   browser?.os || ''
                 ) && (
-                  <Link to="/game-select">
+                  <Link to="/games">
                     <Button design="success">Play In Browser</Button>
                   </Link>
                 )}

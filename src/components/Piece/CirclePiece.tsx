@@ -7,11 +7,12 @@ interface Props {
   onSelect?: () => void;
   onChange: (o: any) => void;
   isSelected?: boolean;
+  draggable?: boolean;
   piece: CircleTokenPiece;
 }
 
 export const CirclePiece = React.memo((props: Props) => {
-  const { isSelected, piece, onSelect, onChange } = props;
+  const { draggable, isSelected, piece, onSelect, onChange } = props;
   const objectRef = React.useRef<any>();
   const trRef = React.createRef<any>();
 
@@ -48,10 +49,11 @@ export const CirclePiece = React.memo((props: Props) => {
         fill={piece.color}
         x={piece.x}
         y={piece.y}
+        zIndex={piece.layer}
         onClick={onSelect}
         onTap={onSelect}
         ref={objectRef}
-        draggable
+        draggable={draggable}
         onDragMove={handleTransform}
         onTransform={handleTransform}
       />

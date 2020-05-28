@@ -1,5 +1,10 @@
-export const Chess = {
-  gameName: 'Chess',
+import { EditorState } from '../types';
+
+export const Chess: EditorState = {
+  version: 1,
+  id: 'chess',
+  disableSync: true,
+  name: 'Chess',
   description: `
   The classic game of horseys and castles.
   `,

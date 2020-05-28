@@ -1,4 +1,5 @@
 import React from 'react';
+import { FaSortDown } from 'react-icons/fa';
 import {
   ButtonGroup,
   Button,
@@ -54,7 +55,7 @@ export function DropdownButton(props: Props) {
           onClick={() => setShowDropdown(!showDropdown)}
           disabled={props.disabled}
         >
-          &#x2BC6;
+          <FaSortDown />
         </Button>
       </ButtonGroup>
       {showDropdown && (

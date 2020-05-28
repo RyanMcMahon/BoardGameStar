@@ -4,7 +4,13 @@ import Peer from 'peerjs';
 
 import { getInstanceId, getIdentity } from './identity';
 
-import { RenderPiece, GameEvent, ClientEvent } from '../types';
+import {
+  RenderPiece,
+  GameEvent,
+  ClientEvent,
+  ChatEvent,
+  EditorState,
+} from '../types';
 import { createPeer } from './peer';
 
 let tempAssets: {
@@ -26,6 +32,8 @@ export function useGameClient(gameId: string, hostId: string) {
     {}
   );
   const [pendingAssets, setPendingAssets] = React.useState<string[]>([]);
+  const [config, setConfig] = React.useState<EditorState>();
+  const [chat, setChat] = React.useState<ChatEvent[]>([]);
   const [board, setBoard] = React.useState<string[]>([]);
   const [myHand, setMyHand] = React.useState<string[]>([]);
   const [handCounts, setHandCounts] = React.useState<{ [key: string]: number }>(
@@ -70,9 +78,18 @@ export function useGameClient(gameId: string, hostId: string) {
       }
 
       case 'join': {
-        const { assets: a, hand, board: b, pieces: p } = data;
+        const {
+          assets: a,
+          config: cfg,
+          hand,
+          board: b,
+          pieces: p,
+          chat: c,
+        } = data;
+        setConfig(cfg);
         setPieces(p);
         setMyHand(hand);
+        setChat(c);
         setBoard(prevBoard => [...b, ...prevBoard]);
         if (Array.isArray(a)) {
           setPendingAssets(a);
@@ -80,18 +97,23 @@ export function useGameClient(gameId: string, hostId: string) {
           // Fake loader to give time to read "Facts"
           setTimeout(
             () => setPercentLoaded(_.random(20, 30)),
-            _.random(500, 1200)
+            _.random(200, 600)
           );
           setTimeout(
             () => setPercentLoaded(_.random(50, 70)),
-            _.random(1500, 2000)
+            _.random(800, 1200)
           );
           setTimeout(
             () => setPercentLoaded(_.random(80, 99)),
-            _.random(2200, 3000)
+            _.random(1200, 2000)
           );
           setTimeout(() => setAssets(a), _.random(3100, 3500));
         }
+        break;
+      }
+
+      case 'chat': {
+        setChat(c => [...c, data]);
         break;
       }
 
@@ -217,6 +239,8 @@ export function useGameClient(gameId: string, hostId: string) {
   return {
     playerId,
     conn,
+    config,
+    chat,
     board,
     pieces,
     setPieces,

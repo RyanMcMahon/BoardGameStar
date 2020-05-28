@@ -79,6 +79,7 @@ export const Die = React.memo((props: Props) => {
         onDragMove={handleTransform}
         x={piece.x}
         y={piece.y}
+        zIndex={piece.layer}
         ref={groupRef}
         onClick={onSelect}
         onTap={onSelect}

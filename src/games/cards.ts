@@ -1,5 +1,10 @@
-export const Cards = {
-  gameName: 'Playing Cards',
+import { EditorState } from '../types';
+
+export const Cards: EditorState = {
+  version: 1,
+  id: 'cards',
+  disableSync: true,
+  name: 'Playing Cards',
   description: `
   There are 57,939 card games, over 9 of which are playable on Earth!
   `,
@@ -848,6 +853,7 @@ export const Cards = {
     'bJX-OScyR32wcqiFne6YwQ': {
       id: 'bJX-OScyR32wcqiFne6YwQ',
       type: 'player',
+      name: 'player',
       width: 261.904296875,
       height: 32,
       color: '#2ecc71',
@@ -859,6 +865,7 @@ export const Cards = {
     T3ckrjAXTQaNj3xTrS093g: {
       id: 'T3ckrjAXTQaNj3xTrS093g',
       type: 'player',
+      name: 'player',
       width: 261.904296875,
       height: 32,
       color: '#3498db',
@@ -870,6 +877,7 @@ export const Cards = {
     'Rzh6-Il6SxqadqnV316SPw': {
       id: 'Rzh6-Il6SxqadqnV316SPw',
       type: 'player',
+      name: 'player',
       width: 261.904296875,
       height: 32,
       color: '#9b59b6',
@@ -881,6 +889,7 @@ export const Cards = {
     PyOEyegPQii2faY8d8LsQw: {
       id: 'PyOEyegPQii2faY8d8LsQw',
       type: 'player',
+      name: 'player',
       width: 261.904296875,
       height: 32,
       color: '#34495e',

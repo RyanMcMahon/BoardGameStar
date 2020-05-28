@@ -16,9 +16,9 @@ export function CreateGameModal(props: Props) {
       return;
     }
 
-    const gameName = nameRef.current.value.trim();
+    const name = nameRef.current.value.trim();
     props.onCreate({
-      gameName,
+      name,
     });
   };
 

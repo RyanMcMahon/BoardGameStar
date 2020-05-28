@@ -4,14 +4,13 @@ import styled from 'styled-components';
 import { maxMobileWidth, theShadow } from '../../utils/style';
 
 export interface ControlsMenuItem {
-  icon: string | ReactNode;
+  icon: ReactNode;
   label: string;
   fn: () => void;
 }
 
 interface Props {
   items: ControlsMenuItem[];
-  // piece: AnyPiece | DeletedPiece | undefined;
 }
 
 const ControlsContainer = styled.div({
@@ -41,6 +40,8 @@ const Icon = styled.span({
   width: '30px',
   marginRight: '.5rem',
   textAlign: 'center',
+  position: 'relative',
+  top: '3px',
 });
 
 const ExpandIcon = styled.span({

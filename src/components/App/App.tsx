@@ -2,6 +2,19 @@ import React from 'react';
 import styled from 'styled-components';
 import * as _ from 'lodash';
 import { useParams, Link, Redirect } from 'react-router-dom';
+import {
+  FaExpand,
+  FaSlidersH,
+  FaCommentDots,
+  FaEye,
+  FaTimes,
+  FaLevelUpAlt,
+  FaPlus,
+  FaMinus,
+  FaDiceFive,
+  FaRandom,
+  FaSync,
+} from 'react-icons/fa';
 
 import { useGameClient } from '../../utils/client';
 import { Button, breakPoints, maxMobileWidth } from '../../utils/style';
@@ -32,6 +45,9 @@ import { ImagePiece, Deck, RectPiece, CirclePiece, Die } from '../Piece';
 import { PlayArea } from '../Piece/PlayArea';
 import { ControlsMenu, ControlsMenuItem } from '../ControlsMenu';
 import { DiceModal } from '../DiceModal';
+import { Chat } from '../Chat';
+import { SettingsModal } from '../SettingsModal';
+import { AppContext, initialState, appReducer } from './AppContext';
 // import { DeckPeekModal } from '../DeckPeekModal/DeckPeekModal';
 
 const MainContainer = styled.div({
@@ -128,11 +144,24 @@ const FailedConnection = styled.h4({
   color: '#e74c3c',
 });
 
+const UnreadIcon = styled(FaCommentDots)({
+  // display: 'inline-block',
+  // textAlign: 'center',
+  color: '#e74c3c',
+  // color: '#fff',
+  // height: '20px',
+  // width: '20px',
+  // borderRadius: '20px',
+});
+
 export const App: React.FC = () => {
+  const [state, dispatch] = React.useReducer(appReducer, initialState);
   const { gameId = '', hostId = '' } = useParams();
   const {
     playerId,
     conn,
+    config,
+    chat,
     pieces,
     board,
     myHand,
@@ -154,9 +183,14 @@ export const App: React.FC = () => {
     true
   );
   const [drawModalId, setDrawModalId] = React.useState<string>('');
+  const [showSettingsModal, setShowSettingsModal] = React.useState<boolean>(
+    false
+  );
   const [showRenameModal, setShowRenameModal] = React.useState<boolean>(false);
   const [showInviteModal, setShowInviteModal] = React.useState<boolean>(false);
   const [showDiceModal, setShowDiceModal] = React.useState<boolean>(false);
+  const [lastReadChat, setLastReadChat] = React.useState<number>(0);
+  const [showChat, setShowChat] = React.useState<boolean>(false);
   const [showControlsModal, setShowControlsModal] = React.useState<boolean>(
     false
   );
@@ -171,10 +205,25 @@ export const App: React.FC = () => {
     }
   }, []);
 
+  React.useEffect(() => {
+    if (showChat) {
+      setLastReadChat(chat.length);
+    }
+  }, [chat.length, showChat]);
+
   const pieceControls = (
     piece: RenderPiece | undefined
   ): ControlsMenuItem[] => {
-    const items = [];
+    const items = [
+      {
+        icon: chat.length > lastReadChat ? <UnreadIcon /> : <FaCommentDots />,
+        label:
+          chat.length > lastReadChat
+            ? `Chat (${chat.length - lastReadChat})`
+            : `Chat`,
+        fn: () => setShowChat(true),
+      },
+    ];
 
     if (piece) {
       switch (piece.type) {
@@ -183,7 +232,7 @@ export const App: React.FC = () => {
             items.push(
               ...[
                 {
-                  icon: '👁',
+                  icon: <FaEye />,
                   label: 'Reveal',
                   fn: () => {}, // TODO
                 },
@@ -193,7 +242,7 @@ export const App: React.FC = () => {
             items.push(
               ...[
                 {
-                  icon: '🞪',
+                  icon: <FaTimes />,
                   label: 'Remove',
                   fn: () =>
                     handleUpdatePiece({ id: piece.id, type: 'deleted' }),
@@ -207,7 +256,7 @@ export const App: React.FC = () => {
           items.push(
             ...[
               {
-                icon: '⟳',
+                icon: <FaSync />,
                 label: 'Flip Card',
                 fn: () =>
                   handleUpdatePiece({ ...piece, faceDown: !piece.faceDown }),
@@ -220,25 +269,25 @@ export const App: React.FC = () => {
           items.push(
             ...[
               {
-                icon: '⤴',
+                icon: <FaLevelUpAlt />,
                 label: 'Draw Cards',
                 fn: () => setDrawModalId(piece.id),
               },
               // TODO
               // {
-              //   icon: '👁',
+              //   icon: 'FaEye',
               //   label: 'Peek At Deck',
               //   fn: () => {
               //     handlePeekAtDeck(piece.id, true);
               //   },
               // },
               {
-                icon: '🗘',
+                icon: <FaRandom />,
                 label: 'Shuffle Discarded',
                 fn: () => handleShuffleDiscarded(piece.id),
               },
               {
-                icon: '🞪',
+                icon: <FaTimes />,
                 label: 'Discard Played Cards',
                 fn: () => handleDiscardPlayed(piece.id),
               },
@@ -250,7 +299,7 @@ export const App: React.FC = () => {
       items.push(
         ...[
           {
-            icon: '⚄',
+            icon: <FaDiceFive />,
             label: 'Roll Dice',
             fn: () => setShowDiceModal(true),
           },
@@ -261,21 +310,39 @@ export const App: React.FC = () => {
     items.push(
       ...[
         {
-          icon: '🞤',
+          icon: <FaPlus />,
           label: 'Zoom In',
           fn: () => tableRef.current && tableRef.current.zoomIn(),
         },
         {
-          icon: '‒',
+          icon: <FaMinus />,
           label: 'Zoom Out',
           fn: () => tableRef.current && tableRef.current.zoomOut(),
         },
         // TODO
         // {
-        //   icon: '⌖',
+        //   icon: 'FaCrosshair',
         //   label: 'Reset Zoom',
         //   fn: () => tableRef.current && tableRef.current.resetZoom(),
         // },
+        {
+          icon: <FaExpand />,
+          label: 'Toggle Fullscreen',
+          fn: () => {
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen();
+            } else {
+              if (document.exitFullscreen) {
+                document.exitFullscreen();
+              }
+            }
+          },
+        },
+        {
+          icon: <FaSlidersH />,
+          label: 'Settings',
+          fn: () => setShowSettingsModal(true),
+        },
       ]
     );
     return items;
@@ -450,6 +517,16 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleOnChat = (message: string) => {
+    if (conn) {
+      conn.send({
+        playerId,
+        message,
+        event: 'chat',
+      });
+    }
+  };
+
   const handleSelectPiece = (id: string) => () => {
     if (id === selectedPieceId) {
       setSelectedPieceId(null);
@@ -472,18 +549,12 @@ export const App: React.FC = () => {
     }
   }, [conn, handleUpdatePieceUnthrottled]);
 
-  const player = Object.values(pieces).find(
-    p => p.type === 'player' && p.playerId === playerId
-  );
+  const players = Object.values(pieces).filter(
+    p => p.type === 'player'
+  ) as PlayerPiece[];
+  const player = players.find(p => p.playerId === playerId);
 
-  const layers = board.reduce((agg: RenderPiece[][], pieceId: string) => {
-    const piece = pieces[pieceId];
-    if (piece) {
-      agg[piece.layer] = agg[piece.layer] || [];
-      agg[piece.layer].push(piece);
-    }
-    return agg;
-  }, []);
+  const boardPieces = board.map(id => pieces[id]);
 
   if (!gameId) {
     return <Redirect to="/" />;
@@ -492,140 +563,109 @@ export const App: React.FC = () => {
   return (
     <MainContainer>
       <AppContainer>
-        <Table ref={tableRef}>
-          {layers.map(
-            (layer, layerDepth) =>
-              layer &&
-              layer.length && (
-                <Layer key={layerDepth}>
-                  {layer.map(piece => {
-                    switch (piece.type) {
-                      // Board
-                      case 'board':
-                        return (
-                          <ImagePiece
-                            key={piece.id}
-                            assets={assets}
-                            piece={piece as BoardPiece}
-                          />
-                        );
+        <AppContext.Provider value={{ state, dispatch }}>
+          <Table ref={tableRef}>
+            <Layer>
+              {boardPieces.map(piece => (
+                <>
+                  {piece.type === 'board' && (
+                    <ImagePiece
+                      key={piece.id}
+                      assets={assets}
+                      piece={piece as BoardPiece}
+                    />
+                  )}
 
-                      // Deck
-                      case 'deck':
-                        return (
-                          <Deck
-                            key={piece.id}
-                            assets={assets}
-                            piece={piece as DeckPiece}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                            isSelected={piece.id === selectedPieceId}
-                            onSelect={handleSelectPiece(piece.id)}
-                            onDblClick={() => setDrawModalId(piece.id)}
-                          />
-                        );
+                  {piece.type === 'deck' && (
+                    <Deck
+                      key={piece.id}
+                      assets={assets}
+                      piece={piece as DeckPiece}
+                      draggable={state.globalDragEnabled}
+                      onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                      isSelected={piece.id === selectedPieceId}
+                      onSelect={handleSelectPiece(piece.id)}
+                      onDblClick={() => setDrawModalId(piece.id)}
+                    />
+                  )}
 
-                      // Board
-                      case 'card':
-                        return (
-                          <ImagePiece
-                            key={piece.id}
-                            assets={assets}
-                            piece={
-                              (piece.faceDown
-                                ? {
-                                    ...piece,
-                                    image: pieces[piece.deckId].image,
-                                  }
-                                : piece) as CardPiece
+                  {piece.type === 'card' && (
+                    <ImagePiece
+                      key={piece.id}
+                      assets={assets}
+                      piece={
+                        (piece.faceDown
+                          ? {
+                              ...piece,
+                              image: pieces[piece.deckId].image,
                             }
-                            draggable={true}
-                            isSelected={piece.id === selectedPieceId}
-                            onSelect={handleSelectPiece(piece.id)}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                            onDblClick={handlePickUpCard(piece.id)}
-                          />
-                        );
+                          : piece) as CardPiece
+                      }
+                      draggable={state.globalDragEnabled}
+                      isSelected={piece.id === selectedPieceId}
+                      onSelect={handleSelectPiece(piece.id)}
+                      onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                      onDblClick={handlePickUpCard(piece.id)}
+                    />
+                  )}
 
-                      // Image Token
-                      case 'image':
-                        return (
-                          <ImagePiece
-                            key={piece.id}
-                            assets={assets}
-                            piece={piece as ImageTokenPiece}
-                            draggable={true}
-                            isSelected={piece.id === selectedPieceId}
-                            onSelect={handleSelectPiece(piece.id)}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                          />
-                        );
+                  {piece.type === 'image' && (
+                    <ImagePiece
+                      key={piece.id}
+                      assets={assets}
+                      piece={piece as ImageTokenPiece}
+                      draggable={state.globalDragEnabled}
+                      isSelected={piece.id === selectedPieceId}
+                      onSelect={handleSelectPiece(piece.id)}
+                      onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                    />
+                  )}
 
-                      // Rectangle
-                      case 'rect':
-                        return (
-                          <RectPiece
-                            key={piece.id}
-                            piece={piece as RectTokenPiece}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                          />
-                        );
+                  {piece.type === 'rect' && (
+                    <RectPiece
+                      key={piece.id}
+                      piece={piece as RectTokenPiece}
+                      draggable={state.globalDragEnabled}
+                      onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                    />
+                  )}
 
-                      // Circle
-                      case 'circle':
-                        return (
-                          <CirclePiece
-                            key={piece.id}
-                            piece={piece as CircleTokenPiece}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                          />
-                        );
+                  {piece.type === 'circle' && (
+                    <CirclePiece
+                      key={piece.id}
+                      piece={piece as CircleTokenPiece}
+                      draggable={state.globalDragEnabled}
+                      onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                    />
+                  )}
 
-                      // Player
-                      case 'player':
-                        return piece.playerId ? (
-                          <PlayArea
-                            key={piece.id}
-                            piece={piece as PlayerPiece}
-                            handCount={handCounts[piece.playerId]}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                          />
-                        ) : null;
+                  {piece.type === 'player' && piece.playerId && (
+                    <PlayArea
+                      key={piece.id}
+                      piece={piece as PlayerPiece}
+                      handCount={handCounts[piece.playerId]}
+                      draggable={state.globalDragEnabled}
+                      onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                    />
+                  )}
 
-                      // Dice
-                      case 'die':
-                        return (
-                          <Die
-                            key={piece.id}
-                            draggable={true}
-                            piece={piece as DicePiece}
-                            isSelected={piece.id === selectedPieceId}
-                            onSelect={handleSelectPiece(piece.id)}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                          />
-                        );
-
-                      default:
-                        return null;
-                    }
-                  })}
-                </Layer>
-              )
-          )}
-        </Table>
+                  {piece.type === 'die' && (
+                    <Die
+                      key={piece.id}
+                      draggable={state.globalDragEnabled}
+                      piece={piece as DicePiece}
+                      isSelected={piece.id === selectedPieceId}
+                      onSelect={handleSelectPiece(piece.id)}
+                      onChange={(p: any) =>
+                        handleUpdatePiece({ ...piece, ...p })
+                      }
+                    />
+                  )}
+                </>
+              ))}
+            </Layer>
+          </Table>
+        </AppContext.Provider>
 
         <TogglePlayerContainerButton
           onClick={() => setShowPlayerControls(!showPlayerControls)}
@@ -678,7 +718,7 @@ export const App: React.FC = () => {
                 Invite
               </Button>
 
-              <Link to="/" className="u-pull-right">
+              <Link to="/games" className="u-pull-right">
                 <Button design="danger">Leave Game</Button>
               </Link>
             </PlayerLinksContainer>
@@ -723,6 +763,24 @@ export const App: React.FC = () => {
         />
       )}
 
+      {showChat && (
+        <Chat
+          players={players}
+          chat={chat}
+          onChat={handleOnChat}
+          onClose={() => setShowChat(false)}
+        />
+      )}
+
+      {showSettingsModal && (
+        <SettingsModal
+          playerId={playerId}
+          config={config}
+          assets={assets}
+          onClose={() => setShowSettingsModal(false)}
+        />
+      )}
+
       {/* {(peekingCards.length || peekingDiscardedCards.length) && (
         <DeckPeekModal
           pieces={pieces}
@@ -748,7 +806,7 @@ export const App: React.FC = () => {
                 </LoadingFactSubheader>
               </>
             )}
-            <Link to="/">Leave Game</Link>
+            <Link to="/games">Leave Game</Link>
           </LoadingContainer>
         </LoadingPage>
       )}

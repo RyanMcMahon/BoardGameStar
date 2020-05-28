@@ -1,8 +1,5 @@
-import React from 'react';
 import slug from 'slugid';
-import { Route, Switch } from 'react-router-dom';
-import { Editor } from '../Editor';
-import { CustomGames } from '../CustomGames';
+
 import {
   EditorAction,
   PlayerOption,
@@ -10,11 +7,14 @@ import {
   AnyPieceOption,
 } from '../../types';
 
-function reducer(state: EditorState, action: EditorAction) {
+export function editorReducer(
+  state: EditorState,
+  action: EditorAction
+): EditorState {
   switch (action.type) {
     case 'create_game': {
       const { editorConfig } = action;
-      const { gameName } = editorConfig;
+      const { name } = editorConfig;
       const player1: PlayerOption = {
         id: slug.nice(),
         type: 'player' as const,
@@ -46,7 +46,9 @@ function reducer(state: EditorState, action: EditorAction) {
         players: [player1.id, player2.id],
       };
       return {
-        gameName,
+        name,
+        version: 1,
+        id: slug.nice(),
         curScenario: scenario.id,
         scenarios: {
           [scenario.id]: scenario,
@@ -61,7 +63,7 @@ function reducer(state: EditorState, action: EditorAction) {
     case 'update_game_name': {
       return {
         ...state,
-        gameName: action.gameName,
+        name: action.name,
       };
     }
 
@@ -225,33 +227,3 @@ function reducer(state: EditorState, action: EditorAction) {
       throw Error('unhandled EditorAction');
   }
 }
-
-export function ExecutableRoutes() {
-  const [state, dispatch] = React.useReducer<
-    React.Reducer<EditorState, EditorAction>,
-    EditorState
-  >(
-    reducer,
-    {
-      gameName: '',
-      curScenario: '',
-      scenarios: {},
-      pieces: {},
-    },
-    (state: EditorState) => state
-  );
-
-  return (
-    <Switch>
-      <Route path="/">
-        {state.curScenario ? (
-          <Editor dispatch={dispatch} state={state} />
-        ) : (
-          <CustomGames dispatch={dispatch} />
-        )}
-      </Route>
-    </Switch>
-  );
-}
-
-export default ExecutableRoutes;

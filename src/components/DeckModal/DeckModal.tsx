@@ -47,6 +47,7 @@ export function DeckModal(props: Props) {
             <input
               ref={inputRef}
               type="number"
+              className="u-full-width"
               min={1}
               defaultValue={1}
               placeholder="Number"
