@@ -290,172 +290,146 @@ export function Editor(props: Props) {
     setSelectedPieceId(null);
   };
 
-  const layers = curScenario.pieces.reduce(
-    (agg: RenderPiece[][], id: string) => {
-      const piece = state.pieces[id];
-      agg[piece.layer] = agg[piece.layer] || [];
-      agg[piece.layer].push((piece as unknown) as RenderPiece);
-      return agg;
-    },
-    []
-  );
+  const boardPieces = curScenario.pieces.map(id => state.pieces[id]);
 
   return (
     <MainContainer>
       <AppContainer>
         <Table>
           <Layer>
-            <Image image={axisImage} x={0} y={0} />
-          </Layer>
-          {layers.map(
-            (layer, layerDepth) =>
-              layer &&
-              layer.length && (
-                <Layer key={layerDepth}>
-                  {layer.map(piece => {
-                    switch (piece.type) {
-                      // Board
-                      case 'board':
-                        return (
-                          <ImagePiece
-                            key={piece.id}
-                            assets={assets}
-                            piece={piece as BoardPiece}
-                            draggable={true}
-                            isSelected={piece.id === selectedPieceId}
-                            onChange={b => {
-                              dispatch({
-                                type: 'update_piece',
-                                piece: {
-                                  ...piece,
-                                  ...b,
-                                },
-                              });
-                            }}
-                            onSelect={handleSelectPiece(piece.id)}
-                          />
-                        );
+            <Image image={axisImage} x={0} y={0} zIndex={0} />
 
-                      // Deck
-                      case 'deck':
-                        return (
-                          <Deck
-                            key={piece.id}
-                            assets={assets}
-                            piece={piece as DeckPiece}
-                            editingEnabled={true}
-                            isSelected={piece.id === selectedPieceId}
-                            onSelect={handleSelectPiece(piece.id)}
-                            onChange={b => {
-                              dispatch({
-                                type: 'update_piece',
-                                piece: {
-                                  ...piece,
-                                  ...b,
-                                },
-                              });
-                            }}
-                            onDblClick={() => setDeckModalId(piece.id)}
-                          />
-                        );
+            {boardPieces.map(piece => (
+              <>
+                {piece.type === 'board' && (
+                  <ImagePiece
+                    key={piece.id}
+                    assets={assets}
+                    piece={piece as BoardPiece}
+                    draggable={true}
+                    isSelected={piece.id === selectedPieceId}
+                    onChange={b => {
+                      dispatch({
+                        type: 'update_piece',
+                        piece: {
+                          ...piece,
+                          ...b,
+                        },
+                      });
+                    }}
+                    onSelect={handleSelectPiece(piece.id)}
+                  />
+                )}
 
-                      // Image Token
-                      case 'image':
-                        return (
-                          <ImagePiece
-                            key={piece.id}
-                            assets={assets}
-                            piece={piece as ImageTokenPiece}
-                            draggable={true}
-                            isSelected={piece.id === selectedPieceId}
-                            onChange={b => {
-                              dispatch({
-                                type: 'update_piece',
-                                piece: {
-                                  ...piece,
-                                  ...b,
-                                },
-                              });
-                            }}
-                            onSelect={handleSelectPiece(piece.id)}
-                          />
-                        );
+                {piece.type === 'deck' && (
+                  <Deck
+                    key={piece.id}
+                    assets={assets}
+                    piece={piece as DeckPiece}
+                    editingEnabled={true}
+                    draggable={true}
+                    isSelected={piece.id === selectedPieceId}
+                    onSelect={handleSelectPiece(piece.id)}
+                    onChange={b => {
+                      dispatch({
+                        type: 'update_piece',
+                        piece: {
+                          ...piece,
+                          ...b,
+                        },
+                      });
+                    }}
+                    onDblClick={() => setDeckModalId(piece.id)}
+                  />
+                )}
 
-                      // Rectangle
-                      case 'rect':
-                        return (
-                          <RectPiece
-                            key={piece.id}
-                            piece={piece as RectTokenPiece}
-                            isSelected={piece.id === selectedPieceId}
-                            onChange={b => {
-                              dispatch({
-                                type: 'update_piece',
-                                piece: {
-                                  ...piece,
-                                  ...b,
-                                },
-                              });
-                            }}
-                            onSelect={handleSelectPiece(piece.id)}
-                          />
-                        );
+                {piece.type === 'image' && (
+                  <ImagePiece
+                    key={piece.id}
+                    assets={assets}
+                    piece={piece as ImageTokenPiece}
+                    draggable={true}
+                    isSelected={piece.id === selectedPieceId}
+                    onChange={b => {
+                      dispatch({
+                        type: 'update_piece',
+                        piece: {
+                          ...piece,
+                          ...b,
+                        },
+                      });
+                    }}
+                    onSelect={handleSelectPiece(piece.id)}
+                  />
+                )}
 
-                      // Circle
-                      case 'circle':
-                        return (
-                          <CirclePiece
-                            key={piece.id}
-                            piece={piece as CircleTokenPiece}
-                            isSelected={piece.id === selectedPieceId}
-                            onChange={b => {
-                              dispatch({
-                                type: 'update_piece',
-                                piece: {
-                                  ...piece,
-                                  ...b,
-                                },
-                              });
-                            }}
-                            onSelect={handleSelectPiece(piece.id)}
-                          />
-                        );
+                {piece.type === 'rect' && (
+                  <RectPiece
+                    key={piece.id}
+                    piece={piece as RectTokenPiece}
+                    draggable={true}
+                    isSelected={piece.id === selectedPieceId}
+                    onChange={b => {
+                      dispatch({
+                        type: 'update_piece',
+                        piece: {
+                          ...piece,
+                          ...b,
+                        },
+                      });
+                    }}
+                    onSelect={handleSelectPiece(piece.id)}
+                  />
+                )}
 
-                      // Player
-                      case 'player':
-                        return (
-                          <PlayArea
-                            key={piece.id}
-                            piece={
-                              {
-                                ...piece,
-                                name: `Player ${curScenario.players.findIndex(
-                                  id => id === piece.id
-                                ) + 1}`,
-                              } as PlayerPiece
-                            }
-                            handCount={0}
-                            isSelected={piece.id === selectedPieceId}
-                            onChange={b => {
-                              dispatch({
-                                type: 'update_piece',
-                                piece: {
-                                  ...piece,
-                                  ...b,
-                                },
-                              });
-                            }}
-                            onSelect={handleSelectPiece(piece.id)}
-                          />
-                        );
+                {piece.type === 'circle' && (
+                  <CirclePiece
+                    key={piece.id}
+                    piece={piece as CircleTokenPiece}
+                    draggable={true}
+                    isSelected={piece.id === selectedPieceId}
+                    onChange={b => {
+                      dispatch({
+                        type: 'update_piece',
+                        piece: {
+                          ...piece,
+                          ...b,
+                        },
+                      });
+                    }}
+                    onSelect={handleSelectPiece(piece.id)}
+                  />
+                )}
 
-                      default:
-                        return null;
+                {piece.type === 'player' && (
+                  <PlayArea
+                    key={piece.id}
+                    piece={
+                      {
+                        ...piece,
+                        name: `Player ${curScenario.players.findIndex(
+                          id => id === piece.id
+                        ) + 1}`,
+                      } as PlayerPiece
                     }
-                  })}
-                </Layer>
-              )
-          )}
+                    handCount={0}
+                    draggable={true}
+                    isSelected={piece.id === selectedPieceId}
+                    onChange={b => {
+                      dispatch({
+                        type: 'update_piece',
+                        piece: {
+                          ...piece,
+                          ...b,
+                        },
+                      });
+                    }}
+                    onSelect={handleSelectPiece(piece.id)}
+                  />
+                )}
+              </>
+            ))}
+          </Layer>
         </Table>
       </AppContainer>
 
