@@ -27,10 +27,37 @@ class BGSDB extends Dexie {
   }
 }
 
-const db = new BGSDB();
+let dbResolve: (db: BGSDB) => void;
+let getDB = new Promise<BGSDB>(resolve => {
+  dbResolve = resolve;
+});
+
+const resolveMockDB = () =>
+  dbResolve({
+    isMock: true,
+    games: {
+      add: () => {},
+      get: () => {},
+      toArray: () => [],
+    },
+    favorites: {
+      // TODO
+    },
+  } as any);
+
+if (window.indexedDB) {
+  const testDB = indexedDB.open('test');
+  testDB.onerror = resolveMockDB;
+  testDB.onsuccess = function() {
+    const db = new BGSDB();
+    dbResolve(db);
+  };
+} else {
+  resolveMockDB();
+}
 
 export async function addGame(config: EditorState, assets: Assets) {
-  return db.games.add({
+  return (await getDB).games.add({
     assets,
     config,
     gameId: config.id,
@@ -39,15 +66,15 @@ export async function addGame(config: EditorState, assets: Assets) {
 }
 
 export async function getGameById(gameId: string) {
-  return db.games.get(gameId);
+  return (await getDB).games.get(gameId);
 }
 
 export async function loadGames() {
-  return db.games.toArray();
+  return (await getDB).games.toArray();
 }
 
 export async function deleteGame(gameId: string) {
-  return db.games.delete(gameId);
+  return (await getDB).games.delete(gameId);
 }
 
 export async function addFavorite(gameId: string) {

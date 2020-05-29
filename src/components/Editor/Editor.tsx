@@ -7,7 +7,6 @@ import { Button } from '../../utils/style';
 import { Table } from '../Table';
 import { loadAsset, getFilename, getAssetDimensions } from '../../utils/assets';
 import {
-  RenderPiece,
   EditorAction,
   EditorState,
   PlayerOption,

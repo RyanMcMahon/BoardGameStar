@@ -61,7 +61,7 @@ const MenuSpacer = styled.div({
 });
 
 const MenuJoinForm = styled.form({
-  margin: '0 1rem 0 1rem',
+  marginLeft: '1rem',
   display: 'flex',
   flexDirection: 'row',
   '> input': {
@@ -97,23 +97,18 @@ const MenuJoinForm = styled.form({
   },
 });
 
-const MenuLink = styled(Link)({
-  fontSize: '1.5rem',
-  fontWeight: 'normal',
+const NewGameLink = styled(Link)({
   textDecoration: 'none',
-  margin: '0 1rem 0 0',
-  backgroundColor: primaryColor,
-  color: '#fff',
-  padding: '.5rem 1rem',
-  borderRadius: '4px',
-  textAlign: 'center',
-  ':hover': {
-    backgroundColor: primaryHighlightColor,
-    color: '#fff',
-  },
   [breakPoints.mobile]: {
-    marginTop: '.5rem',
+    width: '100%',
+    boxSizing: 'border-box',
+    display: 'flex',
   },
+});
+
+const NewGameButton = styled(Button)({
+  margin: '0 1rem',
+  flex: 1,
 });
 
 export const Content = styled.div({
@@ -164,7 +159,11 @@ export function WebPage(props: Props) {
             Join Game
           </Button>
         </MenuJoinForm>
-        {isWebBuild && <MenuLink to="/games">Start New Game</MenuLink>}
+        {isWebBuild && (
+          <NewGameLink to="/games">
+            <NewGameButton design="primary">Start New Game</NewGameButton>
+          </NewGameLink>
+        )}
       </Menu>
       {props.children}
       <Footer>&copy; Copyright {new Date().getFullYear()}</Footer>
