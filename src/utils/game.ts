@@ -235,7 +235,7 @@ export function createNewGame(
 
       conn.on('open', () => {
         const playAreaId = scenario.players[_.size(players) - 1];
-        const playArea = pieces[playAreaId] as PlayerPiece;
+        let playArea = pieces[playAreaId] as PlayerPiece;
         playArea.playerId = playerId;
         playArea.delta++;
         playArea.name = player.name;
@@ -499,6 +499,11 @@ export function createNewGame(
                   ...pieces,
                   ...p,
                 };
+                Object.values(p).forEach(piece => {
+                  if (playArea.id === piece.id) {
+                    playArea = piece as PlayerPiece;
+                  }
+                });
                 sendToRoom({
                   event: 'update_piece',
                   pieces: p,
