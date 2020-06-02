@@ -225,7 +225,7 @@ export const App: React.FC = () => {
       },
     ];
 
-    if (piece) {
+    if (piece && piece.type !== 'deleted') {
       switch (piece.type) {
         case 'die':
           if (piece.hidden) {
