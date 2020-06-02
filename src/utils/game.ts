@@ -73,6 +73,7 @@ export function createNewGame(
     curGame.peer.disconnect();
   }
 
+  const scenario = config.scenarios[config.curScenario];
   const hostId = getHostId();
   const gameId = getGameId();
   const peer = createPeer(getInstanceId(gameId, hostId));
@@ -81,27 +82,20 @@ export function createNewGame(
   peer.on('open', () => {
     const chat: ChatEvent[] = [];
     let hiddenPieces: Pieces = {};
-    let pieces: Pieces = Object.values(config.pieces).reduce(
-      (byId, piece) => ({
-        ...byId,
-        [piece.id]: {
-          ...piece,
-          delta: 0,
-        },
-      }),
-      {}
-    );
-    Object.values(pieces).forEach(piece => {
-      if (piece.type === 'card') {
-        for (let i = 1; i < piece.count; i++) {
-          const cardCopy = { ...piece, id: slug.nice() };
-          console.log('added card', cardCopy);
-          pieces[cardCopy.id] = cardCopy;
-        }
+    let pieces: Pieces = Object.values(config.pieces).reduce((byId, piece) => {
+      if (piece.type !== 'card') {
+        return {
+          ...byId,
+          [piece.id]: {
+            ...piece,
+            delta: 0,
+          },
+        };
+      } else {
+        return byId;
       }
-    });
+    }, {});
 
-    const scenario = config.scenarios[config.curScenario];
     const decks: Decks = Object.values(pieces)
       .filter(p => p.type === 'deck')
       .reduce(
@@ -109,20 +103,74 @@ export function createNewGame(
           ...byId,
           [deck.id]: {
             ...deck,
-            cards: _.shuffle(
-              Object.values(pieces)
-                .filter(p => p.type === 'card' && p.deckId === deck.id)
-                .map(c => c.id)
-            ),
+            cards: [],
             discarded: [],
           },
         }),
         {}
       );
     Object.values(decks).forEach(deck => {
-      (pieces[deck.id] as DeckPiece).total = deck.cards.length;
-      (pieces[deck.id] as DeckPiece).count = deck.cards.length;
+      (pieces[deck.id] as DeckPiece).total = 0; //deck.cards.length;
+      (pieces[deck.id] as DeckPiece).count = 0; //deck.cards.length;
     });
+
+    // Create Cards
+    const maxPlayers = scenario.players.length;
+    const cardsForPlayerCounts: {
+      [deckId: string]: {
+        [playerCount: number]: string[];
+      };
+    } = Object.keys(decks)
+      .map(deckId => [
+        deckId,
+        [...Array(maxPlayers)].reduce(
+          (agg, x, index) => ({
+            ...agg,
+            [index + 1]: [],
+          }),
+          {}
+        ),
+      ])
+      .reduce(
+        (agg, [deckId, cardMap]) => ({
+          ...agg,
+          [deckId]: cardMap,
+        }),
+        {}
+      );
+
+    Object.values(config.pieces).forEach(piece => {
+      if (piece.type === 'card') {
+        const countExp = (piece.counts || '1').split(',').map((t, index) => {
+          const tuple = t.split(':');
+          if (tuple.length < 2) {
+            tuple.unshift(`${index + 1}`);
+          }
+          return [parseInt(tuple[0], 10), parseInt(tuple[1], 10)];
+        });
+        console.log(countExp);
+        countExp.forEach(([min, count], index) => {
+          const max =
+            index + 1 < countExp.length
+              ? countExp[index + 1][0] - 1
+              : maxPlayers;
+          console.log(min, max, count);
+          for (let i = min; i <= max; i++) {
+            for (let k = 0; k < count; k++) {
+              const cardCopy = {
+                ...piece,
+                id: slug.nice(),
+                parentId: piece.id,
+                delta: 0,
+              };
+              cardsForPlayerCounts[piece.deckId][i].push(cardCopy.id);
+              pieces[cardCopy.id] = cardCopy;
+            }
+          }
+        });
+      }
+    });
+    console.log(cardsForPlayerCounts);
 
     const players: Players = {};
     const game: Game = {
@@ -130,7 +178,9 @@ export function createNewGame(
       hostId,
       gameId,
       pieces,
-      board: scenario.pieces.filter(pieceId => pieces[pieceId].type !== 'card'),
+      board: scenario.pieces.filter(
+        pieceId => pieces[pieceId] && pieces[pieceId].type !== 'card'
+      ),
     };
     const clients: GamePeerDataConnection[] = [];
     const sendToRoom = (event: GameEvent) => {
@@ -144,6 +194,7 @@ export function createNewGame(
         return;
       }
       piece.count = count;
+      piece.total = cardsForPlayerCounts[deckId][_.size(players)].length;
       piece.delta++;
       console.log('update_piece', piece.delta);
       sendToRoom({
@@ -173,9 +224,10 @@ export function createNewGame(
 
     peer.on('connection', (conn: GamePeerDataConnection) => {
       const { playerId, name } = conn.metadata;
+      const playerCount = Object.keys(players).length + 1;
       const player: Player = players[playerId] || {
         conn,
-        name: name || `Player ${Object.keys(players).length + 1}`,
+        name: name || `Player ${playerCount}`,
         hand: [],
       };
       clients.push(conn);
@@ -192,6 +244,13 @@ export function createNewGame(
         delete syncConfig.loadAssets;
         delete syncConfig.store;
 
+        // look at cards and adjust to player counts
+        Object.values(decks).forEach(deck => {
+          deck.cards = _.shuffle(cardsForPlayerCounts[deck.id][playerCount]);
+          updateDeckCount(deck.id);
+        });
+
+        console.log(pieces);
         conn.send({
           pieces,
           chat,

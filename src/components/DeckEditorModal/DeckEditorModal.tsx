@@ -55,7 +55,7 @@ export function DeckEditorModal(props: Props) {
           y: 50,
           faceDown: false,
           rotation: 0,
-          count: 1,
+          counts: '1',
           layer: 3,
         };
         dispatch({
@@ -92,12 +92,12 @@ export function DeckEditorModal(props: Props) {
                   id: card.id,
                 })
               }
-              onUpdateCount={(count: number) =>
+              onUpdateCount={(counts: string) =>
                 dispatch({
                   type: 'update_piece',
                   piece: {
                     ...card,
-                    count,
+                    counts,
                   } as AnyPieceOption,
                 })
               }

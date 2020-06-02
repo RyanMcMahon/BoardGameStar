@@ -7,7 +7,7 @@ import { useAsset } from '../Piece/utils';
 
 interface Props {
   onDelete: () => void;
-  onUpdateCount: (count: number) => void;
+  onUpdateCount: (counts: string) => void;
   card: CardPiece;
   assets: Assets;
 }
@@ -28,7 +28,7 @@ export function CardEditor(props: Props) {
   const image = useAsset(assets, card);
 
   const handleOnChange = (e: React.FormEvent<HTMLInputElement>) => {
-    props.onUpdateCount(parseInt(e.currentTarget.value, 10));
+    props.onUpdateCount(e.currentTarget.value);
   };
 
   return (
@@ -36,8 +36,8 @@ export function CardEditor(props: Props) {
       <Img src={image?.src} />
       <br />
       <input
-        type="number"
-        value={card.count}
+        type="text"
+        value={card.counts}
         ref={inputRef}
         min={1}
         onChange={handleOnChange}

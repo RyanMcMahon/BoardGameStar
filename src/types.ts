@@ -23,6 +23,12 @@ export interface PieceOption {
   y: number;
   rotation: number;
   layer: number;
+  counts?: string;
+  parentId?: string;
+  playerCounts?: {
+    min: number;
+    max: number;
+  };
 }
 
 export interface RectPieceOption extends PieceOption {
@@ -42,6 +48,7 @@ export interface CardOption extends ImagePieceOption {
   type: 'card';
   deckId: string;
   faceDown: boolean;
+  counts: string;
 }
 
 export interface DeckOption extends ImagePieceOption {
@@ -176,13 +183,6 @@ export type EditorAction =
   | AddPieceAction
   | UpdatePieceAction
   | RemovePieceAction;
-
-export interface CardOption {
-  type: 'card';
-  id: string;
-  image: string;
-  count: number;
-}
 
 export interface Piece {
   delta: number;

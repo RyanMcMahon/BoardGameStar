@@ -550,11 +550,19 @@ export const App: React.FC = () => {
   }, [conn, handleUpdatePieceUnthrottled]);
 
   const players = Object.values(pieces).filter(
-    p => p.type === 'player'
+    p => p.type === 'player' && p.playerId
   ) as PlayerPiece[];
   const player = players.find(p => p.playerId === playerId);
 
-  const boardPieces = board.map(id => pieces[id] || {});
+  const boardPieces = board
+    .map(id => pieces[id] || {})
+    .filter(
+      piece =>
+        !piece.counts ||
+        piece.type === 'card' ||
+        players.length >= parseInt(piece.counts.split(':')[0], 10)
+    );
+  console.log(boardPieces);
 
   if (!gameId) {
     return <Redirect to="/" />;

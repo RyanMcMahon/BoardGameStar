@@ -133,7 +133,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     aTYKWmuNSqyOQrs7RpIfNQ: {
@@ -147,7 +147,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     YHkAYGgeRf2py2834JxLHA: {
@@ -161,7 +161,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     aRvjIkslSK6FtNwJwH2IaA: {
@@ -175,7 +175,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     DHS2djdxSL60zoOBMVN2mw: {
@@ -189,7 +189,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'U4lye1zFSgie54-3rSsQ_w': {
@@ -203,7 +203,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     LG5KxY3WSaWeUwKQsZpKJA: {
@@ -217,7 +217,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     XziDjlmhQQamcMpQdHVQ6Q: {
@@ -231,7 +231,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     TtXy0wgSTWu_URU5vZMtuQ: {
@@ -245,7 +245,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'S5FP-gETRhmCiMu15vunIQ': {
@@ -259,7 +259,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Hfipe6IXStyDPjBoxICLow: {
@@ -273,7 +273,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     YeSSVar3RhahcXboEEdxKw: {
@@ -287,7 +287,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Bw5fCpQZSTiKx2oZEw4Zbw: {
@@ -301,7 +301,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'I3FIGh39QASc8KC-XYG01w': {
@@ -315,7 +315,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'LvjakCXZQJKM51-n2w5g6g': {
@@ -329,7 +329,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'XbVRY9-RSNOJkPLIfHIk9g': {
@@ -343,7 +343,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     DPc7mriTQjOjLq2dLwzWng: {
@@ -357,7 +357,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'Z-FIyswLRkiJexUlZpypZA': {
@@ -371,7 +371,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'KsIikXcnRu-ZY5OpGYTZPQ': {
@@ -385,7 +385,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     QHqxDr0tTg6fp3TBmQYr6g: {
@@ -399,7 +399,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     eohzhivIRfCSh49Yt8secA: {
@@ -413,7 +413,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'XoubQ8wdQKGwgDbJ-dt0yg': {
@@ -427,7 +427,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     R6ecpyYHTfuZfzTp2emHYA: {
@@ -441,7 +441,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     cMzZjFH1QSOP2DxZdYmDfA: {
@@ -455,7 +455,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     XLNiIl0eRSqSALu1F1cpIQ: {
@@ -469,7 +469,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     fydUE7AAQ8OKb3IcAn2ybQ: {
@@ -483,7 +483,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     LCCpHNcpRU2DT6LWyGnIkw: {
@@ -497,7 +497,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'ETqr3Eh-SBWTIkJsAH111w': {
@@ -511,7 +511,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     LmMEXf35SyKMQpTQjs2E4A: {
@@ -525,7 +525,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     chBsl1sjQ0qCY498sBU90g: {
@@ -539,7 +539,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     IiCxdBn1TLSB7J4VzcnZhQ: {
@@ -553,7 +553,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'R1SGiLP2RFGiyKwZDv-GWw': {
@@ -567,7 +567,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     RujdlIO0RSuhzZdIWbflpA: {
@@ -581,7 +581,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     XfxBbWYQTs6IXcO7_zvr1g: {
@@ -595,7 +595,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     cS3KRnh1QUurujzWFNUCNQ: {
@@ -609,7 +609,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     ZoXDnx1ARf6I3SghJYDxKw: {
@@ -623,7 +623,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     O3G5Jd87TSa0pyQMN_r9Lw: {
@@ -637,7 +637,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     DMozJf8zScalyPPmynnKpg: {
@@ -651,7 +651,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'MBFCt-jXQvawJupiA8Dr1A': {
@@ -665,7 +665,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'ZwODulcqQPC47omIj-2dsQ': {
@@ -679,7 +679,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'fc_nhX15SyGur-EtH9CRsw': {
@@ -693,7 +693,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'OQVB-Q8lTtuQxQ59vkq6XQ': {
@@ -707,7 +707,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     YiiUepHdTHSO8tXNRj_TXA: {
@@ -721,7 +721,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     G2HMw7R5SqKxshNcK4FCWQ: {
@@ -735,7 +735,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Mtrw9oxJRvaYjmQqUEVoCw: {
@@ -749,7 +749,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'VUxXY-LnT4KJGNqObbSEyQ': {
@@ -763,7 +763,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Hb_6qPSAQeKmDYlzh0P_Hw: {
@@ -777,7 +777,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'P-o9GIRvQWSTmHyUUMTBUA': {
@@ -791,7 +791,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     bjR7WWQuRWig0Thdlb3oiw: {
@@ -805,7 +805,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     dMHHVHSuQw2VubLh5PCEYA: {
@@ -819,7 +819,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'IkNopk-NRsyudqW0Dyvtlw': {
@@ -833,7 +833,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     adUGR6JcSFW9lBm_2W68HA: {
@@ -847,7 +847,7 @@ export const Cards: EditorState = {
       y: 50,
       faceDown: false,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'bJX-OScyR32wcqiFne6YwQ': {

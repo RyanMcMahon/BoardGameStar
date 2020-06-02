@@ -296,7 +296,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     C99Y18YmQ7mRY8BLCzxAlg: {
@@ -310,7 +310,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     NPmjOHkmQ_KdZGZyp0Sfbw: {
@@ -324,7 +324,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     XPU66z0XRd2gkHhpU_CiCw: {
@@ -338,7 +338,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Jw7I7HygTaikeoEUlXI7jQ: {
@@ -352,7 +352,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'LG6Wy9DqS4m-2tTjkCw3TA': {
@@ -366,7 +366,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     CO8IogDwS6e3gB0LxVmwBg: {
@@ -380,7 +380,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     RSa9NaNkTjOLVfg6IecjGQ: {
@@ -394,7 +394,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     CSTBddI4TjmPQ81W6lACDQ: {
@@ -408,7 +408,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     ZXLMi5KmTNGMGl9coELGEg: {
@@ -422,7 +422,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'cp1qROJ-SS6dmg3MGZ4sFw': {
@@ -436,7 +436,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'UJlil_jGSfGUi-c4ozXWUQ': {
@@ -450,7 +450,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'LflpqvFyQs-F0xTudePDzQ': {
@@ -464,7 +464,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     bwcrIVHaRwazGmNLpLcGrg: {
@@ -478,7 +478,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     VnxyUzI_TaexVCAGf2J5NA: {
@@ -492,7 +492,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     ZYFF7ynOSQKz7iHpH3ulEw: {
@@ -506,7 +506,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     NEtLnaYwSrG51mFP2_RDMA: {
@@ -520,7 +520,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'Bb62-rusTAqUcKCatYTJTg': {
@@ -534,7 +534,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     CvhgaIVRTSOgiQQKsyovag: {
@@ -548,7 +548,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     a7w_GMlYSjiS945qmBKu3Q: {
@@ -562,7 +562,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Taun89NHTYWx4MrhFTNHWg: {
@@ -576,7 +576,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'TcB-fe0pSOevoOIYlkxHOg': {
@@ -590,7 +590,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'dq2ns-H6RW2T1GnCtAAH1Q': {
@@ -604,7 +604,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     NVfNz5M1Rwm4DJzoph3EXw: {
@@ -618,7 +618,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'cE0aksQASSe-Hu9xx8UElg': {
@@ -632,7 +632,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     D9LMt46URymy3u2MpUkcig: {
@@ -646,7 +646,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'czTeb3-HQ82h2pumsrUmwQ': {
@@ -660,7 +660,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     S6MNEIvRSHa4SIj_UbBBuA: {
@@ -674,7 +674,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     DCCHALaxQtuXySz1g2Ei_w: {
@@ -688,7 +688,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'Dg5p-ZIqSXmkilZN70qAZA': {
@@ -702,7 +702,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'EN-Xp8e1S7SxMpG0I2Gdtw': {
@@ -716,7 +716,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     L3bJqSh8TrSeNHbzBV5RlQ: {
@@ -730,7 +730,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'R9K8-SsUStyAcDoTf0zZOw': {
@@ -744,7 +744,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'JamTncHAT3-XQikKsOOQbA': {
@@ -758,7 +758,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Rts2VxgoSZe8U7ANvwClpQ: {
@@ -772,7 +772,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'QH1P61b1QJaTA6awonK-OA': {
@@ -786,7 +786,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     OwEr5fQMQ_Ww9fDnJgpQXg: {
@@ -800,7 +800,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'abwVHMGaQ7WB-HcFws-zfQ': {
@@ -814,7 +814,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     GLpvLtt5QheP7VEQbXr4aA: {
@@ -828,7 +828,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     ImYb6l3US0W9juEKxyb5uQ: {
@@ -842,7 +842,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     JFRKi0FaQjKfyCaCAxeo9w: {
@@ -856,7 +856,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     eThroW2VTR6fGT1gbHAXzg: {
@@ -870,7 +870,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     NSjpeqKmRZe_VfDaSf4zVQ: {
@@ -884,7 +884,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     TGfGBBZvSRypjXYYRsfYtw: {
@@ -898,7 +898,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'GNdJjaObQF-212fUjZxUTw': {
@@ -912,7 +912,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     GVNAUtbMTImdwL2dGAdLFA: {
@@ -926,7 +926,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     AdgN8GAMRGeAJJ0Mvga4ig: {
@@ -940,7 +940,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     PutDM6MXRfK60Eb1udZaFw: {
@@ -954,7 +954,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Fuc9oUtxRIuhUspc5RUs5A: {
@@ -1005,7 +1005,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     I_ucIpgcQfGFAgzZlRiX8Q: {
@@ -1019,7 +1019,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     ZZO4cRORSmGNxs4RXgumsA: {
@@ -1033,7 +1033,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     GAiu8Nw1SfevnGdFMU2C9w: {
@@ -1047,7 +1047,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'ExNLvghhTPKpweSllk-AYg': {
@@ -1061,7 +1061,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     CyQRjUReRHO0jjATvfMfdw: {
@@ -1075,7 +1075,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     DOnD5sx2SrOU6tOj9BGS6w: {
@@ -1089,7 +1089,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     dm6G0bofREuyguCOFPgjSQ: {
@@ -1103,7 +1103,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     bJ7X3GmJTqKaLkXKA1Bdeg: {
@@ -1117,7 +1117,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Kxe37EgkQce5txdsjYOtmw: {
@@ -1131,7 +1131,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Csa5Rvt2QKWv5vlqSt6ZUg: {
@@ -1145,7 +1145,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Az0m0tguQNCKHl5A3aqzbA: {
@@ -1159,7 +1159,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'J-gvM4gWRCO4rjnDPR_yAA': {
@@ -1173,7 +1173,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     LhCXGl2VSkGu_CpqegZ__g: {
@@ -1187,7 +1187,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     KAipdqhHRJOhPHEOQf_pMg: {
@@ -1201,7 +1201,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'OQ5-TB6mSsmqLNlKJogc5A': {
@@ -1215,7 +1215,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     FT4xYDrCSW63SbMJTOrYHw: {
@@ -1229,7 +1229,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     WP9ItlmZQYeDIjAD95Ai2Q: {
@@ -1243,7 +1243,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     VQgNjNJvRxG78DNE4ptdEg: {
@@ -1257,7 +1257,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'OVHxadweS5-4lB4jbiaGoQ': {
@@ -1271,7 +1271,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     V8GhDPXMR0KnmbH68MvsXQ: {
@@ -1285,7 +1285,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'aOiedPCBR-a7O6u9mFFcdA': {
@@ -1299,7 +1299,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     JwyZpplzT3u21DQaZACTxA: {
@@ -1313,7 +1313,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     PTcFBfrjREmG0SQRThSpEA: {
@@ -1327,7 +1327,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'bFkm5qOEQu-21JrCyfAf6g': {
@@ -1341,7 +1341,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     M0WHs39jR_KDYae5vUHBhg: {
@@ -1355,7 +1355,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'V9Bfv-55SqS-tVjXzwBW5Q': {
@@ -1369,7 +1369,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Ti6u2kf8QrSHFWIN92TvBA: {
@@ -1383,7 +1383,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'dC69U4j4Q1-w0qjX1IZQqA': {
@@ -1397,7 +1397,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Hgull7fxTXi7w87gRtx7Pg: {
@@ -1411,7 +1411,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     LmpZbzA7R5uq2Fv_TVgF_g: {
@@ -1425,7 +1425,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     eVbOUWxZS7m3uj2wbSBxbQ: {
@@ -1439,7 +1439,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     GHmT_1ZCRY2WlicMYRxSEw: {
@@ -1453,7 +1453,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'cHvQ8-KITM60Dh2LTlVKuw': {
@@ -1467,7 +1467,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'Sq_9PxNPQ-qX0lql18ed3w': {
@@ -1481,7 +1481,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'H-rmniJjTHWwKlVPH6nj0Q': {
@@ -1495,7 +1495,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'aiY3PCkBRnKV_1-VQ-lxpw': {
@@ -1509,7 +1509,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     FMLwtFArTyuQKV2sI9xmhA: {
@@ -1523,7 +1523,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     SNBpTjOLTrG0LZXE3fxx6g: {
@@ -1537,7 +1537,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     MZRUD8rrSs2sgJSqaUHixw: {
@@ -1551,7 +1551,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     YJa6pZbvRPSeHQOIzejhHg: {
@@ -1565,7 +1565,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'Hq6JvtLkRSy58rewJg-u9w': {
@@ -1579,7 +1579,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'dmz5Y7YnQY-CozdrQtSaig': {
@@ -1593,7 +1593,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Rvc1SUG6Rk6uSIFBaSUn9g: {
@@ -1607,7 +1607,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     QxwBnvMhTVq9uM3nPOBgaw: {
@@ -1621,7 +1621,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'aIHocEpxSF-fWb7HC_qiaw': {
@@ -1635,7 +1635,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'Xe3_Jk0YQu-V_Lu2Hzgxow': {
@@ -1649,7 +1649,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     epvHVbDgRPaVJE0blEptOQ: {
@@ -1663,7 +1663,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     IjcSOQwjRcWwBoFVrqUfGg: {
@@ -1677,7 +1677,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     GArmTxlCRMaMmvGIAkfxdw: {
@@ -1691,7 +1691,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'Ajf-nGM8Sl-qMTmkvm7mlQ': {
@@ -1705,7 +1705,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'bW8fgRqkQ42-EIEpKwuClg': {
@@ -1719,7 +1719,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'OwaQIx5jSCK-IHFBmthimQ': {
@@ -1733,7 +1733,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'IJUYC2beSUyblxP7_cqi-g': {
@@ -1747,7 +1747,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Am2YnUm8TCOFhao59dcsNA: {
@@ -1761,7 +1761,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'W4bbohprQD6E-bBZ1J1fCQ': {
@@ -1775,7 +1775,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'Iv5vxj6RQ7C-ieL1fxLk8g': {
@@ -1789,7 +1789,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'SXRP0t8-SICJ3KP_DnHo5Q': {
@@ -1803,7 +1803,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     FLpT9Bi6RkCVJqmfCaiqHw: {
@@ -1817,7 +1817,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     UV53KD3lTgKkgsZ1QoPVjA: {
@@ -1831,7 +1831,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     DjKYk726SSmVMEfT0yr9lg: {
@@ -1845,7 +1845,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'bQtGxqRCTDu3N-I_r2_Y-Q': {
@@ -1859,7 +1859,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Klp5WSJLSxKWpPlN4Aktqg: {
@@ -1873,7 +1873,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     JBqB_7nhQT21F_tr27ZslA: {
@@ -1887,7 +1887,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     OHDDgUtfQQuyFOVU4sg8UA: {
@@ -1938,7 +1938,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Zsl4h22rQNOW82KH_mSqvg: {
@@ -1952,7 +1952,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     ESg3gR7WTPu6FtpTVn8Q9A: {
@@ -1966,7 +1966,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     RNqgbWduRh6ZCVABdwr6oA: {
@@ -1980,7 +1980,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     dChwF4mFRpKvCh1EhspUWQ: {
@@ -1994,7 +1994,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'B3s-KsI9SC6IKYlKQIXIpQ': {
@@ -2008,7 +2008,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'GtzT3MLnSX6s0AGuokK-tA': {
@@ -2022,7 +2022,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'Za1-rWNYSUukRva0v1y1iA': {
@@ -2036,7 +2036,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     SDrx7OKqR7Kr0rXBT84Bnw: {
@@ -2050,7 +2050,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'LF1EPzPNRE-c2_yQUuAVaA': {
@@ -2064,7 +2064,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     d40JOUslTtCQGsivc5htCg: {
@@ -2078,7 +2078,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     AVr6pdM5Q7ykzYTrM4eEBg: {
@@ -2092,7 +2092,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     QYXHlxO5TDO8m6CFd_Uq6g: {
@@ -2106,7 +2106,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     BKKjvFckT86hstM7usKZgA: {
@@ -2120,7 +2120,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     JZb3BVbySSKidYwkiEUorg: {
@@ -2134,7 +2134,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     R0PsXv_YStewqLzDpxAEiA: {
@@ -2148,7 +2148,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     CGzvMRHqTYioYI6e9EVCQQ: {
@@ -2162,7 +2162,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     H4sO08hOQyWxAVed5APJRw: {
@@ -2176,7 +2176,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     SFVv2haMRSCt3_EfpoXMDw: {
@@ -2190,7 +2190,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'C_SrwYNPQqi_fzQdZpw7-w': {
@@ -2204,7 +2204,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     M_yjlaffQkC23kF7AmeB5g: {
@@ -2218,7 +2218,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Daci6TvyQCu77UFWrsOgdg: {
@@ -2232,7 +2232,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     CMyfntViQCWCR6u4MEvaUA: {
@@ -2246,7 +2246,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     f0HshnR2S_m0sGUe4y_zKA: {
@@ -2260,7 +2260,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     GQFvDtjsRiGixBh0EgYMjA: {
@@ -2274,7 +2274,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     dNXe1X0PRK2LLed1dcCDCw: {
@@ -2288,7 +2288,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Usf649srQDK6ye9dWxIY7Q: {
@@ -2302,7 +2302,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     GK2gFfHUSQCeTIGahCTu3g: {
@@ -2316,7 +2316,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'EknqM3SgQo-n6zlaKq0a9g': {
@@ -2330,7 +2330,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     IeowvM4wR3GnWi6Z8pLxmQ: {
@@ -2344,7 +2344,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     e8HZWRhrQqGA8lz64i7vHQ: {
@@ -2358,7 +2358,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Tjz0bdYFT96PCcv1EhGSmA: {
@@ -2372,7 +2372,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     DoR2ZWrzTsmbQ_TnnZkW5w: {
@@ -2386,7 +2386,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     MGn7S82hSTC3Zr1Q16oO3A: {
@@ -2400,7 +2400,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     X3nIA4LMRzm35DyzlTs4yA: {
@@ -2414,7 +2414,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Zqh6nCAiRTyKlr3WCYuWGg: {
@@ -2428,7 +2428,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'P1rqpbn5Qr-E81I-l9aCMw': {
@@ -2442,7 +2442,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Eo8aDAiJR5WB_FW6B6GNSw: {
@@ -2456,7 +2456,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     SBpXYtegQ4qjW43N77y15g: {
@@ -2470,7 +2470,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'H3aDHWAHS2mo9_boe4r-2g': {
@@ -2484,7 +2484,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     eKHmPTRqQsyWT512AjtS5g: {
@@ -2498,7 +2498,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'A42FVlnjSNOBmSuKbI-Hzg': {
@@ -2512,7 +2512,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Zjr0U5f2SDGZhCwfZF4_mA: {
@@ -2526,7 +2526,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     JqXrI876QgeJcQ7u1Rz5Bw: {
@@ -2540,7 +2540,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'LNt8DaxaQlqkJ-c1vOQYfQ': {
@@ -2554,7 +2554,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     XKFKdo8oQvCI8gJIBGoTRg: {
@@ -2568,7 +2568,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     bO4m98mPS4uoE0CKaQqNoA: {
@@ -2582,7 +2582,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     dnXgTObzR1Or_0SOZnhe6Q: {
@@ -2596,7 +2596,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'D0D_rXJqSSq3ZO3iuQf9-Q': {
@@ -2610,7 +2610,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     PMaYdbcOS3eQMWnlKWGfhg: {
@@ -2624,7 +2624,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     H_FZsM7AQd21oZnyqVU61g: {
@@ -2638,7 +2638,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     QbbJZaAgRICHPeboEEUUEw: {
@@ -2652,7 +2652,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     N9VRIcyBTZGd5q2v_gVoPQ: {
@@ -2666,7 +2666,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'Lfc_ADOrQI-Vsed_BWELTg': {
@@ -2680,7 +2680,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'IwaBN5jqSpGCm-K9jPvFSQ': {
@@ -2694,7 +2694,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'BnMm_siVQ0-qkOvFHXPDQQ': {
@@ -2708,7 +2708,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     YjCSmN3lQCusLwWHs341CQ: {
@@ -2722,7 +2722,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     N26WBNGrRbyn3vxWIUU0Kg: {
@@ -2736,7 +2736,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     GzqalkjETry92NlZBFPctw: {
@@ -2750,7 +2750,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     dwg2PrUnQ0KJNUz_FNQCGw: {
@@ -2764,7 +2764,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     c5T0xDW5STeSoZl6m_Cpsg: {
@@ -2778,7 +2778,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'WvmKTjm2Tc-hLg3PIJmQTg': {
@@ -2792,7 +2792,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     KCUdtt2ATXqKUpbuu9IZ_g: {
@@ -2806,7 +2806,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     Bf4YplqkQdyT2tjOpNVr3A: {
@@ -2820,7 +2820,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'IDcBa3EpSeG-vEoCHsElew': {
@@ -2834,7 +2834,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     FdI_Wo9aSKCpcrrMjlccDg: {
@@ -2848,7 +2848,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     AN7s8X7QRumirmOg9BIrFA: {
@@ -2862,7 +2862,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     JwNl5LvXTGSJdn4fWZ87qw: {
@@ -2876,7 +2876,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     OYZ74KypQf6vdwJkfJVHJw: {
@@ -2890,7 +2890,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'D9_DzbJaReedKu65hF5O-Q': {
@@ -2904,7 +2904,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     QBfBDBlhSIWpR9S9aOaB2A: {
@@ -2918,7 +2918,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     NFMDLBAkRYehf9hYr0tGRA: {
@@ -2932,7 +2932,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     H62rW6l4RBatauCDM4davA: {
@@ -2946,7 +2946,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     S6Rg1ZXcSxO8kBttAYjsXw: {
@@ -2960,7 +2960,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     GeCwYVGxTECvVVY5cpNRWA: {
@@ -2974,7 +2974,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'Q38sspcoQGauLP7wqT-aSw': {
@@ -2988,7 +2988,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     'M473Pf4ST_aAyFS-5PyIrA': {
@@ -3002,7 +3002,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     GIXmGJhsScWODxq9bMnU8g: {
@@ -3016,7 +3016,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     J4iK1_hjTl67ADuMNS9L1A: {
@@ -3030,7 +3030,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     PVmg2nIgScq7LU6w4xNUUA: {
@@ -3044,7 +3044,7 @@ export const Aviary: EditorState = {
       x: 50,
       y: 50,
       rotation: 0,
-      count: 1,
+      counts: '1',
       layer: 3,
     },
     GTAFlzH6SOW3hasFXajJ0A: {
