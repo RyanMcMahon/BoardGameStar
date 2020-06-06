@@ -23,6 +23,7 @@ export interface PieceOption {
   y: number;
   rotation: number;
   layer: number;
+  locked?: boolean;
   counts?: string;
   parentId?: string;
   playerCounts?: {
@@ -101,6 +102,7 @@ export interface EditorState {
   pieces: {
     [id: string]: AnyPieceOption;
   };
+  assets?: Assets;
 }
 export interface GameConfig extends EditorState {
   store: 'included' | 'file' | 'browser';
@@ -111,6 +113,11 @@ export interface GameConfig extends EditorState {
 export interface CreateGameAction {
   type: 'create_game';
   editorConfig: EditorConfig;
+}
+
+export interface EditGameAction {
+  type: 'edit_game';
+  config: EditorState;
 }
 
 export interface SetCurScenarioAction {
@@ -174,6 +181,7 @@ export interface RemovePieceAction {
 
 export type EditorAction =
   | CreateGameAction
+  | EditGameAction
   | UpdateGameNameAction
   | SetCurScenarioAction
   | AddScenarioAction
@@ -202,6 +210,7 @@ export interface DicePiece extends Piece {
   x: number;
   y: number;
   hidden: boolean;
+  locked?: boolean;
   layer: number;
 }
 

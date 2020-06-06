@@ -1,7 +1,7 @@
 import React from 'react';
-import { Text, Label, Tag, Transformer } from 'react-konva';
+import { Text, Label, Tag } from 'react-konva';
 import { PlayerOption } from '../../types';
-import { useTransformer } from './PieceTransformer';
+import { useTransformer, PieceTransformer } from './PieceTransformer';
 
 interface Props {
   piece: PlayerOption;
@@ -19,15 +19,6 @@ export function PlayArea(props: Props) {
     objectRef,
     fn: onChange || (() => {}),
   });
-
-  const trRef = React.createRef<any>();
-
-  React.useEffect(() => {
-    if (isSelected && trRef.current) {
-      trRef.current.setNode(objectRef.current);
-      trRef.current.getLayer().batchDraw();
-    }
-  }, [isSelected, trRef]);
 
   return (
     <>
@@ -48,14 +39,12 @@ export function PlayArea(props: Props) {
           fill="white"
         />
       </Label>
-      {isSelected && (
-        <Transformer
-          ref={trRef}
-          rotateEnabled={false}
-          resizeEnabled={false}
-          borderStrokeWidth={2}
-        />
-      )}
+      <PieceTransformer
+        isSelected={isSelected || false}
+        resizeEnabled={false}
+        rotateEnabled={false}
+        objectRef={objectRef}
+      />
     </>
   );
 }

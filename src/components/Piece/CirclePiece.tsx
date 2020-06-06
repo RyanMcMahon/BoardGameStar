@@ -1,18 +1,27 @@
 import React from 'react';
-import { Circle, Transformer } from 'react-konva';
+import { Circle } from 'react-konva';
 
 import { CircleTokenPiece } from '../../types';
+import { PieceTransformer } from './PieceTransformer';
 
 interface Props {
   onSelect?: () => void;
   onChange: (o: any) => void;
+  editingEnabled?: boolean;
   isSelected?: boolean;
   draggable?: boolean;
   piece: CircleTokenPiece;
 }
 
 export const CirclePiece = React.memo((props: Props) => {
-  const { draggable, isSelected, piece, onSelect, onChange } = props;
+  const {
+    draggable,
+    editingEnabled,
+    isSelected,
+    piece,
+    onSelect,
+    onChange,
+  } = props;
   const objectRef = React.useRef<any>();
   const trRef = React.createRef<any>();
 
@@ -49,7 +58,6 @@ export const CirclePiece = React.memo((props: Props) => {
         fill={piece.color}
         x={piece.x}
         y={piece.y}
-        zIndex={piece.layer}
         onClick={onSelect}
         onTap={onSelect}
         ref={objectRef}
@@ -57,33 +65,23 @@ export const CirclePiece = React.memo((props: Props) => {
         onDragMove={handleTransform}
         onTransform={handleTransform}
       />
-
-      {isSelected && (
-        <Transformer
-          ref={trRef}
-          borderStrokeWidth={2}
-          rotateEnabled={false}
-          onTransform={e => {
-            // debugger
-            const node = objectRef.current;
-            const scaleX = node.scaleX();
-            const scaleY = node.scaleY();
-            if (scaleX !== 1) {
-              node.scaleY(scaleX);
-            }
-            if (scaleY !== 1) {
-              node.scaleX(scaleY);
-            }
-          }}
-          boundBoxFunc={(oldBox: any, newBox: any) => {
-            // limit resize
-            if (newBox.width < 5 || newBox.height < 5) {
-              return oldBox;
-            }
-            return newBox;
-          }}
-        />
-      )}
+      <PieceTransformer
+        isSelected={isSelected || false}
+        rotateEnabled={false}
+        resizeEnabled={editingEnabled || false}
+        objectRef={objectRef}
+        onTransform={() => {
+          const node = objectRef.current;
+          const scaleX = node.scaleX();
+          const scaleY = node.scaleY();
+          if (scaleX !== 1) {
+            node.scaleY(scaleX);
+          }
+          if (scaleY !== 1) {
+            node.scaleX(scaleY);
+          }
+        }}
+      />
     </>
   );
 });

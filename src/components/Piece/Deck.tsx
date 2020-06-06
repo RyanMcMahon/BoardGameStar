@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, Image, Label, Tag, Group, Transformer } from 'react-konva';
+import { Text, Image, Label, Tag, Group } from 'react-konva';
 
 import { useAsset } from './utils';
 import { Assets } from '../../utils/game';
@@ -41,15 +41,6 @@ export function Deck(props: Props) {
     fn: onChange,
   });
 
-  const trRef = React.createRef<any>();
-
-  React.useEffect(() => {
-    if (isSelected && !editingEnabled && trRef.current) {
-      trRef.current.setNode(objectRef.current);
-      trRef.current.getLayer().batchDraw();
-    }
-  }, [isSelected, editingEnabled, trRef]);
-
   if (isHolding && checkForHolding && onContextMenu) {
     onContextMenu({
       evt: {
@@ -62,9 +53,9 @@ export function Deck(props: Props) {
 
   return (
     <Group
+      id={piece.id}
       x={piece.x}
       y={piece.y}
-      zIndex={piece.layer}
       draggable={draggable}
       onDragMove={handleTransform}
       ref={groupRef}
@@ -82,7 +73,6 @@ export function Deck(props: Props) {
       )}
 
       <Image
-        id={piece.id}
         ref={objectRef}
         x={0}
         y={0}
@@ -110,21 +100,12 @@ export function Deck(props: Props) {
           }
         }}
       />
-      {isSelected && !editingEnabled && (
-        <Transformer
-          ref={trRef}
-          rotateEnabled={false}
-          resizeEnabled={false}
-          borderStrokeWidth={2}
-        />
-      )}
-      {editingEnabled && (
-        <PieceTransformer
-          isSelected={isSelected || false}
-          rotateEnabled={false}
-          objectRef={objectRef}
-        />
-      )}
+      <PieceTransformer
+        isSelected={isSelected || false}
+        rotateEnabled={false}
+        resizeEnabled={editingEnabled || false}
+        objectRef={objectRef}
+      />
     </Group>
   );
 }

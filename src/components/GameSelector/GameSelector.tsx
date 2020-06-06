@@ -6,12 +6,12 @@ import { GameConfig } from '../../types';
 import { deleteGame } from '../../utils/store';
 import { Button } from '../../utils/style';
 import styled from 'styled-components';
-import { useHistory } from 'react-router-dom';
 
 interface Props {
   name: string;
   config: GameConfig;
   onGameSelect: (config: GameConfig) => void;
+  onEditGame: (config: GameConfig) => void;
   onReloadConfigs: () => void;
 }
 
@@ -26,7 +26,7 @@ const Select = styled.select({
   top: '1px',
 });
 
-const DeleteButton = styled(Button)({
+const GameButton = styled(Button)({
   marginLeft: '1rem',
 });
 
@@ -58,11 +58,22 @@ export function GameSelector(props: Props) {
           ))}
         </Select>
       )}
-      <Button design="primary" onClick={handleGameSelect}>
+      <Button design="success" onClick={handleGameSelect}>
         Play
       </Button>
+      {config.store === 'file' && (
+        <GameButton
+          design="primary"
+          onClick={() => {
+            // TODO edit
+            props.onEditGame(config);
+          }}
+        >
+          Edit
+        </GameButton>
+      )}
       {config.store === 'browser' && (
-        <DeleteButton
+        <GameButton
           design="danger"
           onClick={() => {
             deleteGame(config.id);
@@ -70,7 +81,7 @@ export function GameSelector(props: Props) {
           }}
         >
           Delete
-        </DeleteButton>
+        </GameButton>
       )}
     </>
   );

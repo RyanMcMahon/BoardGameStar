@@ -60,6 +60,10 @@ export function editorReducer(
       };
     }
 
+    case 'edit_game': {
+      return action.config;
+    }
+
     case 'update_game_name': {
       return {
         ...state,

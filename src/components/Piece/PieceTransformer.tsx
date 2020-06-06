@@ -4,6 +4,8 @@ import { Transformer } from 'react-konva';
 interface Props {
   isSelected: boolean;
   rotateEnabled?: boolean;
+  resizeEnabled?: boolean;
+  onTransform?: () => void;
   objectRef: React.MutableRefObject<any>;
 }
 
@@ -54,7 +56,13 @@ export function useTransformer({
 
 export function PieceTransformer(props: Props) {
   const trRef = React.createRef<any>();
-  const { isSelected, objectRef } = props;
+  const {
+    isSelected,
+    objectRef,
+    onTransform,
+    resizeEnabled,
+    rotateEnabled,
+  } = props;
 
   React.useEffect(() => {
     if (isSelected && trRef.current) {
@@ -70,8 +78,13 @@ export function PieceTransformer(props: Props) {
   return (
     <Transformer
       ref={trRef}
+      onTransform={onTransform}
       borderStrokeWidth={2}
-      rotateEnabled={props.rotateEnabled}
+      // TODO
+      // anchorStrokeWidth={5}
+      // anchorSize={5}
+      rotateEnabled={rotateEnabled}
+      resizeEnabled={resizeEnabled}
       boundBoxFunc={(oldBox: any, newBox: any) => {
         // limit resize
         if (newBox.width < 5 || newBox.height < 5) {

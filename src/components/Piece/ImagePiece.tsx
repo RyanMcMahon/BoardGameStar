@@ -10,6 +10,7 @@ interface Props {
   onSelect?: () => void;
   onChange?: (o: any) => void;
   onDblClick?: () => void;
+  editingEnabled?: boolean;
   draggable?: boolean;
   isSelected?: boolean;
   assets: Assets;
@@ -19,6 +20,7 @@ interface Props {
 export const ImagePiece = React.memo((props: Props) => {
   const {
     draggable,
+    editingEnabled,
     isSelected,
     assets,
     piece,
@@ -40,7 +42,6 @@ export const ImagePiece = React.memo((props: Props) => {
         image={image}
         x={piece.x}
         y={piece.y}
-        zIndex={piece.layer}
         width={piece.width}
         height={piece.height}
         rotation={piece.rotation}
@@ -56,6 +57,7 @@ export const ImagePiece = React.memo((props: Props) => {
       <PieceTransformer
         isSelected={isSelected || false}
         rotateEnabled={true}
+        resizeEnabled={editingEnabled || false}
         objectRef={objectRef}
       />
     </>

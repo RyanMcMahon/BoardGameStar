@@ -112,7 +112,9 @@ const ExitButton = styled(Button)({
 
 export function Editor(props: Props) {
   const { state, dispatch } = props;
-  const [assets, setAssets] = React.useState<{ [key: string]: string }>({});
+  const [assets, setAssets] = React.useState<{ [key: string]: string }>(
+    state.assets || {}
+  );
   const [files, setFiles] = React.useState<{ [key: string]: string }>({});
   const [selectedPieceId, setSelectedPieceId] = React.useState<string | null>();
   const [deckModalId, setDeckModalId] = React.useState<string>();
@@ -187,30 +189,32 @@ export function Editor(props: Props) {
 
   const createNewImagePiece = (options: any) => async () => {
     try {
-      const [file] = (window as any).electron.dialog.showOpenDialogSync({
-        properties: ['openFile'],
+      const files = (window as any).electron.dialog.showOpenDialogSync({
+        properties: ['openFile', 'multiSelections'],
       });
-      const filename = getFilename(file);
-      const asset = loadAsset(file);
-      const { width, height } = await getAssetDimensions(asset);
-      const id = slug.nice();
-      const piece = {
-        id,
-        width,
-        height,
-        ...options,
-        image: filename,
-        x: 50,
-        y: 50,
-        rotation: 0,
-      };
-      dispatch({
-        piece,
-        type: 'add_piece',
+      files.forEach(async (file: string, index: number) => {
+        const filename = getFilename(file);
+        const asset = loadAsset(file);
+        const { width, height } = await getAssetDimensions(asset);
+        const id = slug.nice();
+        const piece = {
+          id,
+          width,
+          height,
+          ...options,
+          image: filename,
+          x: 50 + index * 20,
+          y: 50 + index * 20,
+          rotation: 0,
+        };
+        dispatch({
+          piece,
+          type: 'add_piece',
+        });
+        setAssets(a => ({ ...a, [filename]: asset }));
+        setFiles(a => ({ ...a, [filename]: file }));
+        setSelectedPieceId(id);
       });
-      setAssets(a => ({ ...a, [filename]: asset }));
-      setFiles(a => ({ ...a, [filename]: file }));
-      setSelectedPieceId(id);
     } catch (err) {
       console.log(err);
     }
@@ -315,6 +319,7 @@ export function Editor(props: Props) {
                       assets={assets}
                       piece={piece as BoardPiece}
                       draggable={true}
+                      editingEnabled={true}
                       isSelected={piece.id === selectedPieceId}
                       onChange={b => {
                         dispatch({
@@ -359,6 +364,7 @@ export function Editor(props: Props) {
                       assets={assets}
                       piece={piece as ImageTokenPiece}
                       draggable={true}
+                      editingEnabled={true}
                       isSelected={piece.id === selectedPieceId}
                       onChange={b => {
                         dispatch({
@@ -379,6 +385,7 @@ export function Editor(props: Props) {
                       key={piece.id}
                       piece={piece as RectTokenPiece}
                       draggable={true}
+                      editingEnabled={true}
                       isSelected={piece.id === selectedPieceId}
                       onChange={b => {
                         dispatch({
@@ -399,6 +406,7 @@ export function Editor(props: Props) {
                       key={piece.id}
                       piece={piece as CircleTokenPiece}
                       draggable={true}
+                      editingEnabled={true}
                       isSelected={piece.id === selectedPieceId}
                       onChange={b => {
                         dispatch({

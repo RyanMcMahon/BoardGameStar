@@ -80,6 +80,7 @@ export const Table = React.forwardRef((props: Props, ref: any) => {
     ref.current = {
       zoomIn: handleZoom(1.1),
       zoomOut: handleZoom(0.9),
+      redraw: () => (stageRef.current as any).batchDraw(),
     };
   }
 

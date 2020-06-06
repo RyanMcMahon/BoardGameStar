@@ -1,14 +1,14 @@
 import React from 'react';
-import { Image, Text, Group, Circle, Transformer } from 'react-konva';
+import { Image, Text, Group, Circle } from 'react-konva';
 import useImage from 'use-image';
 
-import { useTransformer } from './PieceTransformer';
+import { useTransformer, PieceTransformer } from './PieceTransformer';
 import { DicePiece } from '../../types';
 import { prependPrefix } from '../../utils/assets';
 import { primaryColor } from '../../utils/style';
 
 interface Props {
-  isSelected: boolean;
+  isSelected?: boolean;
   onSelect?: () => void;
   onChange: (o: any) => void;
   draggable?: boolean;
@@ -75,22 +75,16 @@ export const Die = React.memo((props: Props) => {
   return (
     <>
       <Group
+        id={piece.id}
         draggable={draggable}
         onDragMove={handleTransform}
         x={piece.x}
         y={piece.y}
-        zIndex={piece.layer}
         ref={groupRef}
         onClick={onSelect}
         onTap={onSelect}
       >
-        <Image
-          id={'e'}
-          ref={objectRef}
-          image={image}
-          width={128}
-          height={128}
-        />
+        <Image ref={objectRef} image={image} width={128} height={128} />
         {piece.faces === 4 && (
           <Circle
             x={x + 10}
@@ -110,14 +104,12 @@ export const Die = React.memo((props: Props) => {
               : `${piece.value}`
           }
         />
-        {isSelected && (
-          <Transformer
-            ref={trRef}
-            rotateEnabled={false}
-            resizeEnabled={false}
-            borderStrokeWidth={2}
-          />
-        )}
+        <PieceTransformer
+          isSelected={isSelected || false}
+          rotateEnabled={false}
+          resizeEnabled={false}
+          objectRef={objectRef}
+        />
       </Group>
     </>
   );

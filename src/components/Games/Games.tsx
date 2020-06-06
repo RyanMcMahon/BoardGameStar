@@ -131,6 +131,16 @@ export function Games(props: Props) {
     });
   };
 
+  const handleEditGame = (config: GameConfig) => {
+    props.dispatch({
+      config: {
+        ...config,
+        assets: config.loadAssets(),
+      },
+      type: 'edit_game',
+    });
+  };
+
   const load = async () => {
     const configs = await loadConfigs();
     setConfigs(configs);
@@ -167,6 +177,7 @@ export function Games(props: Props) {
                 name={config.name}
                 config={config}
                 onGameSelect={handleGameSelect}
+                onEditGame={handleEditGame}
                 onReloadConfigs={load}
               />
             ))}
