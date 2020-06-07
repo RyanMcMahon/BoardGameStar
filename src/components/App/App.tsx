@@ -43,7 +43,7 @@ import {
   RectTokenPiece,
   DeckPiece,
 } from '../../types';
-import { Layer, Group } from 'react-konva';
+import { Layer } from 'react-konva';
 import { ImagePiece, Deck, RectPiece, CirclePiece, Die } from '../Piece';
 import { PlayArea } from '../Piece/PlayArea';
 import { ControlsMenu, ControlsMenuItem } from '../ControlsMenu';
@@ -51,6 +51,7 @@ import { DiceModal } from '../DiceModal';
 import { Chat } from '../Chat';
 import { SettingsModal } from '../SettingsModal';
 import { AppContext, initialState, appReducer } from './AppContext';
+import Konva from 'konva';
 // import { DeckPeekModal } from '../DeckPeekModal/DeckPeekModal';
 
 const MainContainer = styled.div({
@@ -203,8 +204,9 @@ export const App: React.FC = () => {
     zoomIn: () => void;
     zoomOut: () => void;
     redraw: () => void;
+    updateGroup: (selectedPieceIds: string[]) => void;
+    getNode: (id: string) => Konva.Node;
   }>();
-  const [dragGroupPieces, setDragGroupPieces] = React.useState<any>({});
 
   const selectedPieces = Array.from(selectedPieceIds)
     .map(id => pieces[id])
@@ -260,7 +262,7 @@ export const App: React.FC = () => {
                 icon: <FaTrashAlt />,
                 label: 'Remove',
                 fn: () => {
-                  handleUpdatePieceUnthrottled(
+                  handleUpdatePieces(
                     selectedPieces.map(
                       piece =>
                         ({
@@ -284,7 +286,7 @@ export const App: React.FC = () => {
                 icon: <FaSync />,
                 label: 'Flip Card',
                 fn: () =>
-                  handleUpdatePieceUnthrottled(
+                  handleUpdatePieces(
                     selectedPieces.map(piece => ({
                       ...piece,
                       faceDown: !piece.faceDown,
@@ -334,7 +336,7 @@ export const App: React.FC = () => {
             icon: allUnlocked ? <FaLock /> : <FaLockOpen />,
             label: allUnlocked ? 'Lock' : 'Unlock',
             fn: () =>
-              handleUpdatePieceUnthrottled(
+              handleUpdatePieces(
                 selectedPieces.map(piece => ({
                   ...piece,
                   locked: allUnlocked,
@@ -410,45 +412,85 @@ export const App: React.FC = () => {
   //   }
   // };
 
-  const handleUpdatePieceUnthrottled = React.useCallback(
-    (updatedPieces: RenderPiece[]) => {
+  let sendUpdatedPiecesRef = React.useRef<
+    (updatedPieces: { [id: string]: RenderPiece }) => void
+  >();
+
+  const sendUpdatedPieces = React.useCallback(
+    (updatedPiecesById: { [id: string]: RenderPiece }) => {
       if (!conn) {
         return;
       }
-      const updatedPiecesById = _.keyBy(updatedPieces, 'id');
-      setPieces(p => ({
-        ...p,
-        ...updatedPiecesById,
-      }));
-
       conn.send({
         event: 'update_piece',
         pieces: updatedPiecesById,
       });
     },
-    [conn, setPieces]
+    [conn]
   );
-  let handleUpdatePieceRef = React.useRef<
-    (updatedPieces: RenderPiece[]) => void
-  >();
+
   const handleUpdatePiece = (
-    partialPieces: (Partial<RenderPiece> & { id: string })[]
+    piece: Partial<RenderPiece> & { id: string },
+    throttled?: boolean
   ) => {
-    if (!handleUpdatePieceRef.current) {
+    const curPiece = pieces[piece.id];
+    if (!curPiece) {
       return;
     }
-    const updatedPieces = partialPieces
-      .filter(piece => !!pieces[piece.id])
-      .map(piece => {
-        const curPiece = pieces[piece.id];
-        return {
-          ...curPiece,
-          ...piece,
-          delta: curPiece.delta + 1,
-        } as RenderPiece;
-      });
 
-    handleUpdatePieceRef.current(updatedPieces);
+    const updatedPieces: RenderPiece[] = [
+      {
+        ...curPiece,
+        ...piece,
+        delta: curPiece.delta + 1,
+      } as RenderPiece,
+    ];
+
+    if (!tableRef.current) {
+      return;
+    }
+
+    if (selectedPieceIds.has(piece.id) && piece.x && piece.y) {
+      const node = tableRef.current.getNode(piece.id);
+      const diff = {
+        x: node.position().x - curPiece.x,
+        y: node.position().y - curPiece.y,
+      };
+      console.log(diff);
+      Array.from(selectedPieceIds)
+        .filter(id => id !== piece.id)
+        .forEach(id => {
+          const groupedPiece = pieces[id];
+          const newPos = {
+            x: groupedPiece.x + diff.x,
+            y: groupedPiece.y + diff.y,
+          };
+          updatedPieces.push({
+            ...groupedPiece,
+            ...newPos,
+            delta: groupedPiece.delta + 1,
+          });
+        });
+    }
+
+    handleUpdatePieces(updatedPieces, throttled);
+  };
+
+  const handleUpdatePieces = (
+    updatedPieces: RenderPiece[],
+    throttled?: boolean
+  ) => {
+    const updatedPiecesById = _.keyBy(updatedPieces, 'id');
+    setPieces(p => ({
+      ...p,
+      ...updatedPiecesById,
+    }));
+
+    if (!throttled || !sendUpdatedPiecesRef.current) {
+      sendUpdatedPieces(updatedPiecesById);
+    } else {
+      sendUpdatedPiecesRef.current(updatedPiecesById);
+    }
   };
 
   const handlePickUpCard = (id: string) => () => {
@@ -599,14 +641,12 @@ export const App: React.FC = () => {
   };
 
   React.useEffect(() => {
-    if (conn && !handleUpdatePieceRef.current) {
-      handleUpdatePieceRef.current = _.throttle(
-        handleUpdatePieceUnthrottled,
-        100,
-        { leading: false }
-      );
+    if (conn && !sendUpdatedPiecesRef.current) {
+      sendUpdatedPiecesRef.current = _.throttle(sendUpdatedPieces, 100, {
+        leading: false,
+      });
     }
-  }, [conn, handleUpdatePieceUnthrottled]);
+  }, [conn, sendUpdatedPieces]);
 
   const players = Object.values(pieces).filter(
     p => p.type === 'player' && p.playerId
@@ -617,12 +657,11 @@ export const App: React.FC = () => {
     .map(id => pieces[id] || {})
     .filter(
       piece =>
-        !selectedPieceIds.has(piece.id) &&
-        (!piece.counts ||
-          piece.type === 'card' ||
-          players.length >= parseInt(piece.counts.split(':')[0], 10))
+        !piece.counts ||
+        piece.type === 'card' ||
+        players.length >= parseInt(piece.counts.split(':')[0], 10)
     )
-    .sort((a, b) => (a.layer > b.layer ? 1 : -1));
+    .sort((a, b) => (selectedPieceIds.has(a.id) || a.layer > b.layer ? 1 : -1));
 
   if (!gameId) {
     return <Redirect to="/" />;
@@ -634,274 +673,120 @@ export const App: React.FC = () => {
         <AppContext.Provider value={{ state, dispatch }}>
           <Table ref={tableRef}>
             <Layer>
-              <Group>
-                {boardPieces.map(piece => {
-                  switch (piece.type) {
-                    case 'board':
-                      return (
-                        <ImagePiece
-                          key={piece.id}
-                          assets={assets}
-                          piece={piece as BoardPiece}
-                        />
-                      );
+              {boardPieces.map(piece => {
+                switch (piece.type) {
+                  case 'board':
+                    return (
+                      <ImagePiece
+                        key={piece.id}
+                        assets={assets}
+                        piece={piece as BoardPiece}
+                      />
+                    );
 
-                    case 'deck':
+                  case 'deck':
+                    return (
+                      <Deck
+                        key={piece.id}
+                        assets={assets}
+                        piece={piece as DeckPiece}
+                        draggable={state.globalDragEnabled && !piece.locked}
+                        onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                        isSelected={selectedPieceIds.has(piece.id)}
+                        onSelect={handleSelectPiece(piece.id)}
+                        onDblClick={() => setDrawModalId(piece.id)}
+                      />
+                    );
+
+                  case 'card':
+                    return (
+                      <ImagePiece
+                        key={piece.id}
+                        assets={assets}
+                        piece={
+                          (piece.faceDown
+                            ? {
+                                ...piece,
+                                image: pieces[piece.deckId].image,
+                              }
+                            : piece) as CardPiece
+                        }
+                        draggable={state.globalDragEnabled && !piece.locked}
+                        isSelected={selectedPieceIds.has(piece.id)}
+                        onSelect={handleSelectPiece(piece.id)}
+                        onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                        onDblClick={handlePickUpCard(piece.id)}
+                      />
+                    );
+
+                  case 'image':
+                    return (
+                      <ImagePiece
+                        key={piece.id}
+                        assets={assets}
+                        piece={piece as ImageTokenPiece}
+                        draggable={state.globalDragEnabled && !piece.locked}
+                        isSelected={selectedPieceIds.has(piece.id)}
+                        onSelect={handleSelectPiece(piece.id)}
+                        onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                      />
+                    );
+
+                  case 'rect':
+                    return (
+                      <RectPiece
+                        key={piece.id}
+                        piece={piece as RectTokenPiece}
+                        draggable={state.globalDragEnabled && !piece.locked}
+                        isSelected={selectedPieceIds.has(piece.id)}
+                        onSelect={handleSelectPiece(piece.id)}
+                        onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                      />
+                    );
+
+                  case 'circle':
+                    return (
+                      <CirclePiece
+                        key={piece.id}
+                        piece={piece as CircleTokenPiece}
+                        draggable={state.globalDragEnabled && !piece.locked}
+                        isSelected={selectedPieceIds.has(piece.id)}
+                        onSelect={handleSelectPiece(piece.id)}
+                        onChange={p => handleUpdatePiece({ ...piece, ...p })}
+                      />
+                    );
+
+                  case 'player':
+                    if (piece.playerId) {
                       return (
-                        <Deck
+                        <PlayArea
                           key={piece.id}
-                          assets={assets}
-                          piece={piece as DeckPiece}
+                          piece={piece as PlayerPiece}
+                          handCount={handCounts[piece.playerId]}
                           draggable={state.globalDragEnabled && !piece.locked}
-                          onChange={p =>
-                            handleUpdatePiece([{ ...piece, ...p }])
-                          }
-                          onSelect={handleSelectPiece(piece.id)}
-                          onDblClick={() => setDrawModalId(piece.id)}
+                          onChange={p => handleUpdatePiece({ ...piece, ...p })}
                         />
                       );
-
-                    case 'card':
-                      return (
-                        <ImagePiece
-                          key={piece.id}
-                          assets={assets}
-                          piece={
-                            (piece.faceDown
-                              ? {
-                                  ...piece,
-                                  image: pieces[piece.deckId].image,
-                                }
-                              : piece) as CardPiece
-                          }
-                          draggable={state.globalDragEnabled && !piece.locked}
-                          onSelect={handleSelectPiece(piece.id)}
-                          onChange={p =>
-                            handleUpdatePiece([{ ...piece, ...p }])
-                          }
-                          onDblClick={handlePickUpCard(piece.id)}
-                        />
-                      );
-
-                    case 'image':
-                      return (
-                        <ImagePiece
-                          key={piece.id}
-                          assets={assets}
-                          piece={piece as ImageTokenPiece}
-                          draggable={state.globalDragEnabled && !piece.locked}
-                          onSelect={handleSelectPiece(piece.id)}
-                          onChange={p =>
-                            handleUpdatePiece([{ ...piece, ...p }])
-                          }
-                        />
-                      );
-
-                    case 'rect':
-                      return (
-                        <RectPiece
-                          key={piece.id}
-                          piece={piece as RectTokenPiece}
-                          draggable={state.globalDragEnabled && !piece.locked}
-                          onSelect={handleSelectPiece(piece.id)}
-                          onChange={p =>
-                            handleUpdatePiece([{ ...piece, ...p }])
-                          }
-                        />
-                      );
-
-                    case 'circle':
-                      return (
-                        <CirclePiece
-                          key={piece.id}
-                          piece={piece as CircleTokenPiece}
-                          draggable={state.globalDragEnabled && !piece.locked}
-                          onSelect={handleSelectPiece(piece.id)}
-                          onChange={p =>
-                            handleUpdatePiece([{ ...piece, ...p }])
-                          }
-                        />
-                      );
-
-                    case 'player':
-                      if (piece.playerId) {
-                        return (
-                          <PlayArea
-                            key={piece.id}
-                            piece={piece as PlayerPiece}
-                            handCount={handCounts[piece.playerId]}
-                            draggable={state.globalDragEnabled && !piece.locked}
-                            onChange={p =>
-                              handleUpdatePiece([{ ...piece, ...p }])
-                            }
-                          />
-                        );
-                      }
-                      return null;
-
-                    case 'die':
-                      return (
-                        <Die
-                          key={piece.id}
-                          draggable={state.globalDragEnabled && !piece.locked}
-                          piece={piece as DicePiece}
-                          onSelect={handleSelectPiece(piece.id)}
-                          onChange={(p: any) =>
-                            handleUpdatePiece([{ ...piece, ...p }])
-                          }
-                        />
-                      );
-                  }
-
-                  return null;
-                })}
-              </Group>
-            </Layer>
-            <Layer>
-              <Group
-                draggable={state.globalDragEnabled && allUnlocked}
-                onDragStart={e => {
-                  const startPositions = Array.from(e.target.children)
-                    .filter(child => child.attrs.id)
-                    .map(child => ({
-                      ...pieces[child.attrs.id],
-                      id: child.attrs.id,
-                    }));
-                  setDragGroupPieces({
-                    ..._.keyBy(startPositions, 'id'),
-                    group: e.target.position(),
-                  });
-                }}
-                onDragEnd={e => {
-                  e.target.position({ x: 0, y: 0 });
-                  setDragGroupPieces({});
-                }}
-                onDragMove={e => {
-                  const pos = e.target.position();
-                  const diff = {
-                    x: pos.x - dragGroupPieces.group.x,
-                    y: pos.y - dragGroupPieces.group.y,
-                  };
-                  const update = Array.from(e.target.children)
-                    .filter(child => child.attrs.id)
-                    .map(child => {
-                      const piece = pieces[child.attrs.id];
-                      const originalPiece = dragGroupPieces[child.attrs.id];
-
-                      return {
-                        ...piece,
-                        x: diff.x + originalPiece.x,
-                        y: diff.y + originalPiece.y,
-                      };
-                    });
-
-                  if (update.length) {
-                    handleUpdatePiece(update);
-                  }
-                }}
-              >
-                {selectedPieces
-                  .map(piece => ({
-                    ...piece,
-                    x: dragGroupPieces[piece.id]?.x || piece.x,
-                    y: dragGroupPieces[piece.id]?.y || piece.y,
-                  }))
-                  .map(piece => {
-                    switch (piece.type) {
-                      case 'deck':
-                        return (
-                          <Deck
-                            key={piece.id}
-                            assets={assets}
-                            piece={piece as DeckPiece}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                            isSelected={true}
-                            onSelect={handleSelectPiece(piece.id)}
-                            onDblClick={() => setDrawModalId(piece.id)}
-                          />
-                        );
-
-                      case 'card':
-                        return (
-                          <ImagePiece
-                            key={piece.id}
-                            assets={assets}
-                            piece={
-                              (piece.faceDown
-                                ? {
-                                    ...piece,
-                                    image: pieces[piece.deckId].image,
-                                  }
-                                : piece) as CardPiece
-                            }
-                            isSelected={true}
-                            onSelect={handleSelectPiece(piece.id)}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                            onDblClick={handlePickUpCard(piece.id)}
-                          />
-                        );
-
-                      case 'image':
-                        return (
-                          <ImagePiece
-                            key={piece.id}
-                            assets={assets}
-                            piece={piece}
-                            isSelected={true}
-                            onSelect={handleSelectPiece(piece.id)}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                          />
-                        );
-
-                      case 'rect':
-                        return (
-                          <RectPiece
-                            key={piece.id}
-                            piece={piece as RectTokenPiece}
-                            isSelected={true}
-                            onSelect={handleSelectPiece(piece.id)}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                          />
-                        );
-
-                      case 'circle':
-                        return (
-                          <CirclePiece
-                            key={piece.id}
-                            piece={piece as CircleTokenPiece}
-                            isSelected={true}
-                            onSelect={handleSelectPiece(piece.id)}
-                            onChange={p =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                          />
-                        );
-
-                      case 'die':
-                        return (
-                          <Die
-                            key={piece.id}
-                            piece={piece as DicePiece}
-                            isSelected={true}
-                            onSelect={handleSelectPiece(piece.id)}
-                            onChange={(p: any) =>
-                              handleUpdatePiece({ ...piece, ...p })
-                            }
-                          />
-                        );
                     }
-
                     return null;
-                  })}
-              </Group>
+
+                  case 'die':
+                    return (
+                      <Die
+                        key={piece.id}
+                        draggable={state.globalDragEnabled && !piece.locked}
+                        piece={piece as DicePiece}
+                        isSelected={selectedPieceIds.has(piece.id)}
+                        onSelect={handleSelectPiece(piece.id)}
+                        onChange={(p: any) =>
+                          handleUpdatePiece({ ...piece, ...p })
+                        }
+                      />
+                    );
+                }
+
+                return null;
+              })}
             </Layer>
           </Table>
         </AppContext.Provider>

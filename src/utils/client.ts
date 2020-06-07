@@ -108,7 +108,6 @@ export function useGameClient(gameId: string, hostId: string) {
             _.random(1200, 2000)
           );
           setTimeout(() => setAssets(a), _.random(3100, 3500));
-          // setAssets(a);
         }
         break;
       }

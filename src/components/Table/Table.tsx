@@ -81,6 +81,7 @@ export const Table = React.forwardRef((props: Props, ref: any) => {
       zoomIn: handleZoom(1.1),
       zoomOut: handleZoom(0.9),
       redraw: () => (stageRef.current as any).batchDraw(),
+      getNode: (id: string) => (stageRef.current as any).find(`#${id}`)[0],
     };
   }
 
