@@ -312,6 +312,9 @@ export const App: React.FC = () => {
         event: 'pick_up_cards',
         cardIds: [id],
       });
+      const ids = new Set(selectedPieceIds);
+      ids.delete(id);
+      setSelectedPieceIds(ids);
     }
   };
 
