@@ -155,6 +155,7 @@ export const App: React.FC = () => {
   const {
     playerId,
     conn,
+    isLoaded,
     config,
     chat,
     pieces,
@@ -487,7 +488,7 @@ export const App: React.FC = () => {
     <MainContainer>
       <AppContainer>
         <AppContext.Provider value={{ state, dispatch }}>
-          <Table ref={tableRef} onZoom={handleZoom}>
+          <Table ref={tableRef} onZoom={handleZoom} isLoaded={isLoaded}>
             <Layer>
               {boardPieces.map(piece => {
                 switch (piece.type) {
@@ -747,7 +748,7 @@ export const App: React.FC = () => {
         />
       )} */}
 
-      {_.size(assets) === 0 && (
+      {!isLoaded && (
         <LoadingPage>
           <LoadingContainer>
             {failedConnection ? (

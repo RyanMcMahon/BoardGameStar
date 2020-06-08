@@ -13,10 +13,6 @@ import {
 } from '../types';
 import { createPeer } from './peer';
 
-let tempAssets: {
-  [key: string]: string;
-} = {};
-
 interface ClientPeerDataConnection extends Peer.DataConnection {
   send: (event: ClientEvent) => void;
 }
@@ -31,6 +27,7 @@ export function useGameClient(gameId: string, hostId: string) {
   const [pieces, setPieces] = React.useState<{ [key: string]: RenderPiece }>(
     {}
   );
+  const [isLoaded, setIsLoaded] = React.useState<boolean>(false);
   const [pendingAssets, setPendingAssets] = React.useState<string[]>([]);
   const [config, setConfig] = React.useState<EditorState>();
   const [chat, setChat] = React.useState<ChatEvent[]>([]);
@@ -58,12 +55,16 @@ export function useGameClient(gameId: string, hostId: string) {
           'Time Paradox: requesting assets before connection established'
         );
       }
+      if (assets[asset]) {
+        return;
+      }
+
       conn.send({
         asset,
         event: 'request_asset',
       });
     },
-    [conn]
+    [conn, assets]
   );
 
   const processEvent = React.useCallback((data: GameEvent) => {
@@ -71,8 +72,8 @@ export function useGameClient(gameId: string, hostId: string) {
       case 'asset_loaded': {
         const { asset } = data;
         Object.entries(asset).forEach(([key, value]) => {
+          setAssets(a => ({ ...a, [key]: value }));
           setPendingAssets(pending => pending.filter(a => a !== key));
-          tempAssets[key] = value;
         });
         break;
       }
@@ -107,7 +108,10 @@ export function useGameClient(gameId: string, hostId: string) {
             () => setPercentLoaded(_.random(80, 99)),
             _.random(1200, 2000)
           );
-          setTimeout(() => setAssets(a), _.random(3100, 3500));
+          setTimeout(() => {
+            setAssets(a);
+            setIsLoaded(true);
+          }, _.random(3100, 3500));
         }
         break;
       }
@@ -195,15 +199,19 @@ export function useGameClient(gameId: string, hostId: string) {
   }, []);
 
   React.useEffect(() => {
+    if (isLoaded) {
+      return;
+    }
+
     if (pendingAssets.length) {
       setPercentLoaded(
-        percent => percent + ((100 - percent) / pendingAssets.length + 1)
+        percent => percent + (100 - percent) / pendingAssets.length
       );
       requestAsset(pendingAssets[0]);
-    } else if (_.size(tempAssets)) {
-      setAssets(tempAssets);
+    } else if (_.size(assets)) {
+      setIsLoaded(true);
     }
-  }, [pendingAssets, requestAsset]);
+  }, [pendingAssets, requestAsset, assets, isLoaded]);
 
   React.useEffect(() => {
     const { instanceId, playerId, name } = getIdentity();
@@ -231,14 +239,15 @@ export function useGameClient(gameId: string, hostId: string) {
   }, [gameId, hostId, processEvent]);
 
   React.useEffect(() => {
-    if (checkTimeout && !board.length) {
+    if (checkTimeout && !isLoaded && !_.size(assets)) {
       setFailedConnection(true);
     }
-  }, [checkTimeout, board]);
+  }, [checkTimeout, isLoaded, assets]);
 
   return {
     playerId,
     conn,
+    isLoaded,
     config,
     chat,
     board,

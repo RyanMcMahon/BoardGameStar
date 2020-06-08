@@ -4,6 +4,7 @@ import { Stage } from 'react-konva';
 import { useAppContext } from '../App/AppContext';
 
 interface Props {
+  isLoaded?: boolean;
   children: React.ReactNode;
   onZoom: () => void;
 }
@@ -26,9 +27,10 @@ let scaleDist = 0;
 
 export const Table = React.forwardRef((props: Props, ref: any) => {
   // const [scaleDist, setScaleDist] = React.useState<number>(0);
-  const { onZoom } = props;
+  const { onZoom, isLoaded } = props;
   const { state, dispatch } = useAppContext();
   const stageRef = React.createRef<Stage>();
+  const [zoomInit, setZoomInit] = React.useState(false);
   const [dimensions, setDimensions] = React.useState({
     width: 200,
     height: 200,
@@ -46,6 +48,36 @@ export const Table = React.forwardRef((props: Props, ref: any) => {
   }, [updateDimensions]);
 
   React.useLayoutEffect(updateDimensions, []);
+  React.useEffect(() => {
+    const stage = stageRef.current as any;
+    if (stage && isLoaded && !zoomInit) {
+      const [layer] = stage.children;
+      const children = layer.children;
+      const min = { x: 0, y: 0 };
+      const max = { x: 0, y: 0 };
+      children.forEach((child: Konva.Node) => {
+        if (child.attrs.x < min.x) {
+          min.x = child.attrs.x;
+        } else if (child.attrs.x + child.attrs.width > max.x) {
+          max.x = child.attrs.x + child.attrs.width;
+        }
+        if (child.attrs.y < min.y) {
+          min.y = child.attrs.y;
+        } else if (child.attrs.y + child.attrs.height > max.y) {
+          max.y = child.attrs.y + child.attrs.height;
+        }
+      });
+
+      const xScale = (stage.width() / (max.x - min.x)) * 0.8;
+      const yScale = (stage.height() / (max.y - min.y)) * 0.8;
+      const newScale = xScale < yScale ? xScale : yScale;
+      stage.scale({ x: newScale, y: newScale });
+      stage.offsetX(min.x * 1.2);
+      stage.offsetY(min.y * 1.2);
+      stage.batchDraw();
+      setZoomInit(true);
+    }
+  }, [isLoaded, stageRef, zoomInit]);
 
   const handleOnWheel = (e: any) => {
     e.evt.preventDefault();
