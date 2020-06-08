@@ -149,16 +149,6 @@ const FailedConnection = styled.h4({
   color: '#e74c3c',
 });
 
-const UnreadIcon = styled(FaCommentDots)({
-  // display: 'inline-block',
-  // textAlign: 'center',
-  color: '#e74c3c',
-  // color: '#fff',
-  // height: '20px',
-  // width: '20px',
-  // borderRadius: '20px',
-});
-
 export const App: React.FC = () => {
   const [state, dispatch] = React.useReducer(appReducer, initialState);
   const { gameId = '', hostId = '' } = useParams();
@@ -226,184 +216,6 @@ export const App: React.FC = () => {
       setLastReadChat(chat.length);
     }
   }, [chat.length, showChat]);
-
-  const pieceControls = (): ControlsMenuItem[] => {
-    const commonType = selectedPieces.reduce(
-      (type, piece) => (!type || piece.type === type ? piece.type : 'mixed'),
-      ''
-    );
-
-    const items = [
-      {
-        icon: chat.length > lastReadChat ? <UnreadIcon /> : <FaCommentDots />,
-        label:
-          chat.length > lastReadChat
-            ? `Chat (${chat.length - lastReadChat})`
-            : `Chat`,
-        fn: () => setShowChat(true),
-      },
-    ];
-
-    if (selectedPieces.length && commonType !== 'mixed') {
-      switch (commonType) {
-        case 'die':
-          // if (piece.hidden) {
-          //   items.push(
-          //     ...[
-          //       {
-          //         icon: <FaEye />,
-          //         label: 'Reveal',
-          //         fn: () => {}, // TODO
-          //       },
-          //     ]
-          //   );
-          // } else {
-          items.push(
-            ...[
-              {
-                icon: <FaTrashAlt />,
-                label: 'Remove',
-                fn: () => {
-                  handleUpdatePieces(
-                    selectedPieces.map(
-                      piece =>
-                        ({
-                          ...piece,
-                          type: 'deleted',
-                        } as RenderPiece)
-                    )
-                  );
-                  setSelectedPieceIds(new Set());
-                },
-              },
-            ]
-          );
-          // }
-          break;
-
-        case 'card':
-          items.push(
-            ...[
-              {
-                icon: <FaSync />,
-                label: 'Flip Card',
-                fn: () =>
-                  handleUpdatePieces(
-                    selectedPieces.map(piece => ({
-                      ...piece,
-                      faceDown: !piece.faceDown,
-                    }))
-                  ),
-              },
-            ]
-          );
-          break;
-
-        case 'deck':
-          if (selectedPieces.length === 1) {
-            items.push(
-              ...[
-                {
-                  icon: <FaLevelUpAlt />,
-                  label: 'Draw Cards',
-                  fn: () => setDrawModalId(selectedPieces[0].id),
-                },
-                // TODO
-                // {
-                //   icon: 'FaEye',
-                //   label: 'Peek At Deck',
-                //   fn: () => {
-                //     handlePeekAtDeck(piece.id, true);
-                //   },
-                // },
-                {
-                  icon: <FaRandom />,
-                  label: 'Shuffle Discarded',
-                  fn: () => handleShuffleDiscarded(selectedPieces[0].id),
-                },
-                {
-                  icon: <FaTimes />,
-                  label: 'Discard Played Cards',
-                  fn: () => handleDiscardPlayed(selectedPieces[0].id),
-                },
-              ]
-            );
-          }
-          break;
-      }
-
-      items.push(
-        ...[
-          {
-            icon: allUnlocked ? <FaLock /> : <FaLockOpen />,
-            label: allUnlocked ? 'Lock' : 'Unlock',
-            fn: () =>
-              handleUpdatePieces(
-                selectedPieces.map(piece => ({
-                  ...piece,
-                  locked: allUnlocked,
-                }))
-              ),
-          },
-          {
-            icon: <FaTimes />,
-            label: 'Clear Selection',
-            fn: () => setSelectedPieceIds(new Set()),
-          },
-        ]
-      );
-    } else {
-      items.push(
-        ...[
-          {
-            icon: <FaDiceFive />,
-            label: 'Roll Dice',
-            fn: () => setShowDiceModal(true),
-          },
-        ]
-      );
-    }
-
-    items.push(
-      ...[
-        {
-          icon: <FaPlus />,
-          label: 'Zoom In',
-          fn: () => tableRef.current && tableRef.current.zoomIn(),
-        },
-        {
-          icon: <FaMinus />,
-          label: 'Zoom Out',
-          fn: () => tableRef.current && tableRef.current.zoomOut(),
-        },
-        // TODO
-        // {
-        //   icon: 'FaCrosshair',
-        //   label: 'Reset Zoom',
-        //   fn: () => tableRef.current && tableRef.current.resetZoom(),
-        // },
-        {
-          icon: <FaExpand />,
-          label: 'Toggle Fullscreen',
-          fn: () => {
-            if (!document.fullscreenElement) {
-              document.documentElement.requestFullscreen();
-            } else {
-              if (document.exitFullscreen) {
-                document.exitFullscreen();
-              }
-            }
-          },
-        },
-        {
-          icon: <FaSlidersH />,
-          label: 'Settings',
-          fn: () => setShowSettingsModal(true),
-        },
-      ]
-    );
-    return items;
-  };
 
   // const handleRevealPieces = (pieceIds: string[]) => {
   //   if (conn) {
@@ -851,7 +663,22 @@ export const App: React.FC = () => {
         )}
       </AppContainer>
 
-      <ControlsMenu items={pieceControls()} />
+      <ControlsMenu
+        selectedPieces={selectedPieces}
+        chat={chat}
+        lastReadChat={lastReadChat}
+        onShowChat={() => setShowChat(true)}
+        allUnlocked={allUnlocked}
+        onUpdatePieces={handleUpdatePieces}
+        onShowDrawModal={setDrawModalId}
+        onShuffleDiscarded={handleShuffleDiscarded}
+        onDiscardPlayed={handleDiscardPlayed}
+        onClearSelectedPieces={() => setSelectedPieceIds(new Set())}
+        onShowDiceModal={() => setShowDiceModal(true)}
+        onZoomIn={() => tableRef.current && tableRef.current.zoomIn()}
+        onZoomOut={() => tableRef.current && tableRef.current.zoomOut()}
+        onShowSettingsModal={() => setShowSettingsModal(true)}
+      />
 
       {drawModalId && (
         <DeckModal

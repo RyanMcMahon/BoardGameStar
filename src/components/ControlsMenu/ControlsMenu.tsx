@@ -1,7 +1,24 @@
 import React, { ReactNode } from 'react';
 import styled from 'styled-components';
+import {
+  FaExpand,
+  FaSlidersH,
+  FaCommentDots,
+  FaTrashAlt,
+  FaLock,
+  FaLockOpen,
+  FaEye,
+  FaTimes,
+  FaLevelUpAlt,
+  FaPlus,
+  FaMinus,
+  FaDiceFive,
+  FaRandom,
+  FaSync,
+} from 'react-icons/fa';
 
 import { maxMobileWidth, theShadow } from '../../utils/style';
+import { RenderPiece, ChatEvent } from '../../types';
 
 export interface ControlsMenuItem {
   icon: ReactNode;
@@ -10,7 +27,24 @@ export interface ControlsMenuItem {
 }
 
 interface Props {
-  items: ControlsMenuItem[];
+  selectedPieces: RenderPiece[];
+  // items: ControlsMenuItem[];
+  chat: ChatEvent[];
+  lastReadChat: number;
+  onShowChat: () => void;
+  allUnlocked: boolean;
+  onUpdatePieces: (
+    updatedPieces: RenderPiece[],
+    throttled?: boolean | undefined
+  ) => void;
+  onShowDrawModal: (deckId: string) => void;
+  onShuffleDiscarded: (deckId: string) => void;
+  onDiscardPlayed: (deckId: string) => void;
+  onClearSelectedPieces: () => void;
+  onShowDiceModal: () => void;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onShowSettingsModal: () => void;
 }
 
 const ControlsContainer = styled.div({
@@ -53,9 +87,210 @@ const ExpandIcon = styled.span({
   marginRight: '23px',
 });
 
+const UnreadIcon = styled(FaCommentDots)({
+  // display: 'inline-block',
+  // textAlign: 'center',
+  color: '#e74c3c',
+  // color: '#fff',
+  // height: '20px',
+  // width: '20px',
+  // borderRadius: '20px',
+});
+
 export function ControlsMenu(props: Props) {
-  const { items } = props;
+  const {
+    selectedPieces,
+    chat,
+    lastReadChat,
+    allUnlocked,
+    onShowChat,
+    onUpdatePieces,
+    onShowDrawModal,
+    onShuffleDiscarded,
+    onDiscardPlayed,
+    onClearSelectedPieces,
+    onShowDiceModal,
+    onZoomIn,
+    onZoomOut,
+    onShowSettingsModal,
+  } = props;
   const [isExpanded, setIsExpanded] = React.useState(true);
+
+  const commonType = selectedPieces.reduce(
+    (type, piece) => (!type || piece.type === type ? piece.type : 'mixed'),
+    ''
+  );
+
+  const items = [
+    {
+      icon: chat.length > lastReadChat ? <UnreadIcon /> : <FaCommentDots />,
+      label:
+        chat.length > lastReadChat
+          ? `Chat (${chat.length - lastReadChat})`
+          : `Chat`,
+      fn: onShowChat,
+    },
+  ];
+
+  if (selectedPieces.length && commonType !== 'mixed') {
+    switch (commonType) {
+      case 'die':
+        // if (piece.hidden) {
+        //   items.push(
+        //     ...[
+        //       {
+        //         icon: <FaEye />,
+        //         label: 'Reveal',
+        //         fn: () => {}, // TODO
+        //       },
+        //     ]
+        //   );
+        // } else {
+        items.push(
+          ...[
+            {
+              icon: <FaTrashAlt />,
+              label: 'Remove',
+              fn: () => {
+                onUpdatePieces(
+                  selectedPieces.map(
+                    piece =>
+                      ({
+                        ...piece,
+                        type: 'deleted',
+                      } as RenderPiece)
+                  )
+                );
+                onClearSelectedPieces();
+                // setSelectedPieceIds(new Set());
+              },
+            },
+          ]
+        );
+        // }
+        break;
+
+      case 'card':
+        items.push(
+          ...[
+            {
+              icon: <FaSync />,
+              label: 'Flip Card',
+              fn: () =>
+                onUpdatePieces(
+                  selectedPieces.map(piece => ({
+                    ...piece,
+                    faceDown: !piece.faceDown,
+                  }))
+                ),
+            },
+          ]
+        );
+        break;
+
+      case 'deck':
+        if (selectedPieces.length === 1) {
+          items.push(
+            ...[
+              {
+                icon: <FaLevelUpAlt />,
+                label: 'Draw Cards',
+                fn: () => onShowDrawModal(selectedPieces[0].id),
+              },
+              // TODO
+              // {
+              //   icon: 'FaEye',
+              //   label: 'Peek At Deck',
+              //   fn: () => {
+              //     handlePeekAtDeck(piece.id, true);
+              //   },
+              // },
+              {
+                icon: <FaRandom />,
+                label: 'Shuffle Discarded',
+                fn: () => onShuffleDiscarded(selectedPieces[0].id),
+              },
+              {
+                icon: <FaTimes />,
+                label: 'Discard Played Cards',
+                fn: () => onDiscardPlayed(selectedPieces[0].id),
+              },
+            ]
+          );
+        }
+        break;
+    }
+
+    items.push(
+      ...[
+        {
+          icon: allUnlocked ? <FaLock /> : <FaLockOpen />,
+          label: allUnlocked ? 'Lock' : 'Unlock',
+          fn: () =>
+            onUpdatePieces(
+              selectedPieces.map(piece => ({
+                ...piece,
+                locked: allUnlocked,
+              }))
+            ),
+        },
+        {
+          icon: <FaTimes />,
+          label: 'Clear Selection',
+          fn: onClearSelectedPieces,
+        },
+      ]
+    );
+  } else {
+    items.push(
+      ...[
+        {
+          icon: <FaDiceFive />,
+          label: 'Roll Dice',
+          fn: onShowDiceModal,
+        },
+      ]
+    );
+  }
+
+  items.push(
+    ...[
+      {
+        icon: <FaPlus />,
+        label: 'Zoom In',
+        fn: onZoomIn,
+      },
+      {
+        icon: <FaMinus />,
+        label: 'Zoom Out',
+        fn: onZoomOut,
+      },
+      // TODO
+      // {
+      //   icon: 'FaCrosshair',
+      //   label: 'Reset Zoom',
+      //   fn: () => tableRef.current && tableRef.current.resetZoom(),
+      // },
+      {
+        icon: <FaExpand />,
+        label: 'Toggle Fullscreen',
+        fn: () => {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+          } else {
+            if (document.exitFullscreen) {
+              document.exitFullscreen();
+            }
+          }
+        },
+      },
+      {
+        icon: <FaSlidersH />,
+        label: 'Settings',
+        fn: onShowSettingsModal,
+      },
+    ]
+  );
 
   React.useLayoutEffect(() => {
     if (window.innerWidth < maxMobileWidth) {
