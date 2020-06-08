@@ -80,9 +80,6 @@ export function PieceTransformer(props: Props) {
       ref={trRef}
       onTransform={onTransform}
       borderStrokeWidth={2}
-      // TODO
-      // anchorStrokeWidth={5}
-      // anchorSize={5}
       rotateEnabled={rotateEnabled}
       resizeEnabled={resizeEnabled}
       boundBoxFunc={(oldBox: any, newBox: any) => {

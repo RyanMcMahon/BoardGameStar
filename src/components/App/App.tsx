@@ -52,6 +52,7 @@ import { Chat } from '../Chat';
 import { SettingsModal } from '../SettingsModal';
 import { AppContext, initialState, appReducer } from './AppContext';
 import Konva from 'konva';
+import { useZooming } from '../../utils/useZooming';
 // import { DeckPeekModal } from '../DeckPeekModal/DeckPeekModal';
 
 const MainContainer = styled.div({
@@ -181,6 +182,7 @@ export const App: React.FC = () => {
     // peekingCards,
     // peekingDiscardedCards,
   } = useGameClient(gameId, hostId);
+  const { handleZoom } = useZooming();
   const fact = React.useMemo(() => _.sample(facts), []);
   const [selectedPieceIds, setSelectedPieceIds] = React.useState<Set<string>>(
     new Set()
@@ -456,7 +458,6 @@ export const App: React.FC = () => {
         x: node.position().x - curPiece.x,
         y: node.position().y - curPiece.y,
       };
-      console.log(diff);
       Array.from(selectedPieceIds)
         .filter(id => id !== piece.id)
         .forEach(id => {
@@ -671,7 +672,7 @@ export const App: React.FC = () => {
     <MainContainer>
       <AppContainer>
         <AppContext.Provider value={{ state, dispatch }}>
-          <Table ref={tableRef}>
+          <Table ref={tableRef} onZoom={handleZoom}>
             <Layer>
               {boardPieces.map(piece => {
                 switch (piece.type) {

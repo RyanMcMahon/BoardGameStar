@@ -25,6 +25,7 @@ import useImage from 'use-image';
 import { DeckEditorModal } from '../DeckEditorModal/DeckEditorModal';
 import { ScenarioModal } from '../ScenarioModal';
 import { PlayArea } from '../Piece/PlayArea';
+import { useZooming } from '../../utils/useZooming';
 
 const fs = window.require('fs');
 
@@ -112,6 +113,7 @@ const ExitButton = styled(Button)({
 
 export function Editor(props: Props) {
   const { state, dispatch } = props;
+  const { handleZoom } = useZooming();
   const [assets, setAssets] = React.useState<{ [key: string]: string }>(
     state.assets || {}
   );
@@ -301,12 +303,11 @@ export function Editor(props: Props) {
   };
 
   const boardPieces = curScenario.pieces.map(id => state.pieces[id]);
-  console.log(boardPieces);
 
   return (
     <MainContainer>
       <AppContainer>
-        <Table>
+        <Table onZoom={handleZoom}>
           <Layer>
             <Image image={axisImage} x={0} y={0} zIndex={0} />
 

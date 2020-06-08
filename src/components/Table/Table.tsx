@@ -5,6 +5,7 @@ import { useAppContext } from '../App/AppContext';
 
 interface Props {
   children: React.ReactNode;
+  onZoom: () => void;
 }
 
 const ZOOM_RATE = 1.02;
@@ -25,6 +26,7 @@ let scaleDist = 0;
 
 export const Table = React.forwardRef((props: Props, ref: any) => {
   // const [scaleDist, setScaleDist] = React.useState<number>(0);
+  const { onZoom } = props;
   const { state, dispatch } = useAppContext();
   const stageRef = React.createRef<Stage>();
   const [dimensions, setDimensions] = React.useState({
@@ -65,6 +67,7 @@ export const Table = React.forwardRef((props: Props, ref: any) => {
     };
     stage.position(newPos);
     stage.batchDraw();
+    onZoom();
   };
 
   const handleZoom = (scale: number) => () => {
@@ -73,6 +76,7 @@ export const Table = React.forwardRef((props: Props, ref: any) => {
       const oldScale = stage.scaleX();
       stage.scale({ x: oldScale * scale, y: oldScale * scale });
       stage.batchDraw();
+      onZoom();
     }
   };
 
@@ -112,6 +116,7 @@ export const Table = React.forwardRef((props: Props, ref: any) => {
           stage.scaleY(scale);
           (stage as any).batchDraw();
           scaleDist = dist;
+          onZoom();
 
           if (state.globalDragEnabled) {
             dispatch({ type: 'disable_drag' });
