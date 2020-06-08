@@ -54,7 +54,7 @@
     "start:web": "REACT_APP_WEB_BUILD=1 BROWSER=none react-scripts start",
     "test:web": "REACT_APP_WEB_BUILD=1 react-scripts --inspect-brk test",
     "build:web": "REACT_APP_WEB_BUILD=1 react-scripts build",
-    "server": "npx http-server build --proxy http://localhost:8080?",
+    "server": "yarn build:web && npx http-server build --proxy http://localhost:8080?",
     "react-start": "BROWSER=none react-scripts start",
     "electron": "electron .",
     "electron-start": "node src/start-react",

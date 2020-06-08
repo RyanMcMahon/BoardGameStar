@@ -52,20 +52,14 @@ export const Table = React.forwardRef((props: Props, ref: any) => {
     const stage = e.currentTarget;
     const oldScale = stage.scaleX();
 
-    const mousePointTo = {
-      x: stage.getPointerPosition().x / oldScale - stage.x() / oldScale,
-      y: stage.getPointerPosition().y / oldScale - stage.y() / oldScale,
-    };
-
     const newScale =
       e.evt.deltaY > 0 ? oldScale / ZOOM_RATE : oldScale * ZOOM_RATE;
     stage.scale({ x: newScale, y: newScale });
 
-    const newPos = {
-      x: -(mousePointTo.x - stage.getPointerPosition().x / newScale) * newScale,
-      y: -(mousePointTo.y - stage.getPointerPosition().y / newScale) * newScale,
-    };
-    stage.position(newPos);
+    // Center relative to pointer
+    const zoomCenter = stage.getPointerPosition();
+    centerStage(zoomCenter, oldScale, newScale);
+
     stage.batchDraw();
     onZoom();
   };
@@ -78,6 +72,25 @@ export const Table = React.forwardRef((props: Props, ref: any) => {
       stage.batchDraw();
       onZoom();
     }
+  };
+
+  const centerStage = (
+    zoomCenter: { x: number; y: number },
+    oldScale: number,
+    newScale: number
+  ) => {
+    const stage = stageRef.current as any;
+    const newCenter = {
+      x: zoomCenter.x / oldScale - stage.x() / oldScale,
+      y: zoomCenter.y / oldScale - stage.y() / oldScale,
+    };
+
+    const newPos = {
+      x: -(newCenter.x - zoomCenter.x / newScale) * newScale,
+      y: -(newCenter.y - zoomCenter.y / newScale) * newScale,
+    };
+
+    stage.position(newPos);
   };
 
   if (ref) {
@@ -94,14 +107,14 @@ export const Table = React.forwardRef((props: Props, ref: any) => {
       ref={stageRef}
       width={dimensions.width}
       height={dimensions.height}
-      draggable
+      draggable={state.globalDragEnabled}
       onWheel={handleOnWheel}
       onTouchMove={e => {
         e.evt.preventDefault();
 
         const touch1 = e.evt.touches[0];
         const touch2 = e.evt.touches[1];
-        const stage = e.currentTarget;
+        const stage = e.currentTarget as any;
 
         if (!stage) {
           return;
@@ -110,10 +123,17 @@ export const Table = React.forwardRef((props: Props, ref: any) => {
         if (touch1 && touch2) {
           const dist = getDistance(touch1, touch2);
           const lastScaleDist = scaleDist || dist;
-          const scale = (stage.scaleX() * dist) / lastScaleDist;
+          const oldScale = stage.scaleX();
+          const newScale = (stage.scaleX() * dist) / lastScaleDist;
+          stage.scale({ x: newScale, y: newScale });
 
-          stage.scaleX(scale);
-          stage.scaleY(scale);
+          // Center Absolutely
+          const zoomCenter = {
+            x: (stage.offsetX() + stage.width()) / 2,
+            y: (stage.offsetY() + stage.height()) / 2,
+          };
+          centerStage(zoomCenter, oldScale, newScale);
+
           (stage as any).batchDraw();
           scaleDist = dist;
           onZoom();
