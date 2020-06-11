@@ -112,6 +112,8 @@ export function useGameClient(gameId: string, hostId: string) {
             setAssets(a);
             setIsLoaded(true);
           }, _.random(3100, 3500));
+          setAssets(a);
+          setIsLoaded(true);
         }
         break;
       }

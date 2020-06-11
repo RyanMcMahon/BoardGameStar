@@ -98,6 +98,7 @@ export const Die = React.memo((props: Props) => {
           y={y}
           fill={'#fff'}
           fontSize={fontSize}
+          listening={false}
           text={
             piece.value < 10 && piece.faces > 9
               ? ` ${piece.value}`

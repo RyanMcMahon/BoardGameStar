@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import * as _ from 'lodash';
+import FPSStats from 'react-fps-stats';
 import { useParams, Link, Redirect } from 'react-router-dom';
 import {
   FaExpand,
@@ -18,6 +19,9 @@ import {
   FaRandom,
   FaSync,
 } from 'react-icons/fa';
+
+import { Graphics, Texture } from 'pixi.js';
+import { PixiComponent, Stage, Sprite } from '@inlet/react-pixi';
 
 import { useGameClient } from '../../utils/client';
 import { Button, breakPoints, maxMobileWidth } from '../../utils/style';
@@ -53,7 +57,34 @@ import { SettingsModal } from '../SettingsModal';
 import { AppContext, initialState, appReducer } from './AppContext';
 import Konva from 'konva';
 import { useZooming } from '../../utils/useZooming';
+import { useAsset } from '../Piece/utils';
 // import { DeckPeekModal } from '../DeckPeekModal/DeckPeekModal';
+
+const getTexture = _.memoize((img: string) => Texture.from(img));
+
+const Rectangle = PixiComponent('Rectangle', {
+  create: (props: any) => new Graphics(),
+  applyProps: (instance: any, _, props: any) => {
+    const { x, y, width, height, fill } = props;
+    // instance.draggable();
+    instance.clear();
+    instance.beginFill(fill);
+    instance.drawRect(x, y, width, height);
+    instance.endFill();
+  },
+});
+// const ImageToken = PixiComponent('Sprite', {
+//   create: (props: any) => new Graphics(),
+//   applyProps: (instance: any, _, props: any) => {
+//     const { x, y, width, height, fill, image } = props;
+//     // instance.draggable();
+//     instance.image = image;
+//     instance.clear();
+//     // instance.beginFill(fill);
+//     // instance.drawRect(x, y, width, height);
+//     instance.endFill();
+//   },
+// });
 
 const MainContainer = styled.div({
   height: '100%',
@@ -200,11 +231,17 @@ export const App: React.FC = () => {
     updateGroup: (selectedPieceIds: string[]) => void;
     getNode: (id: string) => Konva.Node;
   }>();
+  const [tick, setTick] = React.useState(0);
 
   const selectedPieces = Array.from(selectedPieceIds)
     .map(id => pieces[id])
     .filter(p => p.type !== 'deleted');
   const allUnlocked = selectedPieces.every(piece => !piece.locked);
+
+  React.useEffect(() => {
+    // requestAnimationFrame(() => setTick(t => t + 1));
+    setTimeout(() => setTick(t => t + 1), 100);
+  });
 
   React.useLayoutEffect(() => {
     if (window.innerWidth < maxMobileWidth) {
@@ -470,15 +507,17 @@ export const App: React.FC = () => {
   ) as PlayerPiece[];
   const player = players.find(p => p.playerId === playerId);
 
-  const boardPieces = board
+  const tablePieces = board
     .map(id => pieces[id] || {})
     .filter(
       piece =>
         !piece.counts ||
         piece.type === 'card' ||
         players.length >= parseInt(piece.counts.split(':')[0], 10)
-    )
-    .sort((a, b) => (selectedPieceIds.has(a.id) || a.layer > b.layer ? 1 : -1));
+    );
+  // .sort((a, b) => (selectedPieceIds.has(a.id) || a.layer > b.layer ? 1 : -1));
+
+  // console.log(boardPieces.filter(x => x.type === 'image').length * 15);
 
   if (!gameId) {
     return <Redirect to="/" />;
@@ -488,7 +527,16 @@ export const App: React.FC = () => {
     <MainContainer>
       <AppContainer>
         <AppContext.Provider value={{ state, dispatch }}>
-          <Table ref={tableRef} onZoom={handleZoom} isLoaded={isLoaded}>
+          {isLoaded && (
+            <Table onZoom={handleZoom} pieces={tablePieces} assets={assets} />
+          )}
+
+          {/* <Table
+            ref={tableRef}
+            onZoom={handleZoom}
+            isLoaded={isLoaded}
+            selectedIds={selectedPieceIds}
+          >
             <Layer>
               {boardPieces.map(piece => {
                 switch (piece.type) {
@@ -605,7 +653,7 @@ export const App: React.FC = () => {
                 return null;
               })}
             </Layer>
-          </Table>
+          </Table> */}
         </AppContext.Provider>
 
         <TogglePlayerContainerButton
@@ -766,6 +814,7 @@ export const App: React.FC = () => {
           </LoadingContainer>
         </LoadingPage>
       )}
+      <FPSStats />
     </MainContainer>
   );
 };

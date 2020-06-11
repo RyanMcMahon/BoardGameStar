@@ -302,12 +302,12 @@ export function Editor(props: Props) {
     setSelectedPieceId(null);
   };
 
-  const boardPieces = curScenario.pieces.map(id => state.pieces[id]);
+  const tablePieces = curScenario.pieces.map(id => state.pieces[id]);
 
   return (
     <MainContainer>
       <AppContainer>
-        <Table onZoom={handleZoom}>
+        {/* <Table onZoom={handleZoom}>
           <Layer>
             <Image image={axisImage} x={0} y={0} zIndex={0} />
 
@@ -452,7 +452,7 @@ export function Editor(props: Props) {
               }
             })}
           </Layer>
-        </Table>
+        </Table> */}
       </AppContainer>
 
       <ControlsContainer>

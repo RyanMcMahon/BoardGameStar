@@ -31,7 +31,7 @@ export function PlayArea(props: Props) {
         onClick={onSelect}
         onTap={onSelect}
       >
-        <Tag fill={piece.color} lineJoin="round" />
+        <Tag fill={piece.color} lineJoin="round" listening={false} />
         <Text
           text={`${piece.name} (${handCount} cards in hand)`}
           fontSize={32}
