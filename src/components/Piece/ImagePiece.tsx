@@ -27,29 +27,42 @@ export class ImagePiece extends Container {
   id: string;
   data: any;
   resizeData: any;
+  nonSelectClick: boolean;
   dragging: boolean;
   dragEnabled: boolean;
   onTransformStart?: () => void;
   onTransformEnd?: () => void;
+  onUpdate?: (rect: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    rotation: number;
+  }) => void;
   transforming: boolean;
   sprite: Sprite;
-  outlines: Graphics[];
+  transformer: Transformer;
+  outline: Graphics;
+  locked?: boolean;
 
   constructor(options: ImagePieceOptions) {
     super();
     this.id = options.id;
     this.x = options.x;
     this.y = options.y;
+    this.angle = options.rotation || 0;
     this.zIndex = options.layer;
     // this.filters = [new OutlineFilter(10, utils.string2hex(primaryColor))];
     this.cursor = 'grab';
+    this.nonSelectClick = false;
     this.dragging = false;
     this.interactive = true;
     this.dragEnabled = true;
+    this.pivot.set(options.width / 2, options.height / 2);
     this.onTransformStart = options.onTransformStart;
     this.onTransformEnd = options.onTransformEnd;
     this.transforming = false;
-    this.outlines = [];
+    this.outline = new Graphics();
 
     const sprite = new Sprite(options.texture);
     sprite.x = 0;
@@ -58,14 +71,37 @@ export class ImagePiece extends Container {
     sprite.width = options.width;
     this.addChild(sprite);
     this.sprite = sprite;
-    this.updateOutline();
 
     const transformer = new Transformer({
       dimensions: sprite,
+      onRotate: (angle: number) => {
+        this.angle = angle;
+        if (this.onUpdate) {
+          this.onUpdate({
+            rotation: this.angle,
+            width: this.sprite.width,
+            height: this.sprite.height,
+            x: this.position.x,
+            y: this.position.y,
+          });
+        }
+      },
       onTransform: ({ width, height }) => {
         this.sprite.width = width;
         this.sprite.height = height;
+        this.pivot.set(width / 2, height / 2);
         this.updateOutline();
+        this.nonSelectClick = true;
+
+        if (this.onUpdate) {
+          this.onUpdate({
+            rotation: this.angle,
+            width: this.sprite.width,
+            height: this.sprite.height,
+            x: this.position.x,
+            y: this.position.y,
+          });
+        }
       },
       onTransformStart: () => {
         this.transforming = true;
@@ -81,8 +117,9 @@ export class ImagePiece extends Container {
         }
       },
     });
+    this.transformer = transformer;
 
-    this.addChild(transformer);
+    // this.addChild(transformer);
 
     this
       // events for drag start
@@ -100,31 +137,33 @@ export class ImagePiece extends Container {
 
   updateOutline() {
     const transformerColor = utils.string2hex(primaryColor);
-    const topLine = new Graphics();
-    topLine.beginFill(transformerColor);
-    topLine.drawRect(0, -2, this.sprite.width, 2);
-    this.addChild(topLine);
-    const bottomLine = new Graphics();
-    bottomLine.beginFill(transformerColor);
-    bottomLine.drawRect(0, this.sprite.height, this.sprite.width, 2);
-    this.addChild(bottomLine);
-    const rightLine = new Graphics();
-    rightLine.beginFill(transformerColor);
-    rightLine.drawRect(this.sprite.width, 0, 2, this.sprite.height);
-    this.addChild(rightLine);
-    const leftLine = new Graphics();
-    leftLine.beginFill(transformerColor);
-    leftLine.drawRect(-2, 0, 2, this.sprite.height);
-    this.addChild(leftLine);
+    const outline = this.outline;
+    outline.clear();
+    outline.beginFill(transformerColor);
+    outline.drawRect(0, -2, this.sprite.width, 2);
+    outline.drawRect(0, this.sprite.height, this.sprite.width, 2);
+    outline.drawRect(this.sprite.width, 0, 2, this.sprite.height);
+    outline.drawRect(-2, 0, 2, this.sprite.height);
+    this.outline = outline;
+  }
 
-    this.outlines.forEach(child => this.removeChild(child));
-    this.outlines = [topLine, bottomLine, rightLine, leftLine];
+  select() {
+    this.addChild(this.transformer);
+    this.addChild(this.outline);
+    this.updateOutline();
+  }
+
+  deselect() {
+    this.removeChild(this.transformer);
+    this.removeChild(this.outline);
   }
 
   handleDragStart(event: any) {
-    if (!this.dragEnabled || this.transforming) {
+    if (!this.dragEnabled || this.transforming || this.locked) {
       return;
     }
+
+    this.nonSelectClick = false;
 
     const localPosition = event.data.getLocalPosition(this.parent);
     const pointerOffset = {
@@ -153,10 +192,22 @@ export class ImagePiece extends Container {
   }
 
   handleDragMove(event: any) {
-    if (this.dragging) {
-      const newPosition = event.data.getLocalPosition(this.parent);
-      this.position.x = newPosition.x - this.data.pointerOffset.x;
-      this.position.y = newPosition.y - this.data.pointerOffset.y;
+    if (!this.dragging) {
+      return;
+    }
+    this.nonSelectClick = true;
+    const newPosition = event.data.getLocalPosition(this.parent);
+    this.position.x = newPosition.x - this.data.pointerOffset.x;
+    this.position.y = newPosition.y - this.data.pointerOffset.y;
+
+    if (this.onUpdate) {
+      this.onUpdate({
+        rotation: this.angle,
+        width: this.sprite.width,
+        height: this.sprite.height,
+        x: this.position.x,
+        y: this.position.y,
+      });
     }
   }
 }

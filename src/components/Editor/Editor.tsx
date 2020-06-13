@@ -4,7 +4,7 @@ import slug from 'slugid';
 import { Layer, Image } from 'react-konva';
 
 import { Button } from '../../utils/style';
-import { Table } from '../Table';
+// import { Table } from '../Table';
 import { loadAsset, getFilename, getAssetDimensions } from '../../utils/assets';
 import {
   EditorAction,

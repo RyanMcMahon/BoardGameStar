@@ -25,7 +25,7 @@ import { PixiComponent, Stage, Sprite } from '@inlet/react-pixi';
 
 import { useGameClient } from '../../utils/client';
 import { Button, breakPoints, maxMobileWidth } from '../../utils/style';
-import { Table } from '../Table';
+import { useTable } from '../Table';
 import { ControlsModal } from '../ControlsModal';
 import { InviteModal } from '../InviteModal';
 
@@ -180,6 +180,42 @@ const FailedConnection = styled.h4({
   color: '#e74c3c',
 });
 
+const tableConfig = {
+  board: {},
+  deck: {
+    selectable: true,
+    draggable: true,
+    rotatable: true,
+  },
+  card: {
+    selectable: true,
+    draggable: true,
+    rotatable: true,
+  },
+  image: {
+    selectable: true,
+    draggable: true,
+    rotatable: true,
+  },
+  rect: {
+    selectable: true,
+    draggable: true,
+    rotatable: true,
+  },
+  circle: {
+    selectable: true,
+    draggable: true,
+    rotatable: true,
+  },
+  die: {
+    selectable: true,
+    draggable: true,
+  },
+  player: {
+    draggable: true,
+  },
+};
+
 export const App: React.FC = () => {
   const [state, dispatch] = React.useReducer(appReducer, initialState);
   const { gameId = '', hostId = '' } = useParams();
@@ -205,10 +241,118 @@ export const App: React.FC = () => {
     // peekingDiscardedCards,
   } = useGameClient(gameId, hostId);
   const { handleZoom } = useZooming();
-  const fact = React.useMemo(() => _.sample(facts), []);
-  const [selectedPieceIds, setSelectedPieceIds] = React.useState<Set<string>>(
-    new Set()
+
+  const handleSelectPiece = (id: string) => {
+    setSelectedPieceIds(s => {
+      const ids = new Set(s);
+      if (ids.has(id)) {
+        ids.delete(id);
+      } else {
+        ids.add(id);
+      }
+      return ids;
+    });
+  };
+
+  let sendUpdatedPiecesRef = React.useRef<
+    (updatedPieces: { [id: string]: RenderPiece }) => void
+  >();
+
+  const sendUpdatedPieces = React.useCallback(
+    (updatedPiecesById: { [id: string]: RenderPiece }) => {
+      if (!conn) {
+        return;
+      }
+      conn.send({
+        event: 'update_piece',
+        pieces: updatedPiecesById,
+      });
+    },
+    [conn]
   );
+
+  const handleUpdatePieces = (
+    //React.useCallback(
+    updatedPieces: RenderPiece[],
+    throttled?: boolean
+  ) => {
+    const updatedPiecesById = _.keyBy(updatedPieces, 'id');
+    setPieces(p => ({
+      ...p,
+      ...updatedPiecesById,
+    }));
+
+    // sendUpdatedPieces(updatedPiecesById);
+    if (!throttled || !sendUpdatedPiecesRef.current) {
+      sendUpdatedPieces(updatedPiecesById);
+    } else {
+      sendUpdatedPiecesRef.current(updatedPiecesById);
+    }
+  };
+  //   },
+  //   [sendUpdatedPieces, sendUpdatedPiecesRef, setPieces]
+  // );
+
+  const handleUpdatePiece = (
+    //React.useCallback(
+    piece: Partial<RenderPiece> & { id: string },
+    throttled?: boolean
+  ) => {
+    const curPiece = pieces[piece.id];
+    if (!curPiece) {
+      return;
+    }
+
+    const updatedPieces: RenderPiece[] = [
+      {
+        ...curPiece,
+        ...piece,
+        delta: curPiece.delta + 1,
+      } as RenderPiece,
+    ];
+
+    // if (selectedPieceIds.has(piece.id) && piece.x && piece.y) {
+    //   const node = tableRef.current.getNode(piece.id);
+    //   const diff = {
+    //     x: node.position().x - curPiece.x,
+    //     y: node.position().y - curPiece.y,
+    //   };
+    //   Array.from(selectedPieceIds)
+    //     .filter(id => id !== piece.id)
+    //     .forEach(id => {
+    //       const groupedPiece = pieces[id];
+    //       const newPos = {
+    //         x: groupedPiece.x + diff.x,
+    //         y: groupedPiece.y + diff.y,
+    //       };
+    //       updatedPieces.push({
+    //         ...groupedPiece,
+    //         ...newPos,
+    //         delta: groupedPiece.delta + 1,
+    //       });
+    //     });
+    // }
+
+    handleUpdatePieces(updatedPieces, throttled);
+  };
+  //   },
+  //   [pieces, handleUpdatePieces]
+  // );
+  const table = useTable({
+    handleSelectPiece,
+    handleUpdatePiece,
+    assets,
+  });
+  const fact = React.useMemo(() => _.sample(facts), []);
+  const {
+    setSelectedPieceIds,
+    selectedPieceIds,
+    setPieces: setTablePieces,
+  } = table;
+  // const [selectedPieceIds, setSelectedPieceIds] = React.useState<Set<string>>(
+  //   new Set()
+  // );
+  // const [tablePieces, setTablePieces] = React.useState<RenderPiece[]>([]);
   const [showPlayerControls, setShowPlayerControls] = React.useState<boolean>(
     true
   );
@@ -231,17 +375,11 @@ export const App: React.FC = () => {
     updateGroup: (selectedPieceIds: string[]) => void;
     getNode: (id: string) => Konva.Node;
   }>();
-  const [tick, setTick] = React.useState(0);
 
   const selectedPieces = Array.from(selectedPieceIds)
     .map(id => pieces[id])
     .filter(p => p.type !== 'deleted');
   const allUnlocked = selectedPieces.every(piece => !piece.locked);
-
-  React.useEffect(() => {
-    // requestAnimationFrame(() => setTick(t => t + 1));
-    setTimeout(() => setTick(t => t + 1), 100);
-  });
 
   React.useLayoutEffect(() => {
     if (window.innerWidth < maxMobileWidth) {
@@ -263,86 +401,6 @@ export const App: React.FC = () => {
   //     });
   //   }
   // };
-
-  let sendUpdatedPiecesRef = React.useRef<
-    (updatedPieces: { [id: string]: RenderPiece }) => void
-  >();
-
-  const sendUpdatedPieces = React.useCallback(
-    (updatedPiecesById: { [id: string]: RenderPiece }) => {
-      if (!conn) {
-        return;
-      }
-      conn.send({
-        event: 'update_piece',
-        pieces: updatedPiecesById,
-      });
-    },
-    [conn]
-  );
-
-  const handleUpdatePiece = (
-    piece: Partial<RenderPiece> & { id: string },
-    throttled?: boolean
-  ) => {
-    const curPiece = pieces[piece.id];
-    if (!curPiece) {
-      return;
-    }
-
-    const updatedPieces: RenderPiece[] = [
-      {
-        ...curPiece,
-        ...piece,
-        delta: curPiece.delta + 1,
-      } as RenderPiece,
-    ];
-
-    if (!tableRef.current) {
-      return;
-    }
-
-    if (selectedPieceIds.has(piece.id) && piece.x && piece.y) {
-      const node = tableRef.current.getNode(piece.id);
-      const diff = {
-        x: node.position().x - curPiece.x,
-        y: node.position().y - curPiece.y,
-      };
-      Array.from(selectedPieceIds)
-        .filter(id => id !== piece.id)
-        .forEach(id => {
-          const groupedPiece = pieces[id];
-          const newPos = {
-            x: groupedPiece.x + diff.x,
-            y: groupedPiece.y + diff.y,
-          };
-          updatedPieces.push({
-            ...groupedPiece,
-            ...newPos,
-            delta: groupedPiece.delta + 1,
-          });
-        });
-    }
-
-    handleUpdatePieces(updatedPieces, throttled);
-  };
-
-  const handleUpdatePieces = (
-    updatedPieces: RenderPiece[],
-    throttled?: boolean
-  ) => {
-    const updatedPiecesById = _.keyBy(updatedPieces, 'id');
-    setPieces(p => ({
-      ...p,
-      ...updatedPiecesById,
-    }));
-
-    if (!throttled || !sendUpdatedPiecesRef.current) {
-      sendUpdatedPieces(updatedPiecesById);
-    } else {
-      sendUpdatedPiecesRef.current(updatedPiecesById);
-    }
-  };
 
   const handlePickUpCard = (id: string) => () => {
     if (conn) {
@@ -480,23 +538,13 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleSelectPiece = (id: string) => () => {
-    const newSelectedPieceIds = new Set(selectedPieceIds);
-    if (selectedPieceIds.has(id)) {
-      newSelectedPieceIds.delete(id);
-    } else {
-      newSelectedPieceIds.add(id);
-    }
-    setSelectedPieceIds(newSelectedPieceIds);
-  };
-
   const handlePromptRename = () => {
     setShowRenameModal(true);
   };
 
   React.useEffect(() => {
     if (conn && !sendUpdatedPiecesRef.current) {
-      sendUpdatedPiecesRef.current = _.throttle(sendUpdatedPieces, 100, {
+      sendUpdatedPiecesRef.current = _.throttle(sendUpdatedPieces, 50, {
         leading: false,
       });
     }
@@ -507,14 +555,18 @@ export const App: React.FC = () => {
   ) as PlayerPiece[];
   const player = players.find(p => p.playerId === playerId);
 
-  const tablePieces = board
-    .map(id => pieces[id] || {})
-    .filter(
-      piece =>
-        !piece.counts ||
-        piece.type === 'card' ||
-        players.length >= parseInt(piece.counts.split(':')[0], 10)
+  React.useEffect(() => {
+    setTablePieces(
+      board
+        .map(id => pieces[id] || {})
+        .filter(
+          piece =>
+            !piece.counts ||
+            piece.type === 'card' ||
+            players.length >= parseInt(piece.counts.split(':')[0], 10)
+        )
     );
+  }, [board, pieces, players.length, setTablePieces]);
   // .sort((a, b) => (selectedPieceIds.has(a.id) || a.layer > b.layer ? 1 : -1));
 
   // console.log(boardPieces.filter(x => x.type === 'image').length * 15);
@@ -527,9 +579,18 @@ export const App: React.FC = () => {
     <MainContainer>
       <AppContainer>
         <AppContext.Provider value={{ state, dispatch }}>
-          {isLoaded && (
-            <Table onZoom={handleZoom} pieces={tablePieces} assets={assets} />
-          )}
+          {isLoaded && <div ref={table.stageRef} />}
+          {/* {isLoaded && (
+            <Table
+              selectedPieceIds={selectedPieceIds}
+              onZoom={handleZoom}
+              pieces={tablePieces}
+              onUpdatePiece={p => handleUpdatePiece(p, true)}
+              onSelectPiece={handleSelectPiece}
+              assets={assets}
+              config={tableConfig}
+            />
+          )} */}
 
           {/* <Table
             ref={tableRef}
