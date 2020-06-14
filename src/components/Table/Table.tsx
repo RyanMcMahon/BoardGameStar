@@ -90,13 +90,26 @@ export const useTable = (props: Props) => {
     };
   }>({});
   const onUpdatePiece = props.handleUpdatePiece;
-  const onSelectPiece = props.handleSelectPiece;
+
   const assets = props.assets;
 
   const [selectedPieceIds, setSelectedPieceIds] = React.useState<Set<string>>(
     new Set()
   );
 
+  const onSelectPiece = React.useCallback(
+    (id: string) =>
+      setSelectedPieceIds(s => {
+        const ids = new Set(s);
+        if (ids.has(id)) {
+          ids.delete(id);
+        } else {
+          ids.add(id);
+        }
+        return ids;
+      }),
+    [setSelectedPieceIds]
+  );
   const { state, dispatch } = useAppContext();
   const dragLayerRef = React.createRef<any>();
   const stageRef = React.createRef<HTMLDivElement>();
@@ -122,6 +135,8 @@ export const useTable = (props: Props) => {
     }
 
     const stage = app.stage as Container;
+    stage.removeChildren(0);
+
     const container = new Viewport({
       screenWidth: window.innerWidth,
       screenHeight: window.innerHeight,
@@ -150,7 +165,7 @@ export const useTable = (props: Props) => {
     if (!container) {
       return;
     }
-    console.log('render update', container.children.length);
+    // console.log('render update', container.children.length);
 
     const piecesById = _.keyBy(pieces, 'id');
     const renderedPieces = new Set();
@@ -166,9 +181,15 @@ export const useTable = (props: Props) => {
 
       renderedPieces.add(piece.id);
       piece.locked = curPiece.locked;
+
+      if (curPiece.type === 'player') {
+        // TODO
+      } else if (curPiece.type === 'deck') {
+        // TODO
+      }
+
       if (!piece.transforming && !piece.dragging) {
-        piece.x = curPiece.x;
-        piece.y = curPiece.y;
+        piece.setPosition(curPiece);
         piece.sprite.width = curPiece.width;
         piece.sprite.height = curPiece.height;
         piece.angle = curPiece.rotation || 0;
@@ -179,22 +200,23 @@ export const useTable = (props: Props) => {
         }
       }
 
-      // piece.onUpdate = p => {
-      //   activeId = piece.id;
-      //   onUpdatePiece({ ...piecesById[piece.id], ...p }, true);
-      // };
+      piece.onUpdate = p => {
+        activeId = piece.id;
+        onUpdatePiece({ ...piecesById[piece.id], ...p }, true);
+      };
     });
 
     pieces
       .filter(p => !renderedPieces.has(p.id))
       .forEach(piece => {
         let child: ImagePiece;
+        const image = assets[piece.image] || piece.image;
 
         switch (piece.type) {
           case 'board': {
             child = new ImagePiece({
               ...piece,
-              texture: Texture.from(assets[piece.image]),
+              texture: Texture.from(image),
             });
             child.interactive = false;
             break;
@@ -203,7 +225,7 @@ export const useTable = (props: Props) => {
           case 'deck': {
             child = new ImagePiece({
               ...piece,
-              texture: Texture.from(assets[piece.image]),
+              texture: Texture.from(image),
             });
             const countPosition = { x: 70, y: 70 };
             const circle = new Graphics();
@@ -246,7 +268,7 @@ export const useTable = (props: Props) => {
           case 'card': {
             child = new ImagePiece({
               ...piece,
-              texture: Texture.from(assets[piece.image]),
+              texture: Texture.from(image),
             });
             break;
           }
@@ -254,7 +276,7 @@ export const useTable = (props: Props) => {
           case 'image': {
             child = new ImagePiece({
               ...piece,
-              texture: Texture.from(assets[piece.image]),
+              texture: Texture.from(image),
             });
             child.scale.copyFrom(container.scale);
             break;
@@ -289,6 +311,19 @@ export const useTable = (props: Props) => {
 
           case 'player': {
             child = new ImagePiece({ ...piece, texture: Texture.EMPTY });
+            const text = new Text(`${piece.name} (TODO cards in hand)`, {
+              fontFamily: 'Arial',
+              fontSize: 28,
+              fill: 0xffffff,
+              align: 'center',
+            });
+            const rect = new Graphics();
+            rect.beginFill(utils.string2hex(piece.color));
+            rect.drawRoundedRect(-14, -7, text.width + 28, text.height + 14, 8);
+            rect.endFill();
+            child.addChild(rect);
+            child.addChild(text);
+
             break;
           }
 
@@ -318,10 +353,14 @@ export const useTable = (props: Props) => {
           child.on('tap', selectPiece);
           child.on('click', selectPiece);
 
-          child.onUpdate = p => {
-            activeId = piece.id;
-            onUpdatePiece({ ...piece, ...p }, true);
-          };
+          // child.onUpdate = _.throttle(
+          //   p => {
+          //     activeId = piece.id;
+          //     onUpdatePiece({ ...piece, ...p }, true);
+          //   },
+          //   50,
+          //   { trailing: true, leading: false }
+          // );
 
           child.onTransformStart = () => {
             container.interactive = false;

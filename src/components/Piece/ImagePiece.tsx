@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React from 'react';
 // import { Image, Group } from 'react-konva';
 import { Container, Sprite, Texture, Graphics, utils } from 'pixi.js';
@@ -44,12 +45,13 @@ export class ImagePiece extends Container {
   transformer: Transformer;
   outline: Graphics;
   locked?: boolean;
+  sendUpdateThrottled: () => void;
 
   constructor(options: ImagePieceOptions) {
     super();
     this.id = options.id;
-    this.x = options.x;
-    this.y = options.y;
+    // this.x = options.x;
+    // this.y = options.y;
     this.angle = options.rotation || 0;
     this.zIndex = options.layer;
     // this.filters = [new OutlineFilter(10, utils.string2hex(primaryColor))];
@@ -63,6 +65,10 @@ export class ImagePiece extends Container {
     this.onTransformEnd = options.onTransformEnd;
     this.transforming = false;
     this.outline = new Graphics();
+    this.sendUpdateThrottled = _.throttle(this.sendUpdate, 50, {
+      leading: false,
+      trailing: true,
+    });
 
     const sprite = new Sprite(options.texture);
     sprite.x = 0;
@@ -71,20 +77,13 @@ export class ImagePiece extends Container {
     sprite.width = options.width;
     this.addChild(sprite);
     this.sprite = sprite;
+    this.setPosition(options);
 
     const transformer = new Transformer({
       dimensions: sprite,
       onRotate: (angle: number) => {
         this.angle = angle;
-        if (this.onUpdate) {
-          this.onUpdate({
-            rotation: this.angle,
-            width: this.sprite.width,
-            height: this.sprite.height,
-            x: this.position.x,
-            y: this.position.y,
-          });
-        }
+        this.sendUpdateThrottled();
       },
       onTransform: ({ width, height }) => {
         this.sprite.width = width;
@@ -93,15 +92,7 @@ export class ImagePiece extends Container {
         this.updateOutline();
         this.nonSelectClick = true;
 
-        if (this.onUpdate) {
-          this.onUpdate({
-            rotation: this.angle,
-            width: this.sprite.width,
-            height: this.sprite.height,
-            x: this.position.x,
-            y: this.position.y,
-          });
-        }
+        this.sendUpdateThrottled();
       },
       onTransformStart: () => {
         this.transforming = true;
@@ -135,6 +126,11 @@ export class ImagePiece extends Container {
       .on('touchmove', this.handleDragMove);
   }
 
+  setPosition(point: { x: number; y: number }) {
+    this.x = point.x + this.sprite.width / 2;
+    this.y = point.y + this.sprite.height / 2;
+  }
+
   updateOutline() {
     const transformerColor = utils.string2hex(primaryColor);
     const outline = this.outline;
@@ -165,10 +161,10 @@ export class ImagePiece extends Container {
 
     this.nonSelectClick = false;
 
-    const localPosition = event.data.getLocalPosition(this.parent);
+    const pointer = event.data.getLocalPosition(this.parent);
     const pointerOffset = {
-      x: localPosition.x - this.x,
-      y: localPosition.y - this.y,
+      x: pointer.x + this.sprite.width / 2 - this.x,
+      y: pointer.y + this.sprite.height / 2 - this.y,
     };
     this.data = {
       ...event.data,
@@ -196,17 +192,24 @@ export class ImagePiece extends Container {
       return;
     }
     this.nonSelectClick = true;
-    const newPosition = event.data.getLocalPosition(this.parent);
-    this.position.x = newPosition.x - this.data.pointerOffset.x;
-    this.position.y = newPosition.y - this.data.pointerOffset.y;
+    const pointer = event.data.getLocalPosition(this.parent);
+    const newPos = {
+      x: pointer.x - this.data.pointerOffset.x,
+      y: pointer.y - this.data.pointerOffset.y,
+    };
 
+    this.setPosition(newPos);
+    this.sendUpdateThrottled();
+  }
+
+  sendUpdate() {
     if (this.onUpdate) {
       this.onUpdate({
         rotation: this.angle,
         width: this.sprite.width,
         height: this.sprite.height,
-        x: this.position.x,
-        y: this.position.y,
+        x: this.x - this.sprite.width / 2,
+        y: this.y - this.sprite.height / 2,
       });
     }
   }

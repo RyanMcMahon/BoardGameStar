@@ -1,10 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import slug from 'slugid';
+import FPSStats from 'react-fps-stats';
 import { Layer, Image } from 'react-konva';
 
 import { Button } from '../../utils/style';
-// import { Table } from '../Table';
+import { useTable } from '../Table';
 import { loadAsset, getFilename, getAssetDimensions } from '../../utils/assets';
 import {
   EditorAction,
@@ -19,6 +20,8 @@ import {
   RectTokenPiece,
   CircleTokenPiece,
   PlayerPiece,
+  RenderPiece,
+  PieceOption,
 } from '../../types';
 import { ImagePiece, Deck, CirclePiece, RectPiece } from '../Piece';
 import useImage from 'use-image';
@@ -129,7 +132,29 @@ export function Editor(props: Props) {
   // ] = React.useState(false);
   const selectedPiece = selectedPieceId ? state.pieces[selectedPieceId] : null;
   const curScenario = state.scenarios[state.curScenario];
-  const [axisImage] = useImage(`/axis.png`);
+  // const [axisImage] = useImage(`/axis.png`);
+
+  const handleSelectPiece = (id: string) => () => {
+    if (id === selectedPieceId) {
+      setSelectedPieceId(null);
+    } else {
+      setSelectedPieceId(id);
+    }
+  };
+
+  const table = useTable({
+    handleSelectPiece,
+    assets,
+    handleUpdatePiece: p =>
+      dispatch({
+        type: 'update_piece',
+        piece: {
+          ...state.pieces[p.id],
+          ...p,
+        } as AnyPieceOption,
+      }),
+  });
+  const { setPieces } = table;
 
   const handleSave = () => {
     const configFile = `module.exports = ${JSON.stringify(state, null, '\t')};`;
@@ -152,14 +177,6 @@ export function Editor(props: Props) {
       type: 'set_cur_scenario',
       scenarioId: '',
     });
-  };
-
-  const handleSelectPiece = (id: string) => () => {
-    if (id === selectedPieceId) {
-      setSelectedPieceId(null);
-    } else {
-      setSelectedPieceId(id);
-    }
   };
 
   const handleUpdateGameName = (e: React.FormEvent<HTMLInputElement>) => {
@@ -302,11 +319,30 @@ export function Editor(props: Props) {
     setSelectedPieceId(null);
   };
 
-  const tablePieces = curScenario.pieces.map(id => state.pieces[id]);
+  React.useEffect(() => {
+    setPieces([
+      ...(curScenario.pieces.map(id => state.pieces[id]) as RenderPiece[]),
+      {
+        id: 'axis',
+        type: 'image',
+        x: 0,
+        y: 0,
+        image: 'axis.png',
+        width: 200,
+        height: 200,
+        layer: 0,
+        rotation: 0,
+        delta: 0,
+      },
+    ]);
+  }, [curScenario.pieces, state.pieces, setPieces]);
+
+  // const tablePieces = curScenario.pieces.map(id => state.pieces[id]);
 
   return (
     <MainContainer>
       <AppContainer>
+        <div ref={table.stageRef} />
         {/* <Table onZoom={handleZoom}>
           <Layer>
             <Image image={axisImage} x={0} y={0} zIndex={0} />
@@ -646,6 +682,7 @@ export function Editor(props: Props) {
           onClose={() => setDeckModalId('')}
         />
       )}
+      <FPSStats />
     </MainContainer>
   );
 }

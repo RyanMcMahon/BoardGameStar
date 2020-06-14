@@ -282,12 +282,12 @@ export const App: React.FC = () => {
       ...updatedPiecesById,
     }));
 
-    // sendUpdatedPieces(updatedPiecesById);
-    if (!throttled || !sendUpdatedPiecesRef.current) {
-      sendUpdatedPieces(updatedPiecesById);
-    } else {
-      sendUpdatedPiecesRef.current(updatedPiecesById);
-    }
+    sendUpdatedPieces(updatedPiecesById);
+    // if (!throttled || !sendUpdatedPiecesRef.current) {
+    //   sendUpdatedPieces(updatedPiecesById);
+    // } else {
+    //   sendUpdatedPiecesRef.current(updatedPiecesById);
+    // }
   };
   //   },
   //   [sendUpdatedPieces, sendUpdatedPiecesRef, setPieces]
