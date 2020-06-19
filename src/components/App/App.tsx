@@ -47,9 +47,6 @@ import {
   RectTokenPiece,
   DeckPiece,
 } from '../../types';
-import { Layer } from 'react-konva';
-import { ImagePiece, Deck, RectPiece, CirclePiece, Die } from '../Piece';
-import { PlayArea } from '../Piece/PlayArea';
 import { ControlsMenu, ControlsMenuItem } from '../ControlsMenu';
 import { DiceModal } from '../DiceModal';
 import { Chat } from '../Chat';
@@ -57,7 +54,7 @@ import { SettingsModal } from '../SettingsModal';
 import { AppContext, initialState, appReducer } from './AppContext';
 import Konva from 'konva';
 import { useZooming } from '../../utils/useZooming';
-import { useAsset } from '../Piece/utils';
+// import { useAsset } from '../Piece/utils';
 // import { DeckPeekModal } from '../DeckPeekModal/DeckPeekModal';
 
 const getTexture = _.memoize((img: string) => Texture.from(img));

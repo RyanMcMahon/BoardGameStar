@@ -19,8 +19,17 @@ import {
 
 import { Stage } from '@inlet/react-pixi';
 import { useAppContext } from '../App/AppContext';
-import { RenderPiece, Assets } from '../../types';
-import { ImagePiece } from '../Piece/ImagePiece';
+import {
+  RenderPiece,
+  Assets,
+  BoardPiece,
+  DeckPiece,
+  CardPiece,
+  ImageTokenOption,
+  ImageTokenPiece,
+  RectTokenPiece,
+} from '../../types';
+import { RenderItem, RenderItemPiece } from '../../utils/render-item';
 
 interface Props {
   // isLoaded?: boolean;
@@ -171,7 +180,7 @@ export const useTable = (props: Props) => {
     const renderedPieces = new Set();
 
     container.children.forEach(child => {
-      const piece = child as ImagePiece;
+      const piece = child as RenderItem;
       const curPiece = piecesById[piece.id];
 
       if (!curPiece) {
@@ -189,10 +198,20 @@ export const useTable = (props: Props) => {
       }
 
       if (!piece.transforming && !piece.dragging) {
-        piece.setPosition(curPiece);
-        piece.sprite.width = curPiece.width;
-        piece.sprite.height = curPiece.height;
-        piece.angle = curPiece.rotation || 0;
+        console.log(curPiece);
+        const renderItemPiece = curPiece;
+        if (curPiece.type === 'circle') {
+          renderItemPiece.width = curPiece.radius * 2;
+          renderItemPiece.height = curPiece.radius * 2;
+        } else if (curPiece.type === 'die') {
+          renderItemPiece.width = 200;
+          renderItemPiece.height = 200;
+        }
+        piece.setPiece(renderItemPiece as RenderItemPiece);
+        // piece.setPosition(curPiece);
+        // piece.angle = curPiece.rotation || 0;
+        piece.onSync(curPiece);
+
         if (selectedPieceIds?.has(piece.id)) {
           piece.select();
         } else {
@@ -209,83 +228,102 @@ export const useTable = (props: Props) => {
     pieces
       .filter(p => !renderedPieces.has(p.id))
       .forEach(piece => {
-        let child: ImagePiece;
+        let child: RenderItem;
         const image = assets[piece.image] || piece.image;
 
         switch (piece.type) {
           case 'board': {
-            child = new ImagePiece({
-              ...piece,
+            child = new RenderItem({
+              piece,
               texture: Texture.from(image),
+              onSync: (el, curPiece) => {
+                el.setDimensions(curPiece as BoardPiece);
+              },
             });
             child.interactive = false;
             break;
           }
 
           case 'deck': {
-            child = new ImagePiece({
-              ...piece,
+            const counts = new Container();
+            child = new RenderItem({
+              piece,
               texture: Texture.from(image),
-            });
-            const countPosition = { x: 70, y: 70 };
-            const circle = new Graphics();
-            child.addChild(circle);
-            circle.beginFill(0x000000);
-            circle.lineStyle(0);
-            circle.drawCircle(countPosition.x, countPosition.y, 60);
-            circle.alpha = 0.5;
-            circle.endFill();
+              onSync: (el, curPiece) => {
+                el.setDimensions(curPiece as DeckPiece);
+                counts.removeChildren(0);
 
-            const cardCount = new Text(`${piece.count}`, {
-              fontSize: '38px',
-              fill: 'white',
-              align: 'center',
-            });
-            cardCount.x = countPosition.x;
-            cardCount.y = countPosition.y - 25;
-            cardCount.anchor.set(0.5);
-            child.addChild(cardCount);
+                const countPosition = { x: curPiece.width / 2, y: 70 };
+                const circle = new Graphics();
+                circle.beginFill(0x000000);
+                circle.lineStyle(0);
+                circle.drawCircle(countPosition.x, countPosition.y, 60);
+                circle.alpha = 0.5;
+                circle.endFill();
+                counts.addChild(circle);
 
-            const divider = new Graphics();
-            divider.beginFill(0xffffff);
-            divider.drawRect(countPosition.x - 35, countPosition.y, 70, 4);
-            divider.endFill();
-            child.addChild(divider);
+                const divider = new Graphics();
+                divider.beginFill(0xffffff);
+                divider.drawRect(countPosition.x - 35, countPosition.y, 70, 4);
+                divider.endFill();
+                counts.addChild(divider);
+                const cardCount = new Text(`${piece.count}`, {
+                  fontSize: '38px',
+                  fill: 'white',
+                  align: 'center',
+                });
+                cardCount.x = countPosition.x;
+                cardCount.y = countPosition.y - 25;
+                cardCount.anchor.set(0.5);
+                counts.addChild(cardCount);
 
-            const cardTotal = new Text(`${piece.total}`, {
-              fontSize: '38px',
-              fill: 'white',
-              align: 'center',
+                const cardTotal = new Text(`${piece.total}`, {
+                  fontSize: '38px',
+                  fill: 'white',
+                  align: 'center',
+                });
+                cardTotal.x = countPosition.x;
+                cardTotal.y = countPosition.y + 25;
+                cardTotal.anchor.set(0.5);
+                counts.addChild(cardTotal);
+              },
             });
-            cardTotal.x = countPosition.x;
-            cardTotal.y = countPosition.y + 25;
-            cardTotal.anchor.set(0.5);
-            child.addChild(cardTotal);
+            child.addChild(counts);
+            child.onSync(piece);
 
             break;
           }
 
           case 'card': {
-            child = new ImagePiece({
-              ...piece,
+            child = new RenderItem({
+              piece,
               texture: Texture.from(image),
+              onSync: (el, curPiece) => {
+                el.setDimensions(curPiece as CardPiece);
+              },
             });
             break;
           }
 
           case 'image': {
-            child = new ImagePiece({
-              ...piece,
+            child = new RenderItem({
+              piece,
               texture: Texture.from(image),
+              onSync: (el, curPiece) => {
+                el.setDimensions(curPiece as ImageTokenPiece);
+              },
             });
             child.scale.copyFrom(container.scale);
             break;
           }
 
           case 'rect': {
-            child = new ImagePiece({
-              ...piece,
+            child = new RenderItem({
+              piece,
               texture: Texture.WHITE,
+              onSync: (el, curPiece) => {
+                el.setDimensions(curPiece as RectTokenPiece);
+              },
             });
 
             child.sprite.tint = utils.string2hex(piece.color);
@@ -293,11 +331,16 @@ export const useTable = (props: Props) => {
           }
 
           case 'circle': {
-            child = new ImagePiece({
-              ...piece,
-              width: piece.radius,
-              height: piece.radius,
+            child = new RenderItem({
+              piece: {
+                ...piece,
+                width: piece.radius,
+                height: piece.radius,
+              },
               texture: Texture.EMPTY,
+              onSync: (el, curPiece) => {
+                // TODO
+              },
             });
             const circle = new Graphics();
             child.addChild(circle);
@@ -310,7 +353,13 @@ export const useTable = (props: Props) => {
           }
 
           case 'player': {
-            child = new ImagePiece({ ...piece, texture: Texture.EMPTY });
+            child = new RenderItem({
+              piece,
+              texture: Texture.EMPTY,
+              onSync: (el, curPiece) => {
+                // TODO
+              },
+            });
             const text = new Text(`${piece.name} (TODO cards in hand)`, {
               fontFamily: 'Arial',
               fontSize: 28,
@@ -353,14 +402,10 @@ export const useTable = (props: Props) => {
           child.on('tap', selectPiece);
           child.on('click', selectPiece);
 
-          // child.onUpdate = _.throttle(
-          //   p => {
-          //     activeId = piece.id;
-          //     onUpdatePiece({ ...piece, ...p }, true);
-          //   },
-          //   50,
-          //   { trailing: true, leading: false }
-          // );
+          child.onUpdate = p => {
+            activeId = piece.id;
+            onUpdatePiece({ ...piece, ...p }, true);
+          };
 
           child.onTransformStart = () => {
             container.interactive = false;

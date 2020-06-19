@@ -23,11 +23,9 @@ import {
   RenderPiece,
   PieceOption,
 } from '../../types';
-import { ImagePiece, Deck, CirclePiece, RectPiece } from '../Piece';
-import useImage from 'use-image';
 import { DeckEditorModal } from '../DeckEditorModal/DeckEditorModal';
 import { ScenarioModal } from '../ScenarioModal';
-import { PlayArea } from '../Piece/PlayArea';
+// import { PlayArea } from '../Piece/PlayArea';
 import { useZooming } from '../../utils/useZooming';
 
 const fs = window.require('fs');

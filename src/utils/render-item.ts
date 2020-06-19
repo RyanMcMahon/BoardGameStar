@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import React from 'react';
 // import { Image, Group } from 'react-konva';
 import { Container, Sprite, Texture, Graphics, utils } from 'pixi.js';
 import { OutlineFilter } from '@pixi/filter-outline';
@@ -13,19 +12,22 @@ import {
   ImageTokenPiece,
   PieceOption,
   RectPieceOption,
-} from '../../types';
-import { primaryColor } from '../../utils/style';
+  RenderPiece,
+} from '../types';
+import { primaryColor } from './style';
 import { Transformer } from './Transformer';
 
-interface ImagePieceOptions extends RectPieceOption {
-  type: string;
+export type RenderItemPiece = RenderPiece & { height: number; width: number };
+
+interface ImagePieceOptions {
+  piece: RenderItemPiece;
   texture: Texture;
-  onTransformStart?: () => void;
-  onTransformEnd?: () => void;
+  onSync: (el: RenderItem, curPiece: RenderPiece) => void;
 }
 
-export class ImagePiece extends Container {
+export class RenderItem extends Container {
   id: string;
+  piece!: RenderItemPiece;
   data: any;
   resizeData: any;
   nonSelectClick: boolean;
@@ -46,60 +48,54 @@ export class ImagePiece extends Container {
   outline: Graphics;
   locked?: boolean;
   sendUpdateThrottled: () => void;
+  onSync: (curPiece: RenderPiece) => void;
 
-  constructor(options: ImagePieceOptions) {
+  constructor({ piece, texture, onSync }: ImagePieceOptions) {
     super();
-    this.id = options.id;
-    // this.x = options.x;
-    // this.y = options.y;
-    this.angle = options.rotation || 0;
-    this.zIndex = options.layer;
-    // this.filters = [new OutlineFilter(10, utils.string2hex(primaryColor))];
+    this.id = piece.id;
     this.cursor = 'grab';
     this.nonSelectClick = false;
     this.dragging = false;
     this.interactive = true;
     this.dragEnabled = true;
-    this.pivot.set(options.width / 2, options.height / 2);
-    this.onTransformStart = options.onTransformStart;
-    this.onTransformEnd = options.onTransformEnd;
     this.transforming = false;
     this.outline = new Graphics();
+    this.onSync = (curPiece: RenderPiece) => onSync(this, curPiece);
     this.sendUpdateThrottled = _.throttle(this.sendUpdate, 50, {
       leading: false,
       trailing: true,
     });
 
-    const sprite = new Sprite(options.texture);
+    const sprite = new Sprite(texture);
     sprite.x = 0;
     sprite.y = 0;
-    sprite.height = options.height;
-    sprite.width = options.width;
+    sprite.height = piece.height;
+    sprite.width = piece.width;
     this.addChild(sprite);
     this.sprite = sprite;
-    this.setPosition(options);
+
+    this.setPiece(piece);
 
     const transformer = new Transformer({
-      dimensions: sprite,
+      dimensions: this.piece,
+
       onRotate: (angle: number) => {
-        this.angle = angle;
-        this.sendUpdateThrottled();
+        this.updatePiece({ ...this.piece, rotation: angle });
       },
-      onTransform: ({ width, height }) => {
-        this.sprite.width = width;
-        this.sprite.height = height;
-        this.pivot.set(width / 2, height / 2);
+
+      onTransform: dimensions => {
         this.updateOutline();
         this.nonSelectClick = true;
-
-        this.sendUpdateThrottled();
+        this.updatePiece({ ...this.piece, ...dimensions });
       },
+
       onTransformStart: () => {
         this.transforming = true;
         if (this.onTransformStart) {
           this.onTransformStart();
         }
       },
+
       onTransformEnd: () => {
         this.transforming = false;
         transformer.setDimensions(this.sprite);
@@ -108,9 +104,10 @@ export class ImagePiece extends Container {
         }
       },
     });
-    this.transformer = transformer;
 
-    // this.addChild(transformer);
+    this.transformer = transformer;
+    this.setPosition(piece);
+    this.setDimensions(piece);
 
     this
       // events for drag start
@@ -126,32 +123,16 @@ export class ImagePiece extends Container {
       .on('touchmove', this.handleDragMove);
   }
 
-  setPosition(point: { x: number; y: number }) {
-    this.x = point.x + this.sprite.width / 2;
-    this.y = point.y + this.sprite.height / 2;
-  }
-
   updateOutline() {
     const transformerColor = utils.string2hex(primaryColor);
     const outline = this.outline;
     outline.clear();
     outline.beginFill(transformerColor);
-    outline.drawRect(0, -2, this.sprite.width, 2);
-    outline.drawRect(0, this.sprite.height, this.sprite.width, 2);
-    outline.drawRect(this.sprite.width, 0, 2, this.sprite.height);
-    outline.drawRect(-2, 0, 2, this.sprite.height);
+    outline.drawRect(0, -2, this.piece.width, 2);
+    outline.drawRect(0, this.piece.height, this.piece.width, 2);
+    outline.drawRect(this.piece.width, 0, 2, this.piece.height);
+    outline.drawRect(-2, 0, 2, this.piece.height);
     this.outline = outline;
-  }
-
-  select() {
-    this.addChild(this.transformer);
-    this.addChild(this.outline);
-    this.updateOutline();
-  }
-
-  deselect() {
-    this.removeChild(this.transformer);
-    this.removeChild(this.outline);
   }
 
   handleDragStart(event: any) {
@@ -163,8 +144,8 @@ export class ImagePiece extends Container {
 
     const pointer = event.data.getLocalPosition(this.parent);
     const pointerOffset = {
-      x: pointer.x + this.sprite.width / 2 - this.x,
-      y: pointer.y + this.sprite.height / 2 - this.y,
+      x: pointer.x + this.piece.width / 2 - this.x,
+      y: pointer.y + this.piece.height / 2 - this.y,
     };
     this.data = {
       ...event.data,
@@ -198,19 +179,58 @@ export class ImagePiece extends Container {
       y: pointer.y - this.data.pointerOffset.y,
     };
 
-    this.setPosition(newPos);
+    this.updatePiece({ ...this.piece, ...newPos });
+  }
+
+  select() {
+    this.addChild(this.transformer);
+    this.addChild(this.outline);
+    this.updateOutline();
+  }
+
+  deselect() {
+    this.removeChild(this.transformer);
+    this.removeChild(this.outline);
+  }
+
+  setPosition(point: { x: number; y: number }) {
+    this.x = point.x + this.piece.width / 2;
+    this.y = point.y + this.piece.height / 2;
+  }
+
+  setDimensions({ width, height }: { width: number; height: number }) {
+    this.sprite.width = width;
+    this.sprite.height = height;
+    this.pivot.set(width / 2, height / 2);
+  }
+
+  updatePiece(newPiece: Partial<RenderItemPiece>) {
+    this.setPiece({
+      ...this.piece,
+      ...newPiece,
+    } as RenderItemPiece);
     this.sendUpdateThrottled();
+  }
+
+  setPiece(piece: RenderItemPiece) {
+    this.piece = { ...piece };
+    this.angle = piece.rotation || 0;
+    this.zIndex = piece.layer;
+    // this.pivot.set(piece.width / 2, piece.height / 2);
+    this.setPosition(piece);
+    this.setDimensions(piece);
+    this.onSync(piece);
   }
 
   sendUpdate() {
     if (this.onUpdate) {
-      this.onUpdate({
-        rotation: this.angle,
-        width: this.sprite.width,
-        height: this.sprite.height,
-        x: this.x - this.sprite.width / 2,
-        y: this.y - this.sprite.height / 2,
-      });
+      this.onUpdate({ rotation: 0, ...this.piece });
+      //   rotation: this.angle,
+      //   width: this.sprite.width,
+      //   height: this.sprite.height,
+      //   x: this.x - this.sprite.width / 2,
+      //   y: this.y - this.sprite.height / 2,
+      // });
     }
   }
 }

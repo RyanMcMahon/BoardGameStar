@@ -6,7 +6,7 @@ import {
   Graphics,
   utils,
 } from 'pixi.js';
-import { primaryColor } from '../../utils/style';
+import { primaryColor } from './style';
 
 interface TransformerOptions {
   dimensions: {
