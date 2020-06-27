@@ -148,13 +148,13 @@ export function createNewGame(
           }
           return [parseInt(tuple[0], 10), parseInt(tuple[1], 10)];
         });
-        console.log(countExp);
+        // console.log(countExp);
         countExp.forEach(([min, count], index) => {
           const max =
             index + 1 < countExp.length
               ? countExp[index + 1][0] - 1
               : maxPlayers;
-          console.log(min, max, count);
+          // console.log(min, max, count);
           for (let i = min; i <= max; i++) {
             for (let k = 0; k < count; k++) {
               const cardCopy = {

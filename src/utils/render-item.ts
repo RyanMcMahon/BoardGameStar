@@ -22,7 +22,16 @@ export type RenderItemPiece = RenderPiece & { height: number; width: number };
 interface ImagePieceOptions {
   piece: RenderItemPiece;
   texture: Texture;
+  uniformScaling?: boolean;
+  draggable?: boolean;
+  rotatable?: boolean;
+  resizable?: boolean;
   onSync: (el: RenderItem, curPiece: RenderPiece) => void;
+  restrictTransform?: (dimensions: {
+    curPiece: RenderPiece;
+    width: number;
+    height: number;
+  }) => { width: number; height: number };
 }
 
 export class RenderItem extends Container {
@@ -50,7 +59,16 @@ export class RenderItem extends Container {
   sendUpdateThrottled: () => void;
   onSync: (curPiece: RenderPiece) => void;
 
-  constructor({ piece, texture, onSync }: ImagePieceOptions) {
+  constructor({
+    piece,
+    texture,
+    uniformScaling,
+    draggable,
+    rotatable,
+    resizable,
+    onSync,
+    restrictTransform,
+  }: ImagePieceOptions) {
     super();
     this.id = piece.id;
     this.cursor = 'grab';
@@ -74,10 +92,15 @@ export class RenderItem extends Container {
     this.addChild(sprite);
     this.sprite = sprite;
 
-    this.setPiece(piece);
-
     const transformer = new Transformer({
-      dimensions: this.piece,
+      uniformScaling,
+      rotatable,
+      resizable,
+      restrictTransform: restrictTransform
+        ? dimensions =>
+            restrictTransform({ ...dimensions, curPiece: this.piece })
+        : undefined,
+      dimensions: piece,
 
       onRotate: (angle: number) => {
         this.updatePiece({ ...this.piece, rotation: angle });
@@ -85,11 +108,11 @@ export class RenderItem extends Container {
 
       onTransform: dimensions => {
         this.updateOutline();
-        this.nonSelectClick = true;
         this.updatePiece({ ...this.piece, ...dimensions });
       },
 
       onTransformStart: () => {
+        this.nonSelectClick = true;
         this.transforming = true;
         if (this.onTransformStart) {
           this.onTransformStart();
@@ -98,6 +121,7 @@ export class RenderItem extends Container {
 
       onTransformEnd: () => {
         this.transforming = false;
+        this.nonSelectClick = false;
         transformer.setDimensions(this.sprite);
         if (this.onTransformEnd) {
           this.onTransformEnd();
@@ -106,21 +130,22 @@ export class RenderItem extends Container {
     });
 
     this.transformer = transformer;
-    this.setPosition(piece);
-    this.setDimensions(piece);
+    this.setPiece(piece);
 
-    this
-      // events for drag start
-      .on('mousedown', this.handleDragStart)
-      .on('touchstart', this.handleDragStart)
-      // events for drag end
-      .on('mouseup', this.handleDragEnd)
-      .on('mouseupoutside', this.handleDragEnd)
-      .on('touchend', this.handleDragEnd)
-      .on('touchendoutside', this.handleDragEnd)
-      // events for drag move
-      .on('mousemove', this.handleDragMove)
-      .on('touchmove', this.handleDragMove);
+    if (draggable) {
+      this
+        // events for drag start
+        .on('mousedown', this.handleDragStart)
+        .on('touchstart', this.handleDragStart)
+        // events for drag end
+        .on('mouseup', this.handleDragEnd)
+        .on('mouseupoutside', this.handleDragEnd)
+        .on('touchend', this.handleDragEnd)
+        .on('touchendoutside', this.handleDragEnd)
+        // events for drag move
+        .on('mousemove', this.handleDragMove)
+        .on('touchmove', this.handleDragMove);
+    }
   }
 
   updateOutline() {
@@ -205,10 +230,16 @@ export class RenderItem extends Container {
   }
 
   updatePiece(newPiece: Partial<RenderItemPiece>) {
+    // TODO move this to circle config
+    if (this.piece.type === 'circle' && newPiece.width) {
+      newPiece.radius = newPiece.width / 2;
+    }
+
     this.setPiece({
       ...this.piece,
       ...newPiece,
     } as RenderItemPiece);
+
     this.sendUpdateThrottled();
   }
 
@@ -216,7 +247,6 @@ export class RenderItem extends Container {
     this.piece = { ...piece };
     this.angle = piece.rotation || 0;
     this.zIndex = piece.layer;
-    // this.pivot.set(piece.width / 2, piece.height / 2);
     this.setPosition(piece);
     this.setDimensions(piece);
     this.onSync(piece);
@@ -225,12 +255,6 @@ export class RenderItem extends Container {
   sendUpdate() {
     if (this.onUpdate) {
       this.onUpdate({ rotation: 0, ...this.piece });
-      //   rotation: this.angle,
-      //   width: this.sprite.width,
-      //   height: this.sprite.height,
-      //   x: this.x - this.sprite.width / 2,
-      //   y: this.y - this.sprite.height / 2,
-      // });
     }
   }
 }

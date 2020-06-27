@@ -221,19 +221,27 @@ export function ControlsMenu(props: Props) {
         break;
     }
 
+    // TODO
+    // items.push(
+    //   ...[
+    //     {
+    //       icon: allUnlocked ? <FaLock /> : <FaLockOpen />,
+    //       label: allUnlocked ? 'Lock' : 'Unlock',
+    //       fn: () =>
+    //         onUpdatePieces(
+    //           selectedPieces.map(piece => ({
+    //             ...piece,
+    //             locked: allUnlocked,
+    //           }))
+    //         ),
+    //     },
+    //   ]
+    // );
+  }
+
+  if (selectedPieces.length) {
     items.push(
       ...[
-        {
-          icon: allUnlocked ? <FaLock /> : <FaLockOpen />,
-          label: allUnlocked ? 'Lock' : 'Unlock',
-          fn: () =>
-            onUpdatePieces(
-              selectedPieces.map(piece => ({
-                ...piece,
-                locked: allUnlocked,
-              }))
-            ),
-        },
         {
           icon: <FaTimes />,
           label: 'Clear Selection',

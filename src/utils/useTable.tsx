@@ -18,7 +18,7 @@ import {
 } from 'pixi.js';
 
 import { Stage } from '@inlet/react-pixi';
-import { useAppContext } from '../App/AppContext';
+// import { useAppContext } from '../App/AppContext';
 import {
   RenderPiece,
   Assets,
@@ -28,26 +28,31 @@ import {
   ImageTokenOption,
   ImageTokenPiece,
   RectTokenPiece,
-} from '../../types';
-import { RenderItem, RenderItemPiece } from '../../utils/render-item';
+} from '../types';
+import { RenderItem, RenderItemPiece } from './render-item';
+import { primaryColor } from './style';
 
-interface Props {
+interface TableOptions {
   // isLoaded?: boolean;
   // selectedPieceIds?: Set<string>;
   // children: React.ReactNode;
+  singleSelection?: boolean;
   handleUpdatePiece: (piece: RenderPiece, throttled: boolean) => void;
-  handleSelectPiece: (id: string) => void;
+  onDblClickDeck?: (id: string) => void;
+  onDblClickCard?: (id: string) => void;
+  // handleSelectPiece: (id: string) => void;
   // pieces: RenderPiece[];
   assets: Assets;
+  handCounts: { [key: string]: number };
   // onZoom: () => void;
-  // config: {
-  //   [key: string]: {
-  //     selectable?: boolean;
-  //     draggable?: boolean;
-  //     resizable?: boolean;
-  //     rotatable?: boolean;
-  //   };
-  // };
+  config: {
+    [key: string]: {
+      selectable?: boolean;
+      draggable?: boolean;
+      resizable?: boolean;
+      rotatable?: boolean;
+    };
+  };
 }
 
 let app = new Application({
@@ -56,6 +61,35 @@ let app = new Application({
 });
 
 const ZOOM_RATE = 1.02;
+
+const optionsByDie: {
+  [key: number]: { y: number; fontSize: number };
+} = {
+  4: {
+    fontSize: 32,
+    y: 65,
+  },
+  6: {
+    fontSize: 68,
+    y: 35,
+  },
+  8: {
+    fontSize: 32,
+    y: 45,
+  },
+  10: {
+    fontSize: 32,
+    y: 60,
+  },
+  12: {
+    fontSize: 32,
+    y: 46,
+  },
+  20: {
+    fontSize: 32,
+    y: 43,
+  },
+};
 
 // by default Konva prevent some events when node is dragging
 // it improve the performance and work well for 95% of cases
@@ -79,8 +113,7 @@ let instance = 1;
 let activeId: string;
 
 // export const Table = React.forwardRef((props: Props, ref: any) => {
-export const useTable = (props: Props) => {
-  // console.log('use table');
+export const useTable = (options: TableOptions) => {
   // const [scaleDist, setScaleDist] = React.useState<number>(0);
   // const {
   //   // selectedPieceIds,
@@ -88,19 +121,20 @@ export const useTable = (props: Props) => {
   //   // assets,
   //   // config,
   // } = props;
+  const { config } = options;
   const [pieces, setPieces] = React.useState<RenderPiece[]>([]);
   // const [assets, setAssets] = React.useState<Assets>({});
-  const [config, setConfig] = React.useState<{
-    [key: string]: {
-      selectable?: boolean;
-      draggable?: boolean;
-      resizable?: boolean;
-      rotatable?: boolean;
-    };
-  }>({});
-  const onUpdatePiece = props.handleUpdatePiece;
+  // const [config, setConfig] = React.useState<{
+  //   [key: string]: {
+  //     selectable?: boolean;
+  //     draggable?: boolean;
+  //     resizable?: boolean;
+  //     rotatable?: boolean;
+  //   };
+  // }>({});
+  const onUpdatePiece = options.handleUpdatePiece;
 
-  const assets = props.assets;
+  const assets = options.assets;
 
   const [selectedPieceIds, setSelectedPieceIds] = React.useState<Set<string>>(
     new Set()
@@ -109,6 +143,14 @@ export const useTable = (props: Props) => {
   const onSelectPiece = React.useCallback(
     (id: string) =>
       setSelectedPieceIds(s => {
+        if (options.singleSelection) {
+          if (s.has(id)) {
+            return new Set();
+          } else {
+            return new Set([id]);
+          }
+        }
+
         const ids = new Set(s);
         if (ids.has(id)) {
           ids.delete(id);
@@ -117,9 +159,9 @@ export const useTable = (props: Props) => {
         }
         return ids;
       }),
-    [setSelectedPieceIds]
+    [setSelectedPieceIds, options.singleSelection]
   );
-  const { state, dispatch } = useAppContext();
+  // const { state, dispatch } = useAppContext();
   const dragLayerRef = React.createRef<any>();
   const stageRef = React.createRef<HTMLDivElement>();
   const [stageAttached, setStageAttached] = React.useState(false);
@@ -151,19 +193,27 @@ export const useTable = (props: Props) => {
       screenHeight: window.innerHeight,
       worldWidth: 5000,
       worldHeight: 5000,
+      divWheel: stageRef.current,
+
+      interaction: app.renderer.plugins.interaction, // the interaction module is important for wheel to work properly when renderer.view is placed or scaled
     });
     stage.addChild(container);
+
     container
       .drag()
       .pinch()
       .wheel()
       .decelerate();
+
     container.on('pinch-start', () =>
       container.children.forEach(child => (child.interactive = false))
     );
     container.on('pinch-end', () =>
-      container.children.forEach(child => (child.interactive = false))
+      container.children.forEach(child => (child.interactive = true))
     );
+    // container.on('pointercancel', () =>
+    //   container.children.forEach(child => (child.interactive = true))
+    // );
     stageRef.current.appendChild(app.view);
     setStageAttached(true);
 
@@ -174,8 +224,8 @@ export const useTable = (props: Props) => {
     if (!container) {
       return;
     }
-    // console.log('render update', container.children.length);
 
+    // console.log(pieces.filter(x => x.type === 'die'));
     const piecesById = _.keyBy(pieces, 'id');
     const renderedPieces = new Set();
 
@@ -183,7 +233,8 @@ export const useTable = (props: Props) => {
       const piece = child as RenderItem;
       const curPiece = piecesById[piece.id];
 
-      if (!curPiece) {
+      if (!curPiece || curPiece.type === 'deleted') {
+        // console.log('removing', (child as RenderItem).id);
         container.removeChild(child);
         return;
       }
@@ -191,26 +242,22 @@ export const useTable = (props: Props) => {
       renderedPieces.add(piece.id);
       piece.locked = curPiece.locked;
 
-      if (curPiece.type === 'player') {
-        // TODO
-      } else if (curPiece.type === 'deck') {
-        // TODO
-      }
-
       if (!piece.transforming && !piece.dragging) {
-        console.log(curPiece);
         const renderItemPiece = curPiece;
+
         if (curPiece.type === 'circle') {
           renderItemPiece.width = curPiece.radius * 2;
           renderItemPiece.height = curPiece.radius * 2;
         } else if (curPiece.type === 'die') {
-          renderItemPiece.width = 200;
-          renderItemPiece.height = 200;
+          renderItemPiece.width = 128;
+          renderItemPiece.height = 128;
+        } else if (curPiece.type === 'player') {
+          const text = piece.getChildAt(piece.children.length - 1) as Text;
+          renderItemPiece.width = text.width + 28;
+          renderItemPiece.height = text.height + 14;
         }
+
         piece.setPiece(renderItemPiece as RenderItemPiece);
-        // piece.setPosition(curPiece);
-        // piece.angle = curPiece.rotation || 0;
-        piece.onSync(curPiece);
 
         if (selectedPieceIds?.has(piece.id)) {
           piece.select();
@@ -230,10 +277,12 @@ export const useTable = (props: Props) => {
       .forEach(piece => {
         let child: RenderItem;
         const image = assets[piece.image] || piece.image;
+        const pieceConfig = config[piece.type];
 
         switch (piece.type) {
           case 'board': {
             child = new RenderItem({
+              ...pieceConfig,
               piece,
               texture: Texture.from(image),
               onSync: (el, curPiece) => {
@@ -247,6 +296,7 @@ export const useTable = (props: Props) => {
           case 'deck': {
             const counts = new Container();
             child = new RenderItem({
+              ...pieceConfig,
               piece,
               texture: Texture.from(image),
               onSync: (el, curPiece) => {
@@ -267,7 +317,7 @@ export const useTable = (props: Props) => {
                 divider.drawRect(countPosition.x - 35, countPosition.y, 70, 4);
                 divider.endFill();
                 counts.addChild(divider);
-                const cardCount = new Text(`${piece.count}`, {
+                const cardCount = new Text(`${curPiece.count || 0}`, {
                   fontSize: '38px',
                   fill: 'white',
                   align: 'center',
@@ -277,7 +327,7 @@ export const useTable = (props: Props) => {
                 cardCount.anchor.set(0.5);
                 counts.addChild(cardCount);
 
-                const cardTotal = new Text(`${piece.total}`, {
+                const cardTotal = new Text(`${curPiece.total || 0}`, {
                   fontSize: '38px',
                   fill: 'white',
                   align: 'center',
@@ -289,24 +339,54 @@ export const useTable = (props: Props) => {
               },
             });
             child.addChild(counts);
-            child.onSync(piece);
 
+            if (options.onDblClickDeck) {
+              let doubleClick = false;
+              const onDoubleClick = () => {
+                if (doubleClick) {
+                  options.onDblClickDeck!(piece.id);
+                } else {
+                  doubleClick = true;
+                  setTimeout(() => (doubleClick = false), 600);
+                }
+              };
+
+              child.on('click', onDoubleClick);
+              child.on('tap', onDoubleClick);
+            }
             break;
           }
 
           case 'card': {
             child = new RenderItem({
+              ...pieceConfig,
               piece,
               texture: Texture.from(image),
               onSync: (el, curPiece) => {
                 el.setDimensions(curPiece as CardPiece);
               },
             });
+
+            if (options.onDblClickCard) {
+              let doubleClick = false;
+              const onDoubleClick = () => {
+                if (doubleClick) {
+                  options.onDblClickCard!(piece.id);
+                } else {
+                  doubleClick = true;
+                  setTimeout(() => (doubleClick = false), 600);
+                }
+              };
+
+              child.on('click', onDoubleClick);
+              child.on('tap', onDoubleClick);
+            }
             break;
           }
 
           case 'image': {
             child = new RenderItem({
+              ...pieceConfig,
               piece,
               texture: Texture.from(image),
               onSync: (el, curPiece) => {
@@ -319,6 +399,7 @@ export const useTable = (props: Props) => {
 
           case 'rect': {
             child = new RenderItem({
+              ...pieceConfig,
               piece,
               texture: Texture.WHITE,
               onSync: (el, curPiece) => {
@@ -331,48 +412,110 @@ export const useTable = (props: Props) => {
           }
 
           case 'circle': {
+            const circle = new Graphics();
             child = new RenderItem({
+              ...pieceConfig,
               piece: {
                 ...piece,
-                width: piece.radius,
-                height: piece.radius,
+                width: piece.radius * 2,
+                height: piece.radius * 2,
               },
+              uniformScaling: true,
               texture: Texture.EMPTY,
               onSync: (el, curPiece) => {
-                // TODO
+                circle.clear();
+                circle.beginFill(utils.string2hex(curPiece.color));
+                circle.lineStyle(0);
+                circle.drawCircle(
+                  curPiece.radius,
+                  curPiece.radius,
+                  curPiece.radius
+                );
+                circle.endFill();
+                el.setDimensions({
+                  ...curPiece,
+                  height: curPiece.radius * 2,
+                  width: curPiece.radius * 2,
+                });
               },
             });
-            const circle = new Graphics();
             child.addChild(circle);
-            child.scale.copyFrom(container.scale);
-            circle.beginFill(utils.string2hex(piece.color));
-            circle.lineStyle(0);
-            circle.drawCircle(0, 0, piece.radius);
-            circle.endFill();
             break;
           }
 
           case 'player': {
-            child = new RenderItem({
-              piece,
-              texture: Texture.EMPTY,
-              onSync: (el, curPiece) => {
-                // TODO
-              },
-            });
-            const text = new Text(`${piece.name} (TODO cards in hand)`, {
+            const text = new Text(``, {
               fontFamily: 'Arial',
               fontSize: 28,
               fill: 0xffffff,
               align: 'center',
             });
+            text.x = 14;
+            text.y = 7;
             const rect = new Graphics();
-            rect.beginFill(utils.string2hex(piece.color));
-            rect.drawRoundedRect(-14, -7, text.width + 28, text.height + 14, 8);
-            rect.endFill();
+            // rect.beginFill(utils.string2hex(piece.color));
+            // rect.drawRoundedRect(-14, -7, text.width + 28, text.height + 14, 8);
+            // rect.endFill();
+            child = new RenderItem({
+              ...pieceConfig,
+              piece,
+              texture: Texture.EMPTY,
+              onSync: (el, curPiece) => {
+                text.text = `${curPiece.name} (${options.handCounts[
+                  curPiece.playerId || ''
+                ] || 0} cards in hand)`;
+                rect.clear();
+                rect.beginFill(utils.string2hex(curPiece.color));
+                rect.drawRoundedRect(
+                  0,
+                  0,
+                  text.width + 28,
+                  text.height + 14,
+                  8
+                );
+                rect.endFill();
+              },
+            });
             child.addChild(rect);
             child.addChild(text);
 
+            break;
+          }
+
+          case 'die': {
+            const dieOptions = optionsByDie[piece.faces];
+            child = new RenderItem({
+              ...pieceConfig,
+              piece: { ...piece, width: 128, height: 128 },
+              texture: Texture.from(
+                `d${piece.faces}${piece.hidden ? '_hidden' : ''}.png`
+              ),
+              onSync: (el, curPiece) => {
+                // console.log('sync die', curPiece);
+                // el.sprite.width = 128;
+                // el.sprite.height = 128;
+              },
+            });
+
+            if (piece.faces === 4) {
+              const circle = new Graphics();
+
+              circle.beginFill(utils.string2hex(primaryColor));
+              circle.lineStyle(0);
+              circle.drawCircle(64, 80, 30);
+              circle.endFill();
+              child.addChild(circle);
+            }
+            const text = new Text(`${piece.value}`, {
+              fontFamily: 'Arial',
+              fontSize: dieOptions.fontSize,
+              fill: 0xffffff,
+              align: 'center',
+            });
+            // text.pivot.set(0.5);
+            text.x = 64 - text.width / 2;
+            text.y = dieOptions.y;
+            child.addChild(text);
             break;
           }
 
@@ -381,10 +524,9 @@ export const useTable = (props: Props) => {
         }
 
         if (child) {
-          const pieceConfig = config[piece.type];
-          if (_.size(pieceConfig) === 0) {
-            child.interactive = false;
-          }
+          // if (_.size(pieceConfig) === 0) {
+          //   child.interactive = false;
+          // }
 
           const selectPiece = () => {
             if (!child.nonSelectClick) {
@@ -399,8 +541,11 @@ export const useTable = (props: Props) => {
 
           child.id = piece.id;
           child.interactive = true;
-          child.on('tap', selectPiece);
-          child.on('click', selectPiece);
+
+          if (config[piece.type].selectable) {
+            child.on('tap', selectPiece);
+            child.on('click', selectPiece);
+          }
 
           child.onUpdate = p => {
             activeId = piece.id;
@@ -424,6 +569,9 @@ export const useTable = (props: Props) => {
     onSelectPiece,
     selectedPieceIds,
     onUpdatePiece,
+    options.handCounts,
+    options.onDblClickCard,
+    options.onDblClickDeck,
   ]);
 
   React.useEffect(() => {
@@ -436,20 +584,11 @@ export const useTable = (props: Props) => {
   return {
     instance,
     setPieces,
-    setConfig,
+    // setConfig,
     // setAssets,
+    container,
     stageRef,
     selectedPieceIds,
     setSelectedPieceIds,
   };
-
-  // return (
-  //   <div ref={stageRef} />
-  //   // <Stage
-  //   //   ref={stageRef}
-  //   //   options={{ transparent: true }}
-  //   //   width={dimensions.width}
-  //   //   height={dimensions.height}
-  //   // />
-  // );
 };

@@ -135,7 +135,7 @@ export function Hand(props: Props): JSX.Element {
                     key={card.id}
                     src={prependPrefix(props.assets[card.image])}
                     alt=""
-                    width="150"
+                    width="125"
                     onClick={handleSelectCard(card.id)}
                     style={{
                       opacity: selectedCards.includes(card.id) ? 0.6 : 1,

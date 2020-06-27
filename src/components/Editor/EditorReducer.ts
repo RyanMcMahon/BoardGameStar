@@ -18,7 +18,7 @@ export function editorReducer(
       const player1: PlayerOption = {
         id: slug.nice(),
         type: 'player' as const,
-        name: 'Player',
+        name: 'Player 1',
         x: 50,
         y: 50,
         width: 0,
@@ -30,7 +30,7 @@ export function editorReducer(
       const player2 = {
         id: slug.nice(),
         type: 'player' as const,
-        name: 'Player',
+        name: 'Player 2',
         x: 50,
         y: 100,
         width: 0,
@@ -177,6 +177,9 @@ export function editorReducer(
         piece.type === 'player'
           ? [...curScenario.players, piece.id]
           : curScenario.players;
+      if (piece.type === 'player') {
+        piece.name = `Player ${players.length}`;
+      }
       return {
         ...state,
         scenarios: {
@@ -211,18 +214,30 @@ export function editorReducer(
     case 'remove_piece': {
       const { id } = action;
       const curScenario = state.scenarios[state.curScenario];
+      const updatedScenario = {
+        ...curScenario,
+        pieces: curScenario.pieces.filter(pieceId => pieceId !== id),
+        players: curScenario.players.filter(pieceId => pieceId !== id),
+      };
       const pieces = { ...state.pieces };
+      const deletedPiece = pieces[id];
       delete pieces[id];
+
+      if (deletedPiece.type === 'player') {
+        updatedScenario.players.forEach((pieceId, index) => {
+          pieces[pieceId] = {
+            ...pieces[pieceId],
+            name: `Player ${index + 1}`,
+          } as PlayerOption;
+        });
+      }
+
       return {
         ...state,
         pieces,
         scenarios: {
           ...state.scenarios,
-          [curScenario.id]: {
-            ...curScenario,
-            pieces: curScenario.pieces.filter(pieceId => pieceId !== id),
-            players: curScenario.players.filter(pieceId => pieceId !== id),
-          },
+          [curScenario.id]: updatedScenario,
         },
       };
     }

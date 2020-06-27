@@ -1,8 +1,8 @@
 import useImage from 'use-image';
 
-import { Assets } from '../../utils/game';
-import { BoardPiece, DeckPiece, ImageTokenPiece, CardPiece } from '../../types';
-import { prependPrefix } from '../../utils/assets';
+import { Assets } from './game';
+import { BoardPiece, DeckPiece, ImageTokenPiece, CardPiece } from '../types';
+import { prependPrefix } from './assets';
 
 export function useAsset(
   assets: Assets,

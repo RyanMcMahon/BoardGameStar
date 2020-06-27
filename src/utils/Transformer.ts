@@ -9,6 +9,9 @@ import {
 import { primaryColor } from './style';
 
 interface TransformerOptions {
+  uniformScaling?: boolean;
+  rotatable?: boolean;
+  resizable?: boolean;
   dimensions: {
     width: number;
     height: number;
@@ -17,6 +20,10 @@ interface TransformerOptions {
   onTransformEnd: () => void;
   onTransform: (dimensions: { width: number; height: number }) => void;
   onRotate: (angle: number) => void;
+  restrictTransform?: (dimensions: {
+    width: number;
+    height: number;
+  }) => { width: number; height: number };
 }
 
 const HANDLE_SIZE = 12;
@@ -93,7 +100,7 @@ export class Transformer extends Container {
   onTransformStart: () => void;
   onTransformEnd: () => void;
   onTransform: (dimensions: { width: number; height: number }) => void;
-  resizing: boolean;
+  // resizing: boolean;
   rotating: boolean;
   curDimensions: {
     width: number;
@@ -113,10 +120,11 @@ export class Transformer extends Container {
     this.onTransformStart = options.onTransformStart;
     this.onTransformEnd = options.onTransformEnd;
     this.onTransform = options.onTransform;
-    this.resizing = false;
+    // this.resizing = false;
     this.rotating = false;
     this.curDimensions = options.dimensions;
 
+    // const restrictTransform = options.restrictTransform || (x => x);
     const rotateHandle = new Container();
     rotateHandle.interactive = true;
     rotateHandle.cursor = 'crosshair';
@@ -132,7 +140,10 @@ export class Transformer extends Container {
     rotateHandle.addChild(circleAndLine);
 
     this.rotateHandle = rotateHandle;
-    this.addChild(rotateHandle);
+
+    if (options.rotatable) {
+      this.addChild(rotateHandle);
+    }
 
     const handleRotateStart = () => {
       this.rotating = true;
@@ -141,7 +152,7 @@ export class Transformer extends Container {
 
     const handleRotateEnd = () => {
       this.rotating = false;
-      this.onTransformStart();
+      this.onTransformEnd();
     };
 
     const handleRotate = (event: any) => {
@@ -173,84 +184,106 @@ export class Transformer extends Container {
       .on('touchmove', handleRotate);
 
     this.resizeHandles = [];
-    handleConfigs.forEach(point => {
-      const handle = new Container();
-      handle.interactive = true;
-      handle.cursor = 'crosshair';
 
-      const rectangle = new Graphics();
-      rectangle.beginFill(utils.string2hex(primaryColor));
-      rectangle.drawRect(0, 0, HANDLE_SIZE, HANDLE_SIZE);
-      rectangle.beginFill(0xffffff);
-      rectangle.drawRect(2, 2, HANDLE_SIZE - 4, HANDLE_SIZE - 4);
-      rectangle.endFill();
-
-      handle.addChild(rectangle);
-
-      this.addChild(handle);
-      this.resizeHandles.push({
-        handle,
-        setPosition: (width: number, height: number) => {
-          const position = point.getPosition(width, height);
-          handle.x = position.x;
-          handle.y = position.y;
-        },
-      });
-
-      const handleResizeStart = (event: any) => {
-        this.resizing = true;
-
-        this.resizeData = {
-          startPosition: event.data.getLocalPosition(this.parent),
-          constraint: point.constraint,
-        };
-
-        this.onTransformStart();
-      };
-
-      const handleResizeEnd = (event: any) => {
-        this.resizing = false;
-        this.resizeData = null;
-        this.onTransformEnd();
-      };
-
-      const handleResizeMove = (event: any) => {
-        if (!this.resizing) {
+    if (options.resizable) {
+      handleConfigs.forEach(point => {
+        // TODO fix uniform scaling for all handles
+        if (
+          options.uniformScaling &&
+          (point.constraint.x !== 1 || point.constraint.y !== 1)
+        ) {
           return;
         }
 
-        const { startPosition, constraint } = this.resizeData;
-        const localPosition = event.data.getLocalPosition(this.parent);
-        const diff = {
-          x: localPosition.x - startPosition.x,
-          y: localPosition.y - startPosition.y,
+        let resizing = false;
+        const handle = new Container();
+        handle.interactive = true;
+        handle.cursor = 'crosshair';
+
+        const rectangle = new Graphics();
+        rectangle.beginFill(utils.string2hex(primaryColor));
+        rectangle.drawRect(0, 0, HANDLE_SIZE, HANDLE_SIZE);
+        rectangle.beginFill(0xffffff);
+        rectangle.drawRect(2, 2, HANDLE_SIZE - 4, HANDLE_SIZE - 4);
+        rectangle.endFill();
+
+        handle.addChild(rectangle);
+
+        this.addChild(handle);
+        this.resizeHandles.push({
+          handle,
+          setPosition: (width: number, height: number) => {
+            const position = point.getPosition(width, height);
+            handle.x = position.x;
+            handle.y = position.y;
+          },
+        });
+
+        const handleResizeStart = (event: any) => {
+          resizing = true;
+
+          this.resizeData = {
+            startPosition: event.data.getLocalPosition(this.parent),
+            constraint: point.constraint,
+            curDimensions: { ...this.curDimensions },
+          };
+
+          this.onTransformStart();
         };
 
-        const dimensions = {
-          width: this.curDimensions.width + diff.x * constraint.x,
-          height: this.curDimensions.height + diff.y * constraint.y,
+        const handleResizeEnd = (event: any) => {
+          resizing = false;
+          this.resizeData = null;
+          this.onTransformEnd();
         };
 
-        this.rotateHandle.x = dimensions.width / 2;
-        this.resizeHandles.forEach(({ setPosition }) =>
-          setPosition(dimensions.width, dimensions.height)
-        );
-        this.onTransform(dimensions);
-      };
+        const handleResizeMove = (event: any) => {
+          if (!resizing) {
+            return;
+          }
 
-      handle
-        // events for resize start
-        .on('mousedown', handleResizeStart)
-        .on('touchstart', handleResizeStart)
-        // events for resize end
-        .on('mouseup', handleResizeEnd)
-        .on('mouseupoutside', handleResizeEnd)
-        .on('touchend', handleResizeEnd)
-        .on('touchendoutside', handleResizeEnd)
-        // events for resize move
-        .on('mousemove', handleResizeMove)
-        .on('touchmove', handleResizeMove);
-    });
+          const { startPosition, constraint, curDimensions } = this.resizeData;
+          const localPosition = event.data.getLocalPosition(this.parent);
+          const diff = {
+            x: localPosition.x - startPosition.x,
+            y: localPosition.y - startPosition.y,
+          };
+
+          if (options.uniformScaling) {
+            if (Math.abs(diff.x) > Math.abs(diff.y)) {
+              diff.y = diff.x;
+            } else {
+              diff.x = diff.y;
+            }
+          }
+
+          const dimensions = {
+            width: curDimensions.width + diff.x * constraint.x,
+            height: curDimensions.height + diff.y * constraint.y,
+          };
+          console.log(diff, dimensions);
+
+          this.rotateHandle.x = dimensions.width / 2;
+          this.resizeHandles.forEach(({ setPosition }) =>
+            setPosition(dimensions.width, dimensions.height)
+          );
+          this.onTransform(dimensions);
+        };
+
+        handle
+          // events for resize start
+          .on('mousedown', handleResizeStart)
+          .on('touchstart', handleResizeStart)
+          // events for resize end
+          .on('mouseup', handleResizeEnd)
+          .on('mouseupoutside', handleResizeEnd)
+          .on('touchend', handleResizeEnd)
+          .on('touchendoutside', handleResizeEnd)
+          // events for resize move
+          .on('mousemove', handleResizeMove)
+          .on('touchmove', handleResizeMove);
+      });
+    }
 
     this.setDimensions(options.dimensions);
   }

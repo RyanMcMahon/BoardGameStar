@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import { Button } from '../../utils/style';
 import { CardPiece, Assets } from '../../types';
-import { useAsset } from '../Piece/utils';
+import { useAsset } from '../../utils/useAsset';
 
 interface Props {
   onDelete: () => void;
@@ -24,7 +24,7 @@ const Img = styled.img({
 
 export function CardEditor(props: Props) {
   const { assets, card } = props;
-  const inputRef = React.createRef<HTMLInputElement>();
+  // const inputRef = React.createRef<HTMLInputElement>();
   const image = useAsset(assets, card);
 
   const handleOnChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -38,7 +38,7 @@ export function CardEditor(props: Props) {
       <input
         type="text"
         value={card.counts}
-        ref={inputRef}
+        // ref={inputRef}
         min={1}
         onChange={handleOnChange}
       />

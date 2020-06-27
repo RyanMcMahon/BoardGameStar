@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import * as _ from 'lodash';
 import FPSStats from 'react-fps-stats';
+import { Viewport } from 'pixi-viewport';
 import { useParams, Link, Redirect } from 'react-router-dom';
 import {
   FaExpand,
@@ -25,7 +26,7 @@ import { PixiComponent, Stage, Sprite } from '@inlet/react-pixi';
 
 import { useGameClient } from '../../utils/client';
 import { Button, breakPoints, maxMobileWidth } from '../../utils/style';
-import { useTable } from '../Table';
+import { useTable } from '../../utils/useTable';
 import { ControlsModal } from '../ControlsModal';
 import { InviteModal } from '../InviteModal';
 
@@ -99,11 +100,12 @@ const AppContainer = styled.div({
 });
 
 const PlayerContainer = styled.div({
+  userSelect: 'none',
   position: 'fixed',
   top: 0,
   right: 0,
   bottom: 0,
-  width: '505px',
+  width: '430px',
   display: 'flex',
   flexDirection: 'column',
   backgroundColor: '#fafafa',
@@ -113,6 +115,17 @@ const PlayerContainer = styled.div({
   },
 });
 
+const PlayerName = styled.div<{ color: string }>(
+  (props: { color: string }) => ({
+    margin: 0,
+    padding: 10,
+    background: props.color,
+    fontSize: '2rem',
+    color: '#fff',
+    cursor: 'pointer',
+  })
+);
+
 const PlayerLinksContainer = styled.div({
   padding: '1rem',
   '> button:nth-child(n+2)': {
@@ -121,14 +134,15 @@ const PlayerLinksContainer = styled.div({
 });
 
 const TogglePlayerContainerButton = styled.div({
+  userSelect: 'none',
   position: 'absolute',
-  top: '1rem',
+  top: '.5rem',
   right: 0,
-  padding: '.5rem 1rem .5rem 1.5rem',
+  padding: '.25rem 1rem .5rem 1.5rem',
   borderRadius: '8px 0 0 8px',
-  fontSize: '100px',
+  fontSize: '50px',
   lineHeight: '24px',
-  height: '50px',
+  height: '34px',
   backgroundColor: 'rgba(0, 0, 0, .2)',
   color: '#fff',
   zIndex: 2000,
@@ -239,17 +253,17 @@ export const App: React.FC = () => {
   } = useGameClient(gameId, hostId);
   const { handleZoom } = useZooming();
 
-  const handleSelectPiece = (id: string) => {
-    setSelectedPieceIds(s => {
-      const ids = new Set(s);
-      if (ids.has(id)) {
-        ids.delete(id);
-      } else {
-        ids.add(id);
-      }
-      return ids;
-    });
-  };
+  // const handleSelectPiece = (id: string) => {
+  //   setSelectedPieceIds(s => {
+  //     const ids = new Set(s);
+  //     if (ids.has(id)) {
+  //       ids.delete(id);
+  //     } else {
+  //       ids.add(id);
+  //     }
+  //     return ids;
+  //   });
+  // };
 
   let sendUpdatedPiecesRef = React.useRef<
     (updatedPieces: { [id: string]: RenderPiece }) => void
@@ -332,19 +346,37 @@ export const App: React.FC = () => {
 
     handleUpdatePieces(updatedPieces, throttled);
   };
+
+  const handlePickUpCard = (id: string) => {
+    if (conn) {
+      conn.send({
+        event: 'pick_up_cards',
+        cardIds: [id],
+      });
+      const ids = new Set(selectedPieceIds);
+      ids.delete(id);
+      setSelectedPieceIds(ids);
+    }
+  };
+
   //   },
   //   [pieces, handleUpdatePieces]
   // );
   const table = useTable({
-    handleSelectPiece,
+    // handleSelectPiece,
     handleUpdatePiece,
     assets,
+    handCounts,
+    config: tableConfig,
+    onDblClickDeck: (id: string) => setDrawModalId(id),
+    onDblClickCard: handlePickUpCard,
   });
   const fact = React.useMemo(() => _.sample(facts), []);
   const {
     setSelectedPieceIds,
     selectedPieceIds,
     setPieces: setTablePieces,
+    container,
   } = table;
   // const [selectedPieceIds, setSelectedPieceIds] = React.useState<Set<string>>(
   //   new Set()
@@ -365,13 +397,13 @@ export const App: React.FC = () => {
   const [showControlsModal, setShowControlsModal] = React.useState<boolean>(
     false
   );
-  const tableRef = React.createRef<{
-    zoomIn: () => void;
-    zoomOut: () => void;
-    redraw: () => void;
-    updateGroup: (selectedPieceIds: string[]) => void;
-    getNode: (id: string) => Konva.Node;
-  }>();
+  // const tableRef = React.createRef<{
+  //   zoomIn: () => void;
+  //   zoomOut: () => void;
+  //   redraw: () => void;
+  //   updateGroup: (selectedPieceIds: string[]) => void;
+  //   getNode: (id: string) => Konva.Node;
+  // }>();
 
   const selectedPieces = Array.from(selectedPieceIds)
     .map(id => pieces[id])
@@ -398,18 +430,6 @@ export const App: React.FC = () => {
   //     });
   //   }
   // };
-
-  const handlePickUpCard = (id: string) => () => {
-    if (conn) {
-      conn.send({
-        event: 'pick_up_cards',
-        cardIds: [id],
-      });
-      const ids = new Set(selectedPieceIds);
-      ids.delete(id);
-      setSelectedPieceIds(ids);
-    }
-  };
 
   // TODO
   // const handlePeekAtDeck = (deckId: string, peeking: boolean) => {
@@ -558,9 +578,11 @@ export const App: React.FC = () => {
         .map(id => pieces[id] || {})
         .filter(
           piece =>
-            !piece.counts ||
-            piece.type === 'card' ||
-            players.length >= parseInt(piece.counts.split(':')[0], 10)
+            (piece.type === 'player' && piece.playerId) ||
+            (piece.type !== 'player' &&
+              (!piece.counts ||
+                piece.type === 'card' ||
+                players.length >= parseInt(piece.counts.split(':')[0], 10)))
         )
     );
   }, [board, pieces, players.length, setTablePieces]);
@@ -723,18 +745,9 @@ export const App: React.FC = () => {
         {showPlayerControls && (
           <PlayerContainer>
             {player && (
-              <h1
-                style={{
-                  margin: 0,
-                  padding: 10,
-                  background: player.color,
-                  color: '#fff',
-                  cursor: 'pointer',
-                }}
-                onClick={handlePromptRename}
-              >
+              <PlayerName color={player.color} onClick={handlePromptRename}>
                 {player.name}
-              </h1>
+              </PlayerName>
             )}
             <HandContainer>
               <Hand
@@ -785,8 +798,8 @@ export const App: React.FC = () => {
         onDiscardPlayed={handleDiscardPlayed}
         onClearSelectedPieces={() => setSelectedPieceIds(new Set())}
         onShowDiceModal={() => setShowDiceModal(true)}
-        onZoomIn={() => tableRef.current && tableRef.current.zoomIn()}
-        onZoomOut={() => tableRef.current && tableRef.current.zoomOut()}
+        onZoomIn={() => container && (container as Viewport).zoom(-200)}
+        onZoomOut={() => container && (container as Viewport).zoom(200)}
         onShowSettingsModal={() => setShowSettingsModal(true)}
       />
 
@@ -872,7 +885,7 @@ export const App: React.FC = () => {
           </LoadingContainer>
         </LoadingPage>
       )}
-      <FPSStats />
+      {/* <FPSStats /> */}
     </MainContainer>
   );
 };

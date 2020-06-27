@@ -5,7 +5,7 @@ import FPSStats from 'react-fps-stats';
 import { Layer, Image } from 'react-konva';
 
 import { Button } from '../../utils/style';
-import { useTable } from '../Table';
+import { useTable } from '../../utils/useTable';
 import { loadAsset, getFilename, getAssetDimensions } from '../../utils/assets';
 import {
   EditorAction,
@@ -112,6 +112,52 @@ const ExitButton = styled(Button)({
   right: '1rem',
 });
 
+const tableConfig = {
+  board: {
+    selectable: true,
+    draggable: true,
+    rotatable: true,
+    resizable: true,
+  },
+  deck: {
+    selectable: true,
+    draggable: true,
+    rotatable: true,
+    resizable: true,
+  },
+  card: {
+    selectable: true,
+    draggable: true,
+    rotatable: true,
+    resizable: true,
+  },
+  image: {
+    selectable: true,
+    draggable: true,
+    rotatable: true,
+    resizable: true,
+  },
+  rect: {
+    selectable: true,
+    draggable: true,
+    rotatable: true,
+    resizable: true,
+  },
+  circle: {
+    selectable: true,
+    draggable: true,
+    resizable: true,
+  },
+  die: {
+    selectable: true,
+    draggable: true,
+  },
+  player: {
+    selectable: true,
+    draggable: true,
+  },
+};
+
 export function Editor(props: Props) {
   const { state, dispatch } = props;
   const { handleZoom } = useZooming();
@@ -119,7 +165,7 @@ export function Editor(props: Props) {
     state.assets || {}
   );
   const [files, setFiles] = React.useState<{ [key: string]: string }>({});
-  const [selectedPieceId, setSelectedPieceId] = React.useState<string | null>();
+  // const [selectedPieceId, setSelectedPieceId] = React.useState<string | null>();
   const [deckModalId, setDeckModalId] = React.useState<string>();
   const [scenarioModalIsShowing, setScenarioModalIsShowing] = React.useState(
     false
@@ -128,21 +174,21 @@ export function Editor(props: Props) {
   //   editorHelpModalIsShowing,
   //   setEditorHelpModalIsShowing,
   // ] = React.useState(false);
-  const selectedPiece = selectedPieceId ? state.pieces[selectedPieceId] : null;
-  const curScenario = state.scenarios[state.curScenario];
-  // const [axisImage] = useImage(`/axis.png`);
 
-  const handleSelectPiece = (id: string) => () => {
-    if (id === selectedPieceId) {
-      setSelectedPieceId(null);
-    } else {
-      setSelectedPieceId(id);
-    }
-  };
+  // const handleSelectPiece = (id: string) => () => {
+  //   if (id === selectedPieceId) {
+  //     setSelectedPieceId(null);
+  //   } else {
+  //     setSelectedPieceId(id);
+  //   }
+  // };
 
   const table = useTable({
-    handleSelectPiece,
     assets,
+    singleSelection: true,
+    handCounts: {},
+    config: tableConfig,
+    onDblClickDeck: (id: string) => setDeckModalId(id),
     handleUpdatePiece: p =>
       dispatch({
         type: 'update_piece',
@@ -152,7 +198,12 @@ export function Editor(props: Props) {
         } as AnyPieceOption,
       }),
   });
-  const { setPieces } = table;
+  const { setPieces, selectedPieceIds, setSelectedPieceIds } = table;
+
+  const [selectedPieceId] = Array.from(selectedPieceIds);
+  const selectedPiece = selectedPieceId ? state.pieces[selectedPieceId] : null;
+  const curScenario = state.scenarios[state.curScenario];
+  // const [axisImage] = useImage(`/axis.png`);
 
   const handleSave = () => {
     const configFile = `module.exports = ${JSON.stringify(state, null, '\t')};`;
@@ -189,6 +240,7 @@ export function Editor(props: Props) {
     const piece = {
       id,
       type: 'player',
+      name: '',
       width: 0,
       height: 0,
       color: playerColors[curScenario.players.length] || '#333',
@@ -201,7 +253,7 @@ export function Editor(props: Props) {
       piece,
       type: 'add_piece',
     });
-    setSelectedPieceId(id);
+    setSelectedPieceIds(new Set([id]));
   };
 
   const createNewImagePiece = (options: any) => async () => {
@@ -230,7 +282,7 @@ export function Editor(props: Props) {
         });
         setAssets(a => ({ ...a, [filename]: asset }));
         setFiles(a => ({ ...a, [filename]: file }));
-        setSelectedPieceId(id);
+        setSelectedPieceIds(new Set([id]));
       });
     } catch (err) {
       console.log(err);
@@ -262,7 +314,8 @@ export function Editor(props: Props) {
       piece,
       type: 'add_piece',
     });
-    setSelectedPieceId(id);
+    // setSelectedPieceId(id);
+    setSelectedPieceIds(new Set([id]));
   };
 
   const handleAddRect = () => {
@@ -282,7 +335,8 @@ export function Editor(props: Props) {
       piece,
       type: 'add_piece',
     });
-    setSelectedPieceId(piece.id);
+    // setSelectedPieceId(piece.id);
+    setSelectedPieceIds(new Set([id]));
   };
 
   const handleDuplicatePiece = () => {
@@ -303,7 +357,8 @@ export function Editor(props: Props) {
       piece,
       type: 'add_piece',
     });
-    setSelectedPieceId(piece.id);
+    // setSelectedPieceId(piece.id);
+    setSelectedPieceIds(new Set([piece.id]));
   };
 
   const handleDeletePiece = () => {
@@ -314,12 +369,15 @@ export function Editor(props: Props) {
       id: selectedPiece.id,
       type: 'remove_piece',
     });
-    setSelectedPieceId(null);
+    // setSelectedPieceId(null);
+    setSelectedPieceIds(new Set());
   };
 
   React.useEffect(() => {
     setPieces([
-      ...(curScenario.pieces.map(id => state.pieces[id]) as RenderPiece[]),
+      ...(curScenario.pieces.map(
+        id => state.pieces[id]
+      ) as RenderPiece[]).filter(piece => piece.type !== 'card'),
       {
         id: 'axis',
         type: 'image',
@@ -341,152 +399,6 @@ export function Editor(props: Props) {
     <MainContainer>
       <AppContainer>
         <div ref={table.stageRef} />
-        {/* <Table onZoom={handleZoom}>
-          <Layer>
-            <Image image={axisImage} x={0} y={0} zIndex={0} />
-
-            {boardPieces.map(piece => {
-              switch (piece.type) {
-                case 'board':
-                  return (
-                    <ImagePiece
-                      key={piece.id}
-                      assets={assets}
-                      piece={piece as BoardPiece}
-                      draggable={true}
-                      editingEnabled={true}
-                      isSelected={piece.id === selectedPieceId}
-                      onChange={b => {
-                        dispatch({
-                          type: 'update_piece',
-                          piece: {
-                            ...piece,
-                            ...b,
-                          },
-                        });
-                      }}
-                      onSelect={handleSelectPiece(piece.id)}
-                    />
-                  );
-
-                case 'deck':
-                  return (
-                    <Deck
-                      key={piece.id}
-                      assets={assets}
-                      piece={piece as DeckPiece}
-                      editingEnabled={true}
-                      draggable={true}
-                      isSelected={piece.id === selectedPieceId}
-                      onSelect={handleSelectPiece(piece.id)}
-                      onChange={b => {
-                        dispatch({
-                          type: 'update_piece',
-                          piece: {
-                            ...piece,
-                            ...b,
-                          },
-                        });
-                      }}
-                      onDblClick={() => setDeckModalId(piece.id)}
-                    />
-                  );
-
-                case 'image':
-                  return (
-                    <ImagePiece
-                      key={piece.id}
-                      assets={assets}
-                      piece={piece as ImageTokenPiece}
-                      draggable={true}
-                      editingEnabled={true}
-                      isSelected={piece.id === selectedPieceId}
-                      onChange={b => {
-                        dispatch({
-                          type: 'update_piece',
-                          piece: {
-                            ...piece,
-                            ...b,
-                          },
-                        });
-                      }}
-                      onSelect={handleSelectPiece(piece.id)}
-                    />
-                  );
-
-                case 'rect':
-                  return (
-                    <RectPiece
-                      key={piece.id}
-                      piece={piece as RectTokenPiece}
-                      draggable={true}
-                      editingEnabled={true}
-                      isSelected={piece.id === selectedPieceId}
-                      onChange={b => {
-                        dispatch({
-                          type: 'update_piece',
-                          piece: {
-                            ...piece,
-                            ...b,
-                          },
-                        });
-                      }}
-                      onSelect={handleSelectPiece(piece.id)}
-                    />
-                  );
-
-                case 'circle':
-                  return (
-                    <CirclePiece
-                      key={piece.id}
-                      piece={piece as CircleTokenPiece}
-                      draggable={true}
-                      editingEnabled={true}
-                      isSelected={piece.id === selectedPieceId}
-                      onChange={b => {
-                        dispatch({
-                          type: 'update_piece',
-                          piece: {
-                            ...piece,
-                            ...b,
-                          },
-                        });
-                      }}
-                      onSelect={handleSelectPiece(piece.id)}
-                    />
-                  );
-
-                case 'player':
-                  return (
-                    <PlayArea
-                      key={piece.id}
-                      piece={
-                        {
-                          ...piece,
-                          name: `Player ${curScenario.players.findIndex(
-                            id => id === piece.id
-                          ) + 1}`,
-                        } as PlayerPiece
-                      }
-                      handCount={0}
-                      draggable={true}
-                      isSelected={piece.id === selectedPieceId}
-                      onChange={b => {
-                        dispatch({
-                          type: 'update_piece',
-                          piece: {
-                            ...piece,
-                            ...b,
-                          },
-                        });
-                      }}
-                      onSelect={handleSelectPiece(piece.id)}
-                    />
-                  );
-              }
-            })}
-          </Layer>
-        </Table> */}
       </AppContainer>
 
       <ControlsContainer>
@@ -680,7 +592,7 @@ export function Editor(props: Props) {
           onClose={() => setDeckModalId('')}
         />
       )}
-      <FPSStats />
+      {/* <FPSStats /> */}
     </MainContainer>
   );
 }
