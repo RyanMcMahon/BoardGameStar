@@ -56,6 +56,7 @@ export class RenderItem extends Container {
   transformer: Transformer;
   outline: Graphics;
   locked?: boolean;
+  tempDragDisabled?: boolean;
   sendUpdateThrottled: () => void;
   onSync: (curPiece: RenderPiece) => void;
 
@@ -76,6 +77,7 @@ export class RenderItem extends Container {
     this.dragging = false;
     this.interactive = true;
     this.dragEnabled = true;
+    this.tempDragDisabled = false;
     this.transforming = false;
     this.outline = new Graphics();
     this.onSync = (curPiece: RenderPiece) => onSync(this, curPiece);
@@ -185,6 +187,7 @@ export class RenderItem extends Container {
   }
 
   handleDragEnd() {
+    // this.interactive = true;
     this.dragging = false;
     this.data = null;
     this.cursor = 'grab';
@@ -194,7 +197,12 @@ export class RenderItem extends Container {
   }
 
   handleDragMove(event: any) {
-    if (!this.dragging) {
+    const { touches } = event.data.originalEvent;
+    if (touches.length > 1) {
+      // this.interactive = false;
+      this.dragging = false;
+    }
+    if (!this.dragging || (this.parent as any).isPinching) {
       return;
     }
     this.nonSelectClick = true;

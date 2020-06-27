@@ -162,23 +162,19 @@ export const useTable = (options: TableOptions) => {
     [setSelectedPieceIds, options.singleSelection]
   );
   // const { state, dispatch } = useAppContext();
-  const dragLayerRef = React.createRef<any>();
+  // const dragLayerRef = React.createRef<any>();
   const stageRef = React.createRef<HTMLDivElement>();
   const [stageAttached, setStageAttached] = React.useState(false);
   const [container, setContainer] = React.useState<Container>();
-  const [zoomInit, setZoomInit] = React.useState(false);
-  // const [dimensions, setDimensions] = React.useState({
-  //   width: 200,
-  //   height: 200,
-  // });
+  // const [zoomInit, setZoomInit] = React.useState(false);
 
   const updateDimensions = React.useCallback(() => {
-    // setDimensions({
-    //   width: window.innerWidth,
-    //   height: window.innerHeight,
-    // });
+    if (container) {
+      (container as Viewport).screenWidth = window.innerWidth;
+      (container as Viewport).screenHeight = window.innerHeight;
+    }
     app.renderer.resize(window.innerWidth, window.innerHeight);
-  }, []);
+  }, [container]);
 
   React.useEffect(() => {
     if (!stageRef.current || stageAttached) {
@@ -205,12 +201,23 @@ export const useTable = (options: TableOptions) => {
       .wheel()
       .decelerate();
 
-    container.on('pinch-start', () =>
-      container.children.forEach(child => (child.interactive = false))
-    );
-    container.on('pinch-end', () =>
-      container.children.forEach(child => (child.interactive = true))
-    );
+    // container.on('touchstart', e => {
+    //   debugger;
+    //   (container as any).isPinching = true;
+    // });
+    // container.on('pinch-start', e => {
+    //   (container as any).isPinching = true;
+    //   console.log((container as any).isPinching);
+    //   // container.children.forEach(child => {
+    //   //   (child as RenderItem).tempDragDisabled = true;
+    //   // });
+    // });
+    // container.on('pinch-end', () => {
+    //   (container as any).isPinching = false;
+    //   // container.children.forEach(child => {
+    //   //   (child as RenderItem).tempDragDisabled = false;
+    //   // });
+    // });
     // container.on('pointercancel', () =>
     //   container.children.forEach(child => (child.interactive = true))
     // );
