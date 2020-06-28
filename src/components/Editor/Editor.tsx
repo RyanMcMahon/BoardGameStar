@@ -1,8 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import slug from 'slugid';
-import FPSStats from 'react-fps-stats';
-import { Layer, Image } from 'react-konva';
+// import FPSStats from 'react-fps-stats';
 
 import { Button } from '../../utils/style';
 import { useTable } from '../../utils/useTable';
@@ -14,18 +13,10 @@ import {
   AnyPieceOption,
   RectPieceOption,
   CircleTokenOption,
-  BoardPiece,
-  DeckPiece,
-  ImageTokenPiece,
-  RectTokenPiece,
-  CircleTokenPiece,
-  PlayerPiece,
   RenderPiece,
-  PieceOption,
 } from '../../types';
 import { DeckEditorModal } from '../DeckEditorModal/DeckEditorModal';
 import { ScenarioModal } from '../ScenarioModal';
-// import { PlayArea } from '../Piece/PlayArea';
 import { useZooming } from '../../utils/useZooming';
 
 const fs = window.require('fs');
@@ -165,23 +156,10 @@ export function Editor(props: Props) {
     state.assets || {}
   );
   const [files, setFiles] = React.useState<{ [key: string]: string }>({});
-  // const [selectedPieceId, setSelectedPieceId] = React.useState<string | null>();
   const [deckModalId, setDeckModalId] = React.useState<string>();
   const [scenarioModalIsShowing, setScenarioModalIsShowing] = React.useState(
     false
   );
-  // const [
-  //   editorHelpModalIsShowing,
-  //   setEditorHelpModalIsShowing,
-  // ] = React.useState(false);
-
-  // const handleSelectPiece = (id: string) => () => {
-  //   if (id === selectedPieceId) {
-  //     setSelectedPieceId(null);
-  //   } else {
-  //     setSelectedPieceId(id);
-  //   }
-  // };
 
   const table = useTable({
     assets,
@@ -203,7 +181,6 @@ export function Editor(props: Props) {
   const [selectedPieceId] = Array.from(selectedPieceIds);
   const selectedPiece = selectedPieceId ? state.pieces[selectedPieceId] : null;
   const curScenario = state.scenarios[state.curScenario];
-  // const [axisImage] = useImage(`/axis.png`);
 
   const handleSave = () => {
     const configFile = `module.exports = ${JSON.stringify(state, null, '\t')};`;
@@ -314,7 +291,6 @@ export function Editor(props: Props) {
       piece,
       type: 'add_piece',
     });
-    // setSelectedPieceId(id);
     setSelectedPieceIds(new Set([id]));
   };
 
@@ -335,7 +311,6 @@ export function Editor(props: Props) {
       piece,
       type: 'add_piece',
     });
-    // setSelectedPieceId(piece.id);
     setSelectedPieceIds(new Set([id]));
   };
 
@@ -357,7 +332,6 @@ export function Editor(props: Props) {
       piece,
       type: 'add_piece',
     });
-    // setSelectedPieceId(piece.id);
     setSelectedPieceIds(new Set([piece.id]));
   };
 
@@ -369,7 +343,6 @@ export function Editor(props: Props) {
       id: selectedPiece.id,
       type: 'remove_piece',
     });
-    // setSelectedPieceId(null);
     setSelectedPieceIds(new Set());
   };
 
@@ -392,8 +365,6 @@ export function Editor(props: Props) {
       },
     ]);
   }, [curScenario.pieces, state.pieces, setPieces]);
-
-  // const tablePieces = curScenario.pieces.map(id => state.pieces[id]);
 
   return (
     <MainContainer>
@@ -444,13 +415,6 @@ export function Editor(props: Props) {
           Duplicate Scenario
         </Button>
 
-        {/* <input
-          type="number"
-          min={2}
-          value={state.name}
-          onChange={handleUpdatePlayerCount}
-        /> */}
-
         <label>Pieces</label>
         <Button design="primary" onClick={handleAddPlayer}>
           Add Player
@@ -470,9 +434,6 @@ export function Editor(props: Props) {
         <Button design="primary" onClick={handleAddDeck}>
           Add Deck
         </Button>
-        {/* <Button design="primary" onClick={handleAddCard}>
-          Add Card
-        </Button> */}
 
         {!!selectedPiece && (
           <>

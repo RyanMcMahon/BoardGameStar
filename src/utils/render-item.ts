@@ -1,19 +1,7 @@
 import _ from 'lodash';
-// import { Image, Group } from 'react-konva';
 import { Container, Sprite, Texture, Graphics, utils } from 'pixi.js';
-import { OutlineFilter } from '@pixi/filter-outline';
 
-// import { useAsset } from './utils';
-// import { Assets } from '../../utils/game';
-// import { PieceTransformer, useTransformer } from './PieceTransformer';
-import {
-  BoardPiece,
-  CardPiece,
-  ImageTokenPiece,
-  PieceOption,
-  RectPieceOption,
-  RenderPiece,
-} from '../types';
+import { RenderPiece } from '../types';
 import { primaryColor } from './style';
 import { Transformer } from './Transformer';
 
@@ -98,10 +86,6 @@ export class RenderItem extends Container {
       uniformScaling,
       rotatable,
       resizable,
-      restrictTransform: restrictTransform
-        ? dimensions =>
-            restrictTransform({ ...dimensions, curPiece: this.piece })
-        : undefined,
       dimensions: piece,
 
       onRotate: (angle: number) => {
@@ -189,7 +173,6 @@ export class RenderItem extends Container {
   }
 
   handleDragEnd() {
-    // this.interactive = true;
     this.dragging = false;
     this.data = null;
     this.cursor = 'grab';

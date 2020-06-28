@@ -2,8 +2,6 @@ import _ from 'lodash';
 import React from 'react';
 
 import { Viewport } from 'pixi-viewport';
-// import Konva from 'konva';
-// import { Stage, Layer } from 'react-konva';
 import {
   utils,
   Graphics,
@@ -12,20 +10,15 @@ import {
   Text,
   Application,
   Sprite,
-  Rectangle,
-  ParticleContainer,
-  DisplayObject,
 } from 'pixi.js';
 
 import { Stage } from '@inlet/react-pixi';
-// import { useAppContext } from '../App/AppContext';
 import {
   RenderPiece,
   Assets,
   BoardPiece,
   DeckPiece,
   CardPiece,
-  ImageTokenOption,
   ImageTokenPiece,
   RectTokenPiece,
 } from '../types';
@@ -33,18 +26,12 @@ import { RenderItem, RenderItemPiece } from './render-item';
 import { primaryColor } from './style';
 
 interface TableOptions {
-  // isLoaded?: boolean;
-  // selectedPieceIds?: Set<string>;
-  // children: React.ReactNode;
   singleSelection?: boolean;
   handleUpdatePiece: (piece: RenderPiece, throttled: boolean) => void;
   onDblClickDeck?: (id: string) => void;
   onDblClickCard?: (id: string) => void;
-  // handleSelectPiece: (id: string) => void;
-  // pieces: RenderPiece[];
   assets: Assets;
   handCounts: { [key: string]: number };
-  // onZoom: () => void;
   config: {
     [key: string]: {
       selectable?: boolean;
@@ -59,8 +46,6 @@ let app = new Application({
   antialias: true, // default: false
   transparent: true, // default: false
 });
-
-const ZOOM_RATE = 1.02;
 
 const optionsByDie: {
   [key: number]: { y: number; fontSize: number };
@@ -91,51 +76,14 @@ const optionsByDie: {
   },
 };
 
-// by default Konva prevent some events when node is dragging
-// it improve the performance and work well for 95% of cases
-// we need to enable all events on Konva, even when we are dragging a node
-// so it triggers touchmove correctly
-// (Konva as any).hitOnDragEnabled = true;
-
-function getDistance(p1: Touch, p2: Touch) {
-  return Math.sqrt(
-    Math.pow(p2.clientX - p1.clientX, 2) + Math.pow(p2.clientY - p1.clientY, 2)
-  );
-}
-
-let scaleDist = 0;
-
-class ISprite extends Sprite {
-  id?: string;
-}
-
 let instance = 1;
 let activeId: string;
 
-// export const Table = React.forwardRef((props: Props, ref: any) => {
 export const useTable = (options: TableOptions) => {
-  // const [scaleDist, setScaleDist] = React.useState<number>(0);
-  // const {
-  //   // selectedPieceIds,
-  //   // pieces,
-  //   // assets,
-  //   // config,
-  // } = props;
   const { config } = options;
   const [pieces, setPieces] = React.useState<RenderPiece[]>([]);
-  // const [assets, setAssets] = React.useState<Assets>({});
-  // const [config, setConfig] = React.useState<{
-  //   [key: string]: {
-  //     selectable?: boolean;
-  //     draggable?: boolean;
-  //     resizable?: boolean;
-  //     rotatable?: boolean;
-  //   };
-  // }>({});
   const onUpdatePiece = options.handleUpdatePiece;
-
   const assets = options.assets;
-
   const [selectedPieceIds, setSelectedPieceIds] = React.useState<Set<string>>(
     new Set()
   );
@@ -161,12 +109,10 @@ export const useTable = (options: TableOptions) => {
       }),
     [setSelectedPieceIds, options.singleSelection]
   );
-  // const { state, dispatch } = useAppContext();
-  // const dragLayerRef = React.createRef<any>();
+
   const stageRef = React.createRef<HTMLDivElement>();
   const [stageAttached, setStageAttached] = React.useState(false);
   const [container, setContainer] = React.useState<Container>();
-  // const [zoomInit, setZoomInit] = React.useState(false);
 
   const updateDimensions = React.useCallback(() => {
     if (container) {
@@ -201,26 +147,6 @@ export const useTable = (options: TableOptions) => {
       .wheel()
       .decelerate();
 
-    // container.on('touchstart', e => {
-    //   debugger;
-    //   (container as any).isPinching = true;
-    // });
-    // container.on('pinch-start', e => {
-    //   (container as any).isPinching = true;
-    //   console.log((container as any).isPinching);
-    //   // container.children.forEach(child => {
-    //   //   (child as RenderItem).tempDragDisabled = true;
-    //   // });
-    // });
-    // container.on('pinch-end', () => {
-    //   (container as any).isPinching = false;
-    //   // container.children.forEach(child => {
-    //   //   (child as RenderItem).tempDragDisabled = false;
-    //   // });
-    // });
-    // container.on('pointercancel', () =>
-    //   container.children.forEach(child => (child.interactive = true))
-    // );
     stageRef.current.appendChild(app.view);
     setStageAttached(true);
 
@@ -232,7 +158,6 @@ export const useTable = (options: TableOptions) => {
       return;
     }
 
-    // console.log(pieces.filter(x => x.type === 'die'));
     const piecesById = _.keyBy(pieces, 'id');
     const renderedPieces = new Set();
 
@@ -241,7 +166,6 @@ export const useTable = (options: TableOptions) => {
       const curPiece = piecesById[piece.id];
 
       if (!curPiece || curPiece.type === 'deleted') {
-        // console.log('removing', (child as RenderItem).id);
         container.removeChild(child);
         return;
       }
@@ -460,9 +384,6 @@ export const useTable = (options: TableOptions) => {
             text.x = 14;
             text.y = 7;
             const rect = new Graphics();
-            // rect.beginFill(utils.string2hex(piece.color));
-            // rect.drawRoundedRect(-14, -7, text.width + 28, text.height + 14, 8);
-            // rect.endFill();
             child = new RenderItem({
               ...pieceConfig,
               piece,
@@ -497,11 +418,7 @@ export const useTable = (options: TableOptions) => {
               texture: Texture.from(
                 `d${piece.faces}${piece.hidden ? '_hidden' : ''}.png`
               ),
-              onSync: (el, curPiece) => {
-                // console.log('sync die', curPiece);
-                // el.sprite.width = 128;
-                // el.sprite.height = 128;
-              },
+              onSync: () => {},
             });
 
             if (piece.faces === 4) {
@@ -519,7 +436,6 @@ export const useTable = (options: TableOptions) => {
               fill: 0xffffff,
               align: 'center',
             });
-            // text.pivot.set(0.5);
             text.x = 64 - text.width / 2;
             text.y = dieOptions.y;
             child.addChild(text);
@@ -531,20 +447,11 @@ export const useTable = (options: TableOptions) => {
         }
 
         if (child) {
-          // if (_.size(pieceConfig) === 0) {
-          //   child.interactive = false;
-          // }
-
           const selectPiece = () => {
             if (!child.nonSelectClick) {
               onSelectPiece(piece.id);
             }
           };
-
-          // setInterval(() => {
-          //   child.x += _.random(10, -10);
-          //   child.y += _.random(10, -10);
-          // }, 50);
 
           child.id = piece.id;
           child.interactive = true;
@@ -591,8 +498,6 @@ export const useTable = (options: TableOptions) => {
   return {
     instance,
     setPieces,
-    // setConfig,
-    // setAssets,
     container,
     stageRef,
     selectedPieceIds,

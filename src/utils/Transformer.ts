@@ -1,11 +1,4 @@
-import {
-  Rectangle,
-  Container,
-  Sprite,
-  Texture,
-  Graphics,
-  utils,
-} from 'pixi.js';
+import { Container, Graphics, utils } from 'pixi.js';
 import { primaryColor } from './style';
 
 interface TransformerOptions {
@@ -20,10 +13,6 @@ interface TransformerOptions {
   onTransformEnd: () => void;
   onTransform: (dimensions: { width: number; height: number }) => void;
   onRotate: (angle: number) => void;
-  restrictTransform?: (dimensions: {
-    width: number;
-    height: number;
-  }) => { width: number; height: number };
 }
 
 const HANDLE_SIZE = 12;
@@ -100,7 +89,6 @@ export class Transformer extends Container {
   onTransformStart: () => void;
   onTransformEnd: () => void;
   onTransform: (dimensions: { width: number; height: number }) => void;
-  // resizing: boolean;
   rotating: boolean;
   curDimensions: {
     width: number;
@@ -120,11 +108,9 @@ export class Transformer extends Container {
     this.onTransformStart = options.onTransformStart;
     this.onTransformEnd = options.onTransformEnd;
     this.onTransform = options.onTransform;
-    // this.resizing = false;
     this.rotating = false;
     this.curDimensions = options.dimensions;
 
-    // const restrictTransform = options.restrictTransform || (x => x);
     const rotateHandle = new Container();
     rotateHandle.interactive = true;
     rotateHandle.cursor = 'crosshair';
@@ -161,8 +147,8 @@ export class Transformer extends Container {
       }
       const cursor = event.data.getLocalPosition(this.parent.parent);
       const center = {
-        x: this.parent.x, // + this.parent.width / 2,
-        y: this.parent.y, // + this.parent.height / 2,
+        x: this.parent.x,
+        y: this.parent.y,
       };
       const x = cursor.x - center.x;
       const y = cursor.y - center.y;
