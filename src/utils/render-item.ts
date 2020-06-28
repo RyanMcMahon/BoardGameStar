@@ -197,9 +197,8 @@ export class RenderItem extends Container {
   }
 
   handleDragMove(event: any) {
-    const { touches } = event.data.originalEvent;
+    const { touches = [] } = event.data?.originalEvent || {};
     if (touches.length > 1) {
-      // this.interactive = false;
       this.dragging = false;
     }
     if (!this.dragging || (this.parent as any).isPinching) {

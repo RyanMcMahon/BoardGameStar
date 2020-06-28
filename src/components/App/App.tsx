@@ -288,6 +288,27 @@ export const App: React.FC = () => {
     throttled?: boolean
   ) => {
     const updatedPiecesById = _.keyBy(updatedPieces, 'id');
+    const [mainPiece] = updatedPieces;
+
+    if (updatedPieces.length === 1 && selectedPieceIds.has(mainPiece.id)) {
+      // TODO group drag
+      const otherPieceIds = Array.from(selectedPieceIds).filter(
+        id => id !== mainPiece.id
+      );
+      const diff = {
+        x: mainPiece.x - pieces[mainPiece.id].x,
+        y: mainPiece.y - pieces[mainPiece.id].y,
+      };
+
+      otherPieceIds.forEach(id => {
+        updatedPiecesById[id] = {
+          ...pieces[id],
+          x: diff.x + pieces[id].x,
+          y: diff.y + pieces[id].y,
+        };
+      });
+    }
+
     setPieces(p => ({
       ...p,
       ...updatedPiecesById,
