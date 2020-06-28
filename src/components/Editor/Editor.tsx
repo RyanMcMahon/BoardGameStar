@@ -17,7 +17,6 @@ import {
 } from '../../types';
 import { DeckEditorModal } from '../DeckEditorModal/DeckEditorModal';
 import { ScenarioModal } from '../ScenarioModal';
-import { useZooming } from '../../utils/useZooming';
 
 const fs = window.require('fs');
 
@@ -151,7 +150,6 @@ const tableConfig = {
 
 export function Editor(props: Props) {
   const { state, dispatch } = props;
-  const { handleZoom } = useZooming();
   const [assets, setAssets] = React.useState<{ [key: string]: string }>(
     state.assets || {}
   );
@@ -164,7 +162,6 @@ export function Editor(props: Props) {
   const table = useTable({
     assets,
     singleSelection: true,
-    handCounts: {},
     config: tableConfig,
     onDblClickDeck: (id: string) => setDeckModalId(id),
     handleUpdatePiece: p =>

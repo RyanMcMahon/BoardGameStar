@@ -113,6 +113,10 @@ export function createNewGame(
       (pieces[deck.id] as DeckPiece).total = 0; //deck.cards.length;
       (pieces[deck.id] as DeckPiece).count = 0; //deck.cards.length;
     });
+    const shuffleDiscarded = (deckId: string) => {
+      decks[deckId].cards.push(...decks[deckId].discarded.splice(0));
+      decks[deckId].cards = _.shuffle(decks[deckId].cards);
+    };
 
     // Create Cards
     const maxPlayers = scenario.players.length;
@@ -436,9 +440,18 @@ export function createNewGame(
               try {
                 const { deckId, count } = data;
                 console.log(`Player ${playerId} drew ${count} cards`);
+                const remainingDrawCount = count - decks[deckId].cards.length;
                 players[playerId].hand.push(
                   ...decks[deckId].cards.splice(0, count)
                 );
+
+                if (remainingDrawCount > 0) {
+                  shuffleDiscarded(deckId);
+                  players[playerId].hand.push(
+                    ...decks[deckId].cards.splice(0, remainingDrawCount)
+                  );
+                }
+
                 conn.send({
                   event: 'set_hand',
                   hand: player.hand,
@@ -454,7 +467,16 @@ export function createNewGame(
               try {
                 const { deckId, count, faceDown } = data;
                 const deckPiece = pieces[deckId];
+                const remainingDrawCount = count - decks[deckId].cards.length;
                 const cardIds = decks[deckId].cards.splice(0, count);
+
+                if (remainingDrawCount > 0) {
+                  shuffleDiscarded(deckId);
+                  cardIds.push(
+                    ...decks[deckId].cards.splice(0, remainingDrawCount)
+                  );
+                }
+
                 game.board.push(...cardIds);
 
                 const p = cardIds
@@ -657,8 +679,7 @@ export function createNewGame(
             case 'shuffle_discarded':
               try {
                 const { deckId } = data;
-                decks[deckId].cards.push(...decks[deckId].discarded.splice(0));
-                decks[deckId].cards = _.shuffle(decks[deckId].cards);
+                shuffleDiscarded(deckId);
                 updateDeckCount(deckId);
               } catch (err) {
                 console.log(err);

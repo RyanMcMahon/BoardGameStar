@@ -31,7 +31,6 @@ interface TableOptions {
   onDblClickDeck?: (id: string) => void;
   onDblClickCard?: (id: string) => void;
   assets: Assets;
-  handCounts: { [key: string]: number };
   config: {
     [key: string]: {
       selectable?: boolean;
@@ -77,7 +76,6 @@ const optionsByDie: {
 };
 
 let instance = 1;
-let activeId: string;
 
 export const useTable = (options: TableOptions) => {
   const { config } = options;
@@ -198,7 +196,6 @@ export const useTable = (options: TableOptions) => {
       }
 
       piece.onUpdate = p => {
-        activeId = piece.id;
         onUpdatePiece({ ...piecesById[piece.id], ...p }, true);
       };
     });
@@ -389,9 +386,7 @@ export const useTable = (options: TableOptions) => {
               piece,
               texture: Texture.EMPTY,
               onSync: (el, curPiece) => {
-                text.text = `${curPiece.name} (${options.handCounts[
-                  curPiece.playerId || ''
-                ] || 0} cards in hand)`;
+                text.text = curPiece.name;
                 rect.clear();
                 rect.beginFill(utils.string2hex(curPiece.color));
                 rect.drawRoundedRect(
@@ -462,7 +457,6 @@ export const useTable = (options: TableOptions) => {
           }
 
           child.onUpdate = p => {
-            activeId = piece.id;
             onUpdatePiece({ ...piece, ...p }, true);
           };
 
@@ -483,7 +477,6 @@ export const useTable = (options: TableOptions) => {
     onSelectPiece,
     selectedPieceIds,
     onUpdatePiece,
-    options.handCounts,
     options.onDblClickCard,
     options.onDblClickDeck,
   ]);

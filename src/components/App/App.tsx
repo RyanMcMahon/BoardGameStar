@@ -23,7 +23,6 @@ import { DiceModal } from '../DiceModal';
 import { Chat } from '../Chat';
 import { SettingsModal } from '../SettingsModal';
 import { AppContext, initialState, appReducer } from './AppContext';
-import { useZooming } from '../../utils/useZooming';
 
 const MainContainer = styled.div({
   height: '100%',
@@ -272,7 +271,7 @@ export const App: React.FC = () => {
   const table = useTable({
     handleUpdatePiece,
     assets,
-    handCounts,
+    // handCounts,
     config: tableConfig,
     onDblClickDeck: (id: string) => setDrawModalId(id),
     onDblClickCard: handlePickUpCard,
@@ -469,7 +468,18 @@ export const App: React.FC = () => {
   React.useEffect(() => {
     setTablePieces(
       board
-        .map(id => pieces[id] || {})
+        .map(id => {
+          if (pieces[id].type === 'player') {
+            return {
+              ...pieces[id],
+              name: `${pieces[id].name} (${
+                handCounts[pieces[id].playerId]
+              } cards in hand)`,
+            };
+          } else {
+            return pieces[id];
+          }
+        })
         .filter(
           piece =>
             (piece.type === 'player' && piece.playerId) ||
@@ -479,7 +489,7 @@ export const App: React.FC = () => {
                 players.length >= parseInt(piece.counts.split(':')[0], 10)))
         )
     );
-  }, [board, pieces, players.length, setTablePieces]);
+  }, [board, pieces, players.length, setTablePieces, handCounts]);
 
   if (!gameId) {
     return <Redirect to="/" />;
