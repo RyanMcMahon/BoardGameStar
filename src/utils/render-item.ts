@@ -186,10 +186,9 @@ export class RenderItem extends Container {
     const pointer = event.data.getLocalPosition(this.parent);
 
     if (
-      this.locked &&
-      (!this.data ||
-        pointer.x !== this.data.pointer.x ||
-        pointer.y !== this.data.pointer.y)
+      !this.data ||
+      pointer.x !== this.data.pointer.x ||
+      pointer.y !== this.data.pointer.y
     ) {
       this.nonSelectClick = true;
     }
