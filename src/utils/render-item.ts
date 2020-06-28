@@ -163,12 +163,6 @@ export class RenderItem extends Container {
   }
 
   handleDragStart(event: any) {
-    if (!this.dragEnabled || this.transforming || this.locked) {
-      return;
-    }
-
-    this.nonSelectClick = false;
-
     const pointer = event.data.getLocalPosition(this.parent);
     const pointerOffset = {
       x: pointer.x + this.piece.width / 2 - this.x,
@@ -176,8 +170,16 @@ export class RenderItem extends Container {
     };
     this.data = {
       ...event.data,
+      pointer,
       pointerOffset,
     };
+
+    this.nonSelectClick = false;
+
+    if (!this.dragEnabled || this.transforming || this.locked) {
+      return;
+    }
+
     this.dragging = true;
     this.cursor = 'grabbing';
 
@@ -198,14 +200,25 @@ export class RenderItem extends Container {
 
   handleDragMove(event: any) {
     const { touches = [] } = event.data?.originalEvent || {};
+    const pointer = event.data.getLocalPosition(this.parent);
+
+    if (
+      this.locked &&
+      (!this.data ||
+        pointer.x !== this.data.pointer.x ||
+        pointer.y !== this.data.pointer.y)
+    ) {
+      this.nonSelectClick = true;
+    }
+
     if (touches.length > 1) {
       this.dragging = false;
     }
+
     if (!this.dragging || (this.parent as any).isPinching) {
       return;
     }
-    this.nonSelectClick = true;
-    const pointer = event.data.getLocalPosition(this.parent);
+
     const newPos = {
       x: pointer.x - this.data.pointerOffset.x,
       y: pointer.y - this.data.pointerOffset.y,
