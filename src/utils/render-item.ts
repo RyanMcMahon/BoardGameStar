@@ -277,7 +277,13 @@ export class RenderItem extends Container {
 
   sendUpdate() {
     if (this.onUpdate) {
-      this.onUpdate({ rotation: 0, ...this.piece });
+      this.onUpdate({
+        rotation: 0,
+        x: this.piece.x,
+        y: this.piece.y,
+        height: this.piece.height,
+        width: this.piece.width,
+      });
     }
   }
 }

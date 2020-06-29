@@ -26,7 +26,10 @@ import { primaryColor } from './style';
 
 interface TableOptions {
   singleSelection?: boolean;
-  handleUpdatePiece: (piece: RenderPiece, throttled: boolean) => void;
+  handleUpdatePiece: (
+    piece: Partial<RenderPiece> & { id: string },
+    throttled: boolean
+  ) => void;
   onDblClickDeck?: (id: string) => void;
   onDblClickCard?: (id: string) => void;
   assets: Assets;
@@ -196,7 +199,7 @@ export const useTable = (options: TableOptions) => {
       }
 
       piece.onUpdate = p => {
-        onUpdatePiece({ ...piecesById[piece.id], ...p }, true);
+        onUpdatePiece({ ...p, id: piece.id }, true);
       };
     });
 
@@ -457,7 +460,7 @@ export const useTable = (options: TableOptions) => {
           }
 
           child.onUpdate = p => {
-            onUpdatePiece({ ...piece, ...p }, true);
+            onUpdatePiece({ ...p, id: piece.id }, true);
           };
 
           child.onTransformStart = () => {
