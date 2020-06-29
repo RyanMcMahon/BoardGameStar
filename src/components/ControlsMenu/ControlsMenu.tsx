@@ -121,16 +121,7 @@ export function ControlsMenu(props: Props) {
     ''
   );
 
-  const items = [
-    {
-      icon: chat.length > lastReadChat ? <UnreadIcon /> : <FaCommentDots />,
-      label:
-        chat.length > lastReadChat
-          ? `Chat (${chat.length - lastReadChat})`
-          : `Chat`,
-      fn: onShowChat,
-    },
-  ];
+  const items = [];
 
   if (selectedPieces.length && commonType !== 'mixed') {
     switch (commonType) {
@@ -220,7 +211,9 @@ export function ControlsMenu(props: Props) {
         }
         break;
     }
+  }
 
+  if (selectedPieces.length) {
     items.push(
       ...[
         {
@@ -234,13 +227,6 @@ export function ControlsMenu(props: Props) {
               }))
             ),
         },
-      ]
-    );
-  }
-
-  if (selectedPieces.length) {
-    items.push(
-      ...[
         {
           icon: <FaTimes />,
           label: 'Clear Selection',
@@ -252,52 +238,56 @@ export function ControlsMenu(props: Props) {
     items.push(
       ...[
         {
+          icon: chat.length > lastReadChat ? <UnreadIcon /> : <FaCommentDots />,
+          label:
+            chat.length > lastReadChat
+              ? `Chat (${chat.length - lastReadChat})`
+              : `Chat`,
+          fn: onShowChat,
+        },
+
+        {
           icon: <FaDiceFive />,
           label: 'Roll Dice',
           fn: onShowDiceModal,
         },
+        {
+          icon: <FaPlus />,
+          label: 'Zoom In',
+          fn: onZoomIn,
+        },
+        {
+          icon: <FaMinus />,
+          label: 'Zoom Out',
+          fn: onZoomOut,
+        },
+        // TODO
+        // {
+        //   icon: 'FaCrosshair',
+        //   label: 'Reset Zoom',
+        //   fn: () => tableRef.current && tableRef.current.resetZoom(),
+        // },
+        {
+          icon: <FaExpand />,
+          label: 'Toggle Fullscreen',
+          fn: () => {
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen();
+            } else {
+              if (document.exitFullscreen) {
+                document.exitFullscreen();
+              }
+            }
+          },
+        },
+        {
+          icon: <FaSlidersH />,
+          label: 'Settings',
+          fn: onShowSettingsModal,
+        },
       ]
     );
   }
-
-  items.push(
-    ...[
-      {
-        icon: <FaPlus />,
-        label: 'Zoom In',
-        fn: onZoomIn,
-      },
-      {
-        icon: <FaMinus />,
-        label: 'Zoom Out',
-        fn: onZoomOut,
-      },
-      // TODO
-      // {
-      //   icon: 'FaCrosshair',
-      //   label: 'Reset Zoom',
-      //   fn: () => tableRef.current && tableRef.current.resetZoom(),
-      // },
-      {
-        icon: <FaExpand />,
-        label: 'Toggle Fullscreen',
-        fn: () => {
-          if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen();
-          } else {
-            if (document.exitFullscreen) {
-              document.exitFullscreen();
-            }
-          }
-        },
-      },
-      {
-        icon: <FaSlidersH />,
-        label: 'Settings',
-        fn: onShowSettingsModal,
-      },
-    ]
-  );
 
   React.useLayoutEffect(() => {
     if (document.documentElement.clientWidth < maxMobileWidth) {
