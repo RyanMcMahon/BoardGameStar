@@ -278,7 +278,7 @@ export class RenderItem extends Container {
   sendUpdate() {
     if (this.onUpdate) {
       this.onUpdate({
-        rotation: 0,
+        rotation: this.piece.rotation || 0,
         x: this.piece.x,
         y: this.piece.y,
         height: this.piece.height,
