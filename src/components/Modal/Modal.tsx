@@ -24,6 +24,7 @@ const ModalOverlay = styled.div<ModalProps>((props: ModalProps) => ({
 
 const ModalWrapper = styled.div<ModalProps>((props: ModalProps) => ({
   maxHeight: 'calc(100% - 100px)',
+  display: 'flex',
   position: 'fixed',
   top: '50%',
   left: '50%',
@@ -35,6 +36,10 @@ const ModalWrapper = styled.div<ModalProps>((props: ModalProps) => ({
   boxShadow: theShadow,
   zIndex: props.zIndex,
 }));
+
+const ModalContent = styled.div({
+  overflowY: 'auto',
+});
 
 const CloseButton = styled.span({
   position: 'absolute',
@@ -58,7 +63,7 @@ export function Modal(props: Props) {
       />
       <ModalWrapper zIndex={props.zIndex || DEFAULT_ZINDEX}>
         <CloseButton onClick={props.onClose}>&#10005;</CloseButton>
-        {props.children}
+        <ModalContent>{props.children}</ModalContent>
       </ModalWrapper>
     </>
   );
