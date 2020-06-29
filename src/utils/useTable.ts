@@ -9,7 +9,6 @@ import {
   Container,
   Text,
   Application,
-  Sprite,
 } from 'pixi.js';
 
 import {

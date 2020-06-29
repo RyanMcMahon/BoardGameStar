@@ -227,6 +227,7 @@ export const App: React.FC = () => {
           ...pieces[id],
           x: diff.x + pieces[id].x,
           y: diff.y + pieces[id].y,
+          delta: pieces[id].delta + 1,
         };
       });
     }
