@@ -51,6 +51,7 @@ const AppContainer = styled.div({
 
 const ControlsContainer = styled.div({
   position: 'fixed',
+  overflowY: 'auto',
   top: 0,
   right: 0,
   bottom: 0,
@@ -73,6 +74,17 @@ const ControlsContainer = styled.div({
   },
 });
 
+const Controls = styled.div({
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+});
+
+const EditorNav = styled.div({
+  display: 'flex',
+  flexDirection: 'row',
+});
+
 const PieceCountContainer = styled.div({
   input: {
     marginLeft: '1rem',
@@ -91,15 +103,13 @@ const ColorSwatch = styled.div({
 });
 
 const SaveButton = styled(Button)({
-  position: 'absolute',
-  bottom: '1rem',
-  left: '1rem',
+  flex: 1,
+  marginRight: '.5rem',
 });
 
 const ExitButton = styled(Button)({
-  position: 'absolute',
-  bottom: '1rem',
-  right: '1rem',
+  flex: 1,
+  marginLeft: '.5rem',
 });
 
 const tableConfig = {
@@ -370,158 +380,166 @@ export function Editor(props: Props) {
       </AppContainer>
 
       <ControlsContainer>
-        <label>New Game</label>
-        <input type="text" value={state.name} onChange={handleUpdateGameName} />
+        <Controls>
+          <label>New Game</label>
+          <input
+            type="text"
+            value={state.name}
+            onChange={handleUpdateGameName}
+          />
 
-        <label>Scenarios</label>
-        {Object.values(state.scenarios).length > 1 && (
-          <>
-            <select
-              defaultValue={curScenario.id}
-              onChange={(e: React.FormEvent<HTMLSelectElement>) =>
-                dispatch({
-                  type: 'set_cur_scenario',
-                  scenarioId: e.currentTarget.value,
-                })
-              }
-            >
-              {Object.values(state.scenarios).map(scenario => (
-                <option key={scenario.id} value={scenario.id}>
-                  {scenario.name}
-                </option>
-              ))}
-            </select>
-            <Button
-              design="primary"
-              onClick={() => setScenarioModalIsShowing(true)}
-            >
-              Rename Scenario
-            </Button>
-          </>
-        )}
-        <Button
-          design="primary"
-          onClick={() => {
-            dispatch({
-              type: 'duplicate_scenario',
-              scenarioId: curScenario.id,
-            });
-            setScenarioModalIsShowing(true);
-          }}
-        >
-          Duplicate Scenario
-        </Button>
+          <label>Scenarios</label>
+          {Object.values(state.scenarios).length > 1 && (
+            <>
+              <select
+                defaultValue={curScenario.id}
+                onChange={(e: React.FormEvent<HTMLSelectElement>) =>
+                  dispatch({
+                    type: 'set_cur_scenario',
+                    scenarioId: e.currentTarget.value,
+                  })
+                }
+              >
+                {Object.values(state.scenarios).map(scenario => (
+                  <option key={scenario.id} value={scenario.id}>
+                    {scenario.name}
+                  </option>
+                ))}
+              </select>
+              <Button
+                design="primary"
+                onClick={() => setScenarioModalIsShowing(true)}
+              >
+                Rename Scenario
+              </Button>
+            </>
+          )}
+          <Button
+            design="primary"
+            onClick={() => {
+              dispatch({
+                type: 'duplicate_scenario',
+                scenarioId: curScenario.id,
+              });
+              setScenarioModalIsShowing(true);
+            }}
+          >
+            Duplicate Scenario
+          </Button>
 
-        <label>Pieces</label>
-        <Button design="primary" onClick={handleAddPlayer}>
-          Add Player
-        </Button>
-        <Button design="primary" onClick={handleAddBoard}>
-          Add Board
-        </Button>
-        <Button design="primary" onClick={handleAddCircle}>
-          Add Circle Token
-        </Button>
-        <Button design="primary" onClick={handleAddImageToken}>
-          Add Image Token
-        </Button>
-        <Button design="primary" onClick={handleAddRect}>
-          Add Rect Token
-        </Button>
-        <Button design="primary" onClick={handleAddDeck}>
-          Add Deck
-        </Button>
+          <label>Pieces</label>
+          <Button design="primary" onClick={handleAddPlayer}>
+            Add Player
+          </Button>
+          <Button design="primary" onClick={handleAddBoard}>
+            Add Board
+          </Button>
+          <Button design="primary" onClick={handleAddCircle}>
+            Add Circle Token
+          </Button>
+          <Button design="primary" onClick={handleAddImageToken}>
+            Add Image Token
+          </Button>
+          <Button design="primary" onClick={handleAddRect}>
+            Add Rect Token
+          </Button>
+          <Button design="primary" onClick={handleAddDeck}>
+            Add Deck
+          </Button>
 
-        {!!selectedPiece && (
-          <>
-            <label>Selected Piece</label>
-            {selectedPiece.type !== 'player' && (
-              <PieceCountContainer>
-                Min Players For Piece
-                <input
-                  type="number"
-                  value={(selectedPiece.counts || '1:').split(':')[0]}
-                  onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                    const playerCount = e.currentTarget.value;
-                    dispatch({
-                      type: 'update_piece',
-                      piece: {
-                        id: selectedPieceId,
-                        counts: `${playerCount}:1`,
-                      } as AnyPieceOption,
-                    });
-                  }}
-                />
-              </PieceCountContainer>
-            )}
-            {selectedPiece.hasOwnProperty('color') && (
-              <>
-                <input
-                  type="color"
-                  value={(selectedPiece as any).color}
-                  onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                    const color = e.currentTarget.value;
-                    dispatch({
-                      type: 'update_piece',
-                      piece: {
-                        id: selectedPieceId,
-                        color,
-                      } as AnyPieceOption,
-                    });
-                  }}
-                />
-                {selectedPiece.type !== 'player' && (
-                  <div>
-                    {curScenario.players.map((playerId, index) => (
-                      <ColorSwatch
-                        key={playerId}
-                        style={{
-                          backgroundColor: (state.pieces[
-                            playerId
-                          ] as PlayerOption).color,
-                        }}
-                        onClick={() =>
-                          dispatch({
-                            type: 'update_piece',
-                            piece: {
-                              id: selectedPieceId,
-                              color: (state.pieces[playerId] as PlayerOption)
-                                .color,
-                            } as AnyPieceOption,
-                          })
-                        }
-                      >
-                        Player {index + 1}
-                      </ColorSwatch>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-            <Button design="primary" onClick={handleDuplicatePiece}>
-              Duplicate
-            </Button>
-            <Button design="danger" onClick={handleDeletePiece}>
-              Delete
-            </Button>
-          </>
-        )}
+          {!!selectedPiece && (
+            <>
+              <label>Selected Piece</label>
+              {selectedPiece.type !== 'player' && (
+                <PieceCountContainer>
+                  Min Players For Piece
+                  <input
+                    type="number"
+                    value={(selectedPiece.counts || '1:').split(':')[0]}
+                    onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                      const playerCount = e.currentTarget.value;
+                      dispatch({
+                        type: 'update_piece',
+                        piece: {
+                          id: selectedPieceId,
+                          counts: `${playerCount}:1`,
+                        } as AnyPieceOption,
+                      });
+                    }}
+                  />
+                </PieceCountContainer>
+              )}
+              {selectedPiece.hasOwnProperty('color') && (
+                <>
+                  <input
+                    type="color"
+                    value={(selectedPiece as any).color}
+                    onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                      const color = e.currentTarget.value;
+                      dispatch({
+                        type: 'update_piece',
+                        piece: {
+                          id: selectedPieceId,
+                          color,
+                        } as AnyPieceOption,
+                      });
+                    }}
+                  />
+                  {selectedPiece.type !== 'player' && (
+                    <div>
+                      {curScenario.players.map((playerId, index) => (
+                        <ColorSwatch
+                          key={playerId}
+                          style={{
+                            backgroundColor: (state.pieces[
+                              playerId
+                            ] as PlayerOption).color,
+                          }}
+                          onClick={() =>
+                            dispatch({
+                              type: 'update_piece',
+                              piece: {
+                                id: selectedPieceId,
+                                color: (state.pieces[playerId] as PlayerOption)
+                                  .color,
+                              } as AnyPieceOption,
+                            })
+                          }
+                        >
+                          Player {index + 1}
+                        </ColorSwatch>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+              <Button design="primary" onClick={handleDuplicatePiece}>
+                Duplicate
+              </Button>
+              <Button design="danger" onClick={handleDeletePiece}>
+                Delete
+              </Button>
+            </>
+          )}
+        </Controls>
 
-        <SaveButton design="success" onClick={handleSave}>
-          Save & Exit
-        </SaveButton>
-        <ExitButton
-          design="danger"
-          onClick={() =>
-            // Hack
-            dispatch({
-              type: 'set_cur_scenario',
-              scenarioId: '',
-            })
-          }
-        >
-          Exit Editor
-        </ExitButton>
+        <EditorNav>
+          <SaveButton design="success" onClick={handleSave}>
+            Save & Exit
+          </SaveButton>
+          <ExitButton
+            design="danger"
+            onClick={() =>
+              // Hack
+              dispatch({
+                type: 'set_cur_scenario',
+                scenarioId: '',
+              })
+            }
+          >
+            Exit Editor
+          </ExitButton>
+        </EditorNav>
       </ControlsContainer>
       {scenarioModalIsShowing && (
         <ScenarioModal
