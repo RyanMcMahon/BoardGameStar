@@ -298,12 +298,22 @@ export const useTable = (options: TableOptions) => {
           }
 
           case 'card': {
+            const faceUpTexture = Texture.from(image);
+            const deck = piecesById[piece.deckId];
+            const faceDownTexture = Texture.from(
+              assets[deck.image] || deck.image
+            );
             child = new RenderItem({
               ...pieceConfig,
               piece,
-              texture: Texture.from(image),
+              texture: faceUpTexture,
               onSync: (el, curPiece) => {
                 el.setDimensions(curPiece as CardPiece);
+                if ((curPiece as CardPiece).faceDown) {
+                  el.sprite.texture = faceDownTexture;
+                } else {
+                  el.sprite.texture = faceUpTexture;
+                }
               },
             });
 
