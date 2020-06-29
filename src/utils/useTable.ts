@@ -12,7 +12,6 @@ import {
   Sprite,
 } from 'pixi.js';
 
-import { Stage } from '@inlet/react-pixi';
 import {
   RenderPiece,
   Assets,
@@ -137,6 +136,7 @@ export const useTable = (options: TableOptions) => {
 
       interaction: app.renderer.plugins.interaction, // the interaction module is important for wheel to work properly when renderer.view is placed or scaled
     });
+    container.sortableChildren = true;
     stage.addChild(container);
 
     container

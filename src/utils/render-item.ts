@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { Container, Sprite, Texture, Graphics, utils } from 'pixi.js';
+import { Container, Sprite, Texture, Graphics, utils, Point } from 'pixi.js';
 
 import { RenderPiece } from '../types';
 import { primaryColor } from './style';
@@ -42,6 +42,7 @@ export class RenderItem extends Container {
   transforming: boolean;
   sprite: Sprite;
   transformer: Transformer;
+  arrow: Graphics;
   outline: Graphics;
   locked?: boolean;
   tempDragDisabled?: boolean;
@@ -79,8 +80,19 @@ export class RenderItem extends Container {
     sprite.y = 0;
     sprite.height = piece.height;
     sprite.width = piece.width;
-    this.addChild(sprite);
     this.sprite = sprite;
+    this.addChild(sprite);
+
+    const arrow = new Graphics();
+    arrow.beginFill(utils.string2hex(primaryColor));
+    arrow.drawPolygon([
+      new Point(-40, -80),
+      new Point(0, 0),
+      new Point(40, -80),
+      new Point(0, -40),
+    ]);
+    arrow.y = -10;
+    this.arrow = arrow;
 
     const transformer = new Transformer({
       uniformScaling,
@@ -166,6 +178,12 @@ export class RenderItem extends Container {
 
     this.dragging = true;
     this.cursor = 'grabbing';
+    this.zIndex = 9999;
+
+    // if (event.data?.originalEvent?.touches?.length) {
+    // this.arrow.x = this.piece.width / 2;
+    // this.addChild(this.arrow);
+    // }
 
     if (this.onTransformStart) {
       this.onTransformStart();
@@ -176,6 +194,9 @@ export class RenderItem extends Container {
     this.dragging = false;
     this.data = null;
     this.cursor = 'grab';
+    this.zIndex = this.piece.layer;
+    // this.removeChild(this.arrow);
+
     if (this.onTransformEnd) {
       this.onTransformEnd();
     }
