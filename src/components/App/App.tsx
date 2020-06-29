@@ -414,6 +414,9 @@ export const App: React.FC = () => {
 
   const handleDiscard = (cardIds: string[]) => {
     if (conn) {
+      const remainingSelected = new Set(selectedPieceIds);
+      cardIds.forEach(id => remainingSelected.delete(id));
+      setSelectedPieceIds(remainingSelected);
       conn.send({
         cardIds,
         event: 'discard',
@@ -563,6 +566,7 @@ export const App: React.FC = () => {
         onShowDrawModal={setDrawModalId}
         onShuffleDiscarded={handleShuffleDiscarded}
         onDiscardPlayed={handleDiscardPlayed}
+        onDiscardSelected={handleDiscard}
         onClearSelectedPieces={() => setSelectedPieceIds(new Set())}
         onShowDiceModal={() => setShowDiceModal(true)}
         onZoomIn={() => container && (container as Viewport).zoom(-200)}

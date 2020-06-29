@@ -643,12 +643,21 @@ export function createNewGame(
                 cardIds.forEach(id => {
                   const card = pieces[id] as Card;
                   if (decks[card.deckId]) {
+                    game.board = game.board.filter(pieceId => pieceId !== id);
+                    // TODO - discard directly from the deck?
+                    // decks[card.deckId].cards = decks[card.deckId].cards.filter(
+                    //   cardId => cardId !== id
+                    // );
                     decks[card.deckId].discarded.push(id);
                   }
                 });
                 conn.send({
                   event: 'set_hand',
                   hand: player.hand,
+                });
+                sendToRoom({
+                  event: 'remove_from_board',
+                  ids: cardIds,
                 });
                 sendHandCounts();
               } catch (err) {

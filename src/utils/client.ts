@@ -168,7 +168,9 @@ export function useGameClient(gameId: string, hostId: string) {
           const boardCopy = [...b];
           ids.forEach(id => {
             const index = boardCopy.findIndex(pieceId => pieceId === id);
-            boardCopy.splice(index, 1, 'deleted');
+            if (index > -1) {
+              boardCopy.splice(index, 1);
+            }
           });
           return boardCopy;
         });

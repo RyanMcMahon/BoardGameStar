@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import styled from 'styled-components';
 import {
+  FaBan,
   FaExpand,
   FaSlidersH,
   FaCommentDots,
@@ -40,6 +41,7 @@ interface Props {
   onShowDrawModal: (deckId: string) => void;
   onShuffleDiscarded: (deckId: string) => void;
   onDiscardPlayed: (deckId: string) => void;
+  onDiscardSelected: (cardIds: string[]) => void;
   onClearSelectedPieces: () => void;
   onShowDiceModal: () => void;
   onZoomIn: () => void;
@@ -108,6 +110,7 @@ export function ControlsMenu(props: Props) {
     onShowDrawModal,
     onShuffleDiscarded,
     onDiscardPlayed,
+    onDiscardSelected,
     onClearSelectedPieces,
     onShowDiceModal,
     onZoomIn,
@@ -174,6 +177,12 @@ export function ControlsMenu(props: Props) {
                     faceDown: !piece.faceDown,
                   }))
                 ),
+            },
+            {
+              icon: <FaBan />,
+              label: 'Discard',
+              fn: () =>
+                onDiscardSelected(selectedPieces.map(piece => piece.id)),
             },
           ]
         );
