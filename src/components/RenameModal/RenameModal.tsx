@@ -17,7 +17,7 @@ export function RenameModal(props: Props) {
   };
 
   return (
-    <Modal onClose={props.onClose}>
+    <Modal onClose={props.onClose} zIndex={9050}>
       <Modal.Content>
         <Modal.Title>Player Name</Modal.Title>
         <form onSubmit={handleSubmit}>

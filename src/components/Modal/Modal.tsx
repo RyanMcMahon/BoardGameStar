@@ -3,21 +3,26 @@ import styled from 'styled-components';
 import { theShadow } from '../../utils/style';
 
 interface Props {
+  zIndex?: number;
   children: React.ReactNode;
   onClose(): void;
 }
 
-const ModalOverlay = styled.div({
+interface ModalProps {
+  zIndex: number;
+}
+
+const ModalOverlay = styled.div<ModalProps>((props: ModalProps) => ({
   position: 'fixed',
   top: 0,
   right: 0,
   bottom: 0,
   left: 0,
   backgroundColor: 'rgba(0, 0, 0, 0.3)',
-  zIndex: 9998,
-});
+  zIndex: props.zIndex,
+}));
 
-const ModalWrapper = styled.div({
+const ModalWrapper = styled.div<ModalProps>((props: ModalProps) => ({
   maxHeight: 'calc(100% - 100px)',
   position: 'fixed',
   top: '50%',
@@ -28,8 +33,8 @@ const ModalWrapper = styled.div({
   borderRadius: '10px',
   border: '1px solid rgba(0, 0, 0, 0.3)',
   boxShadow: theShadow,
-  zIndex: 9999,
-});
+  zIndex: props.zIndex,
+}));
 
 const CloseButton = styled.span({
   position: 'absolute',
@@ -42,11 +47,16 @@ const CloseButton = styled.span({
   },
 });
 
+const DEFAULT_ZINDEX = 9001;
+
 export function Modal(props: Props) {
   return (
     <>
-      <ModalOverlay onClick={props.onClose} />
-      <ModalWrapper>
+      <ModalOverlay
+        onClick={props.onClose}
+        zIndex={(props.zIndex || DEFAULT_ZINDEX) - 1}
+      />
+      <ModalWrapper zIndex={props.zIndex || DEFAULT_ZINDEX}>
         <CloseButton onClick={props.onClose}>&#10005;</CloseButton>
         {props.children}
       </ModalWrapper>

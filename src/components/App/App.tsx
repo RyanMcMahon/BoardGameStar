@@ -610,7 +610,9 @@ export const App: React.FC = () => {
           players={players}
           chat={chat}
           onChat={handleOnChat}
+          playerId={playerId}
           onClose={() => setShowChat(false)}
+          onRename={() => setShowRenameModal(true)}
         />
       )}
 

@@ -4,12 +4,13 @@ import { FaTimes } from 'react-icons/fa';
 import { Button } from '../../utils/style';
 import { ChatEvent, PlayerPiece } from '../../types';
 import styled from 'styled-components';
-import { Modal } from '../Modal';
 
 interface Props {
   chat: ChatEvent[];
   onChat: (message: string) => void;
   onClose: () => void;
+  onRename: () => void;
+  playerId: string;
   players: PlayerPiece[];
 }
 
@@ -55,7 +56,7 @@ const NewMessage = styled.input({
   marginRight: '1rem',
 });
 
-const PlayerName = styled.span<{ color: string }>(options => ({
+const PlayerName = styled.div<{ color: string; hover?: boolean }>(options => ({
   display: 'inline-block',
   backgroundColor: options.color,
   padding: '.5rem 2rem',
@@ -63,6 +64,7 @@ const PlayerName = styled.span<{ color: string }>(options => ({
   borderRadius: '50px',
   color: '#fff',
   fontWeight: 'bold',
+  cursor: options.hover ? 'pointer' : 'default',
 }));
 
 export function Chat(props: Props) {
@@ -114,13 +116,20 @@ export function Chat(props: Props) {
       <ChatMessages ref={chatMessagesRef} onScroll={handleScroll}>
         {chat.map(({ playerId, message }, index) => (
           <div key={playerId + index}>
-            {(index === 0 || chat[index - 1].playerId !== playerId) && (
-              <div>
+            {(index === 0 || chat[index - 1].playerId !== playerId) &&
+              (playerId === props.playerId ? (
+                <PlayerName
+                  color={playersById[playerId].color}
+                  hover={true}
+                  onClick={props.onRename}
+                >
+                  {playersById[playerId].name}
+                </PlayerName>
+              ) : (
                 <PlayerName color={playersById[playerId].color}>
                   {playersById[playerId].name}
                 </PlayerName>
-              </div>
-            )}
+              ))}
             <ChatMessage>{message}</ChatMessage>
           </div>
         ))}
