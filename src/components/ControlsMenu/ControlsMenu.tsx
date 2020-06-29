@@ -300,7 +300,7 @@ export function ControlsMenu(props: Props) {
   );
 
   React.useLayoutEffect(() => {
-    if (window.innerWidth < maxMobileWidth) {
+    if (document.documentElement.clientWidth < maxMobileWidth) {
       setIsExpanded(false);
     }
   }, []);

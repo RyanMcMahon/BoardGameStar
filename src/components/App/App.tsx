@@ -7,7 +7,7 @@ import { useParams, Link, Redirect } from 'react-router-dom';
 
 import { useGameClient } from '../../utils/client';
 import { Button, breakPoints, maxMobileWidth } from '../../utils/style';
-import { useTable } from '../../utils/useTable';
+import { Table, useTable } from '../../utils/useTable';
 import { ControlsModal } from '../ControlsModal';
 import { InviteModal } from '../InviteModal';
 
@@ -305,7 +305,7 @@ export const App: React.FC = () => {
   const allUnlocked = selectedPieces.every(piece => !piece.locked);
 
   React.useLayoutEffect(() => {
-    if (window.innerWidth < maxMobileWidth) {
+    if (document.documentElement.clientWidth < maxMobileWidth) {
       setShowPlayerControls(false);
     }
   }, []);
@@ -367,7 +367,7 @@ export const App: React.FC = () => {
       faceDown,
       event: 'play_cards',
     });
-    if (window.innerWidth < maxMobileWidth) {
+    if (document.documentElement.clientWidth < maxMobileWidth) {
       setShowPlayerControls(false);
     }
   };
@@ -381,7 +381,7 @@ export const App: React.FC = () => {
       playerId,
       event: 'pass_cards',
     });
-    if (window.innerWidth < maxMobileWidth) {
+    if (document.documentElement.clientWidth < maxMobileWidth) {
       setShowPlayerControls(false);
     }
   };
@@ -500,7 +500,7 @@ export const App: React.FC = () => {
     <MainContainer>
       <AppContainer>
         <AppContext.Provider value={{ state, dispatch }}>
-          {isLoaded && <div ref={table.stageRef} />}
+          {isLoaded && <Table ref={table.stageRef} />}
         </AppContext.Provider>
 
         <TogglePlayerContainerButton

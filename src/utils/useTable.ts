@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import React from 'react';
+import styled from 'styled-components';
 
 import { Viewport } from 'pixi-viewport';
 import {
@@ -78,6 +79,10 @@ const optionsByDie: {
 
 let instance = 1;
 
+export const Table = styled.div({
+  overflow: 'hidden',
+});
+
 export const useTable = (options: TableOptions) => {
   const { config } = options;
   const [pieces, setPieces] = React.useState<RenderPiece[]>([]);
@@ -115,10 +120,15 @@ export const useTable = (options: TableOptions) => {
 
   const updateDimensions = React.useCallback(() => {
     if (container) {
-      (container as Viewport).screenWidth = window.innerWidth;
-      (container as Viewport).screenHeight = window.innerHeight;
+      (container as Viewport).screenWidth =
+        document.documentElement.clientWidth;
+      (container as Viewport).screenHeight =
+        document.documentElement.clientHeight;
     }
-    app.renderer.resize(window.innerWidth, window.innerHeight);
+    app.renderer.resize(
+      document.documentElement.clientWidth,
+      document.documentElement.clientHeight
+    );
   }, [container]);
 
   React.useEffect(() => {
@@ -130,8 +140,8 @@ export const useTable = (options: TableOptions) => {
     stage.removeChildren(0);
 
     const container = new Viewport({
-      screenWidth: window.innerWidth,
-      screenHeight: window.innerHeight,
+      screenWidth: document.documentElement.clientWidth,
+      screenHeight: document.documentElement.clientHeight,
       worldWidth: 5000,
       worldHeight: 5000,
       divWheel: stageRef.current,

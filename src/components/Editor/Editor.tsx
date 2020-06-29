@@ -4,7 +4,7 @@ import slug from 'slugid';
 // import FPSStats from 'react-fps-stats';
 
 import { Button } from '../../utils/style';
-import { useTable } from '../../utils/useTable';
+import { Table, useTable } from '../../utils/useTable';
 import { loadAsset, getFilename, getAssetDimensions } from '../../utils/assets';
 import {
   EditorAction,
@@ -366,7 +366,7 @@ export function Editor(props: Props) {
   return (
     <MainContainer>
       <AppContainer>
-        <div ref={table.stageRef} />
+        <Table ref={table.stageRef} />
       </AppContainer>
 
       <ControlsContainer>
