@@ -281,18 +281,7 @@ export const useTable = (options: TableOptions) => {
             child.addChild(counts);
 
             if (options.onDblClickDeck) {
-              let doubleClick = false;
-              const onDoubleClick = () => {
-                if (doubleClick) {
-                  options.onDblClickDeck!(piece.id);
-                } else {
-                  doubleClick = true;
-                  setTimeout(() => (doubleClick = false), 600);
-                }
-              };
-
-              child.on('click', onDoubleClick);
-              child.on('tap', onDoubleClick);
+              child.on('dblclick', () => options.onDblClickDeck!(piece.id));
             }
             break;
           }
@@ -318,18 +307,7 @@ export const useTable = (options: TableOptions) => {
             });
 
             if (options.onDblClickCard) {
-              let doubleClick = false;
-              const onDoubleClick = () => {
-                if (doubleClick) {
-                  options.onDblClickCard!(piece.id);
-                } else {
-                  doubleClick = true;
-                  setTimeout(() => (doubleClick = false), 600);
-                }
-              };
-
-              child.on('click', onDoubleClick);
-              child.on('tap', onDoubleClick);
+              child.on('dblclick', () => options.onDblClickCard!(piece.id));
             }
             break;
           }

@@ -28,6 +28,8 @@ export class RenderItem extends Container {
   data: any;
   resizeData: any;
   nonSelectClick: boolean;
+  clickInPlace: boolean;
+  dblClicking: boolean;
   dragging: boolean;
   dragEnabled: boolean;
   onTransformStart?: () => void;
@@ -63,6 +65,8 @@ export class RenderItem extends Container {
     this.id = piece.id;
     this.cursor = 'grab';
     this.nonSelectClick = false;
+    this.clickInPlace = false;
+    this.dblClicking = false;
     this.dragging = false;
     this.interactive = true;
     this.dragEnabled = true;
@@ -133,16 +137,16 @@ export class RenderItem extends Container {
     if (draggable) {
       this
         // events for drag start
-        .on('mousedown', this.handleDragStart)
-        .on('touchstart', this.handleDragStart)
+        .on('mousedown', this.handleMouseDown)
+        .on('touchstart', this.handleMouseDown)
         // events for drag end
-        .on('mouseup', this.handleDragEnd)
-        .on('mouseupoutside', this.handleDragEnd)
-        .on('touchend', this.handleDragEnd)
-        .on('touchendoutside', this.handleDragEnd)
+        .on('mouseup', this.handleMouseUp)
+        .on('mouseupoutside', this.handleMouseUp)
+        .on('touchend', this.handleMouseUp)
+        .on('touchendoutside', this.handleMouseUp)
         // events for drag move
-        .on('mousemove', this.handleDragMove)
-        .on('touchmove', this.handleDragMove);
+        .on('mousemove', this.handleMouseMove)
+        .on('touchmove', this.handleMouseMove);
     }
   }
 
@@ -158,7 +162,7 @@ export class RenderItem extends Container {
     this.outline = outline;
   }
 
-  handleDragStart(event: any) {
+  handleMouseDown(event: any) {
     const pointer = event.data.getLocalPosition(this.parent);
     const pointerOffset = {
       x: pointer.x + this.piece.width / 2 - this.x,
@@ -171,6 +175,7 @@ export class RenderItem extends Container {
     };
 
     this.nonSelectClick = false;
+    this.clickInPlace = true;
 
     if (!this.dragEnabled || this.transforming || this.locked) {
       return;
@@ -190,19 +195,23 @@ export class RenderItem extends Container {
     }
   }
 
-  handleDragEnd() {
+  handleMouseUp() {
     this.dragging = false;
     this.data = null;
     this.cursor = 'grab';
     this.zIndex = this.piece.layer;
     // this.removeChild(this.arrow);
 
+    if (this.clickInPlace) {
+      this.checkDblClick();
+    }
+
     if (this.onTransformEnd) {
       this.onTransformEnd();
     }
   }
 
-  handleDragMove(event: any) {
+  handleMouseMove(event: any) {
     const { touches = [] } = event.data?.originalEvent || {};
     const pointer = event.data.getLocalPosition(this.parent);
 
@@ -212,6 +221,8 @@ export class RenderItem extends Container {
       pointer.y !== this.data.pointer.y
     ) {
       this.nonSelectClick = true;
+    } else {
+      this.clickInPlace = false;
     }
 
     if (touches.length > 1) {
@@ -228,6 +239,16 @@ export class RenderItem extends Container {
     };
 
     this.updatePiece({ ...this.piece, ...newPos });
+  }
+
+  checkDblClick() {
+    console.log('checkDblClick');
+    if (this.dblClicking) {
+      console.log('emit called', this.emit('dblclick'));
+    } else {
+      this.dblClicking = true;
+      setTimeout(() => (this.dblClicking = false), 500);
+    }
   }
 
   select() {
