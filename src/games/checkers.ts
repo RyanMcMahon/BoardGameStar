@@ -2,6 +2,7 @@ import { EditorState } from '../types';
 
 export const Checkers: EditorState = {
   version: 1,
+  store: 'included',
   id: 'checkers',
   disableSync: true,
   name: 'Checkers',

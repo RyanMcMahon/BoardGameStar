@@ -2,6 +2,7 @@ import { EditorState } from '../types';
 
 export const Aviary: EditorState = {
   version: 1,
+  store: 'included',
   id: 'aviary',
   disableSync: true,
   name: 'Aviary',

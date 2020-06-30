@@ -159,11 +159,9 @@ export function WebPage(props: Props) {
             Join Game
           </Button>
         </MenuJoinForm>
-        {isWebBuild && (
-          <NewGameLink to="/games">
-            <NewGameButton design="primary">Start New Game</NewGameButton>
-          </NewGameLink>
-        )}
+        <NewGameLink to="/games">
+          <NewGameButton design="primary">Start New Game</NewGameButton>
+        </NewGameLink>
       </Menu>
       {props.children}
       <Footer>&copy; Copyright {new Date().getFullYear()}</Footer>

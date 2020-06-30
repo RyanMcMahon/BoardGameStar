@@ -5,7 +5,7 @@ import slug from 'slugid';
 
 import { Button } from '../../utils/style';
 import { Table, useTable } from '../../utils/useTable';
-import { loadAsset, getFilename, getAssetDimensions } from '../../utils/assets';
+import { getAssetDimensions, filePrompt } from '../../utils/assets';
 import {
   EditorAction,
   EditorState,
@@ -17,8 +17,8 @@ import {
 } from '../../types';
 import { DeckEditorModal } from '../DeckEditorModal/DeckEditorModal';
 import { ScenarioModal } from '../ScenarioModal';
-
-const fs = window.require('fs');
+import { addGame } from '../../utils/store';
+import { FaExpand } from 'react-icons/fa';
 
 interface Props {
   state: EditorState;
@@ -112,6 +112,29 @@ const ExitButton = styled(Button)({
   marginLeft: '.5rem',
 });
 
+const FullScreenButton = styled(Button)({
+  margin: '0 !important',
+  fontSize: '24px',
+  lineHeight: '20px',
+  paddingLeft: '.5rem',
+  paddingRight: '.5rem',
+});
+
+const ToggleControlsButton = styled.div({
+  position: 'absolute',
+  top: '1rem',
+  right: 0,
+  padding: '.25rem 1rem .5rem 1.5rem',
+  borderRadius: '8px 0 0 8px',
+  fontSize: '50px',
+  lineHeight: '24px',
+  height: '34px',
+  backgroundColor: 'rgba(0, 0, 0, .2)',
+  color: '#fff',
+  zIndex: 2000,
+  cursor: 'pointer',
+});
+
 const tableConfig = {
   board: {
     selectable: true,
@@ -165,6 +188,7 @@ export function Editor(props: Props) {
   );
   const [files, setFiles] = React.useState<{ [key: string]: string }>({});
   const [deckModalId, setDeckModalId] = React.useState<string>();
+  const [showControls, setShowControls] = React.useState(true);
   const [scenarioModalIsShowing, setScenarioModalIsShowing] = React.useState(
     false
   );
@@ -189,20 +213,33 @@ export function Editor(props: Props) {
   const selectedPiece = selectedPieceId ? state.pieces[selectedPieceId] : null;
   const curScenario = state.scenarios[state.curScenario];
 
-  const handleSave = () => {
-    const configFile = `module.exports = ${JSON.stringify(state, null, '\t')};`;
-    const outPath = `./games/${state.name}`;
+  const handleSave = async () => {
+    if (state.store === 'browser') {
+      await addGame(state, assets);
+    } else {
+      const fs = window.require('fs');
+      const configFile = `module.exports = ${JSON.stringify(
+        state,
+        null,
+        '\t'
+      )};`;
+      const outPath = `./games/${state.name}`;
 
-    try {
-      fs.mkdirSync(outPath, { recursive: true });
-      fs.mkdirSync(`${outPath}/images`, { recursive: true });
-      fs.writeFileSync(`${outPath}/config.js`, configFile, 'utf8');
-      for (let i in files) {
-        fs.copyFileSync(files[i], `${outPath}/images/${i}`);
+      try {
+        fs.mkdirSync(outPath, { recursive: true });
+        fs.mkdirSync(`${outPath}/images`, { recursive: true });
+        fs.writeFileSync(`${outPath}/config.js`, configFile, 'utf8');
+        for (let i in assets) {
+          fs.writeFileSync(
+            `${outPath}/images/${i}`,
+            assets[i].replace(/^data:image\/\w+;base64,/, ''),
+            'base64'
+          );
+        }
+      } catch (err) {
+        console.log('Save Error');
+        console.log(err);
       }
-    } catch (err) {
-      console.log('Save Error');
-      console.log(err);
     }
 
     // Exit (HACK)
@@ -242,12 +279,11 @@ export function Editor(props: Props) {
 
   const createNewImagePiece = (options: any) => async () => {
     try {
-      const files = (window as any).electron.dialog.showOpenDialogSync({
-        properties: ['openFile', 'multiSelections'],
-      });
-      files.forEach(async (file: string, index: number) => {
-        const filename = getFilename(file);
-        const asset = loadAsset(file);
+      const files = await filePrompt();
+
+      files.forEach(async (file, index: number) => {
+        const filename = file.name;
+        const asset = file.content;
         const { width, height } = await getAssetDimensions(asset);
         const id = slug.nice();
         const piece = {
@@ -265,7 +301,7 @@ export function Editor(props: Props) {
           type: 'add_piece',
         });
         setAssets(a => ({ ...a, [filename]: asset }));
-        setFiles(a => ({ ...a, [filename]: file }));
+        setFiles(a => ({ ...a, [filename]: filename }));
         setSelectedPieceIds(new Set([id]));
       });
     } catch (err) {
@@ -379,168 +415,196 @@ export function Editor(props: Props) {
         <Table ref={table.stageRef} />
       </AppContainer>
 
-      <ControlsContainer>
-        <Controls>
-          <label>New Game</label>
-          <input
-            type="text"
-            value={state.name}
-            onChange={handleUpdateGameName}
-          />
+      <ToggleControlsButton onClick={() => setShowControls(!showControls)}>
+        {showControls ? <>&rsaquo;</> : <>&lsaquo;</>}
+      </ToggleControlsButton>
 
-          <label>Scenarios</label>
-          {Object.values(state.scenarios).length > 1 && (
-            <>
-              <select
-                defaultValue={curScenario.id}
-                onChange={(e: React.FormEvent<HTMLSelectElement>) =>
-                  dispatch({
-                    type: 'set_cur_scenario',
-                    scenarioId: e.currentTarget.value,
-                  })
-                }
-              >
-                {Object.values(state.scenarios).map(scenario => (
-                  <option key={scenario.id} value={scenario.id}>
-                    {scenario.name}
-                  </option>
-                ))}
-              </select>
-              <Button
+      {showControls && (
+        <ControlsContainer>
+          <Controls>
+            <div>
+              <FullScreenButton
                 design="primary"
-                onClick={() => setScenarioModalIsShowing(true)}
+                onClick={() => {
+                  if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                  } else {
+                    if (document.exitFullscreen) {
+                      document.exitFullscreen();
+                    }
+                  }
+                }}
               >
-                Rename Scenario
-              </Button>
-            </>
-          )}
-          <Button
-            design="primary"
-            onClick={() => {
-              dispatch({
-                type: 'duplicate_scenario',
-                scenarioId: curScenario.id,
-              });
-              setScenarioModalIsShowing(true);
-            }}
-          >
-            Duplicate Scenario
-          </Button>
+                <FaExpand />
+              </FullScreenButton>
+            </div>
+            <label>New Game</label>
+            <input
+              type="text"
+              value={state.name}
+              onChange={handleUpdateGameName}
+            />
 
-          <label>Pieces</label>
-          <Button design="primary" onClick={handleAddPlayer}>
-            Add Player
-          </Button>
-          <Button design="primary" onClick={handleAddBoard}>
-            Add Board
-          </Button>
-          <Button design="primary" onClick={handleAddCircle}>
-            Add Circle Token
-          </Button>
-          <Button design="primary" onClick={handleAddImageToken}>
-            Add Image Token
-          </Button>
-          <Button design="primary" onClick={handleAddRect}>
-            Add Rect Token
-          </Button>
-          <Button design="primary" onClick={handleAddDeck}>
-            Add Deck
-          </Button>
+            <label>Scenarios</label>
+            {Object.values(state.scenarios).length > 1 && (
+              <>
+                <select
+                  defaultValue={curScenario.id}
+                  onChange={(e: React.FormEvent<HTMLSelectElement>) =>
+                    dispatch({
+                      type: 'set_cur_scenario',
+                      scenarioId: e.currentTarget.value,
+                    })
+                  }
+                >
+                  {Object.values(state.scenarios).map(scenario => (
+                    <option key={scenario.id} value={scenario.id}>
+                      {scenario.name}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  design="primary"
+                  onClick={() => setScenarioModalIsShowing(true)}
+                >
+                  Rename Scenario
+                </Button>
+              </>
+            )}
+            <Button
+              design="primary"
+              onClick={() => {
+                dispatch({
+                  type: 'duplicate_scenario',
+                  scenarioId: curScenario.id,
+                });
+                setScenarioModalIsShowing(true);
+              }}
+            >
+              Duplicate Scenario
+            </Button>
 
-          {!!selectedPiece && (
-            <>
-              <label>Selected Piece</label>
-              {selectedPiece.type !== 'player' && (
-                <PieceCountContainer>
-                  Min Players For Piece
-                  <input
-                    type="number"
-                    value={(selectedPiece.counts || '1:').split(':')[0]}
-                    onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                      const playerCount = e.currentTarget.value;
-                      dispatch({
-                        type: 'update_piece',
-                        piece: {
-                          id: selectedPieceId,
-                          counts: `${playerCount}:1`,
-                        } as AnyPieceOption,
-                      });
-                    }}
-                  />
-                </PieceCountContainer>
-              )}
-              {selectedPiece.hasOwnProperty('color') && (
-                <>
-                  <input
-                    type="color"
-                    value={(selectedPiece as any).color}
-                    onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                      const color = e.currentTarget.value;
-                      dispatch({
-                        type: 'update_piece',
-                        piece: {
-                          id: selectedPieceId,
-                          color,
-                        } as AnyPieceOption,
-                      });
-                    }}
-                  />
-                  {selectedPiece.type !== 'player' && (
-                    <div>
-                      {curScenario.players.map((playerId, index) => (
-                        <ColorSwatch
-                          key={playerId}
-                          style={{
-                            backgroundColor: (state.pieces[
-                              playerId
-                            ] as PlayerOption).color,
-                          }}
-                          onClick={() =>
-                            dispatch({
-                              type: 'update_piece',
-                              piece: {
-                                id: selectedPieceId,
-                                color: (state.pieces[playerId] as PlayerOption)
-                                  .color,
-                              } as AnyPieceOption,
-                            })
-                          }
-                        >
-                          Player {index + 1}
-                        </ColorSwatch>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-              <Button design="primary" onClick={handleDuplicatePiece}>
-                Duplicate
-              </Button>
-              <Button design="danger" onClick={handleDeletePiece}>
-                Delete
-              </Button>
-            </>
-          )}
-        </Controls>
+            <label>Pieces</label>
+            <Button design="primary" onClick={handleAddPlayer}>
+              Add Player
+            </Button>
+            <Button design="primary" onClick={handleAddBoard}>
+              Add Board
+            </Button>
+            <Button design="primary" onClick={handleAddCircle}>
+              Add Circle Token
+            </Button>
+            <Button design="primary" onClick={handleAddImageToken}>
+              Add Image Token
+            </Button>
+            <Button design="primary" onClick={handleAddRect}>
+              Add Rect Token
+            </Button>
+            <Button design="primary" onClick={handleAddDeck}>
+              Add Deck
+            </Button>
 
-        <EditorNav>
-          <SaveButton design="success" onClick={handleSave}>
-            Save & Exit
-          </SaveButton>
-          <ExitButton
-            design="danger"
-            onClick={() =>
-              // Hack
-              dispatch({
-                type: 'set_cur_scenario',
-                scenarioId: '',
-              })
-            }
-          >
-            Exit Editor
-          </ExitButton>
-        </EditorNav>
-      </ControlsContainer>
+            {!!selectedPiece && (
+              <>
+                <label>Selected Piece</label>
+                {selectedPiece.type !== 'player' && (
+                  <PieceCountContainer>
+                    Min Players For Piece
+                    <input
+                      type="number"
+                      value={(selectedPiece.counts || '1:').split(':')[0]}
+                      onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                        const playerCount = e.currentTarget.value;
+                        dispatch({
+                          type: 'update_piece',
+                          piece: {
+                            id: selectedPieceId,
+                            counts: `${playerCount}:1`,
+                          } as AnyPieceOption,
+                        });
+                      }}
+                    />
+                  </PieceCountContainer>
+                )}
+                {selectedPiece.hasOwnProperty('color') && (
+                  <>
+                    <input
+                      type="color"
+                      value={(selectedPiece as any).color}
+                      onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                        const color = e.currentTarget.value;
+                        dispatch({
+                          type: 'update_piece',
+                          piece: {
+                            id: selectedPieceId,
+                            color,
+                          } as AnyPieceOption,
+                        });
+                      }}
+                    />
+                    {selectedPiece.type !== 'player' && (
+                      <div>
+                        {curScenario.players.map((playerId, index) => (
+                          <ColorSwatch
+                            key={playerId}
+                            style={{
+                              backgroundColor: (state.pieces[
+                                playerId
+                              ] as PlayerOption).color,
+                            }}
+                            onClick={() =>
+                              dispatch({
+                                type: 'update_piece',
+                                piece: {
+                                  id: selectedPieceId,
+                                  color: (state.pieces[
+                                    playerId
+                                  ] as PlayerOption).color,
+                                } as AnyPieceOption,
+                              })
+                            }
+                          >
+                            Player {index + 1}
+                          </ColorSwatch>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+                <Button design="primary" onClick={handleDuplicatePiece}>
+                  Duplicate
+                </Button>
+                <Button design="danger" onClick={handleDeletePiece}>
+                  Delete
+                </Button>
+              </>
+            )}
+          </Controls>
+
+          <div>
+            {state.store === 'browser'
+              ? `Game Will Be Saved To Browser`
+              : `Game Will Be Saved To Disk`}
+          </div>
+          <EditorNav>
+            <SaveButton design="success" onClick={handleSave}>
+              Save & Exit
+            </SaveButton>
+            <ExitButton
+              design="danger"
+              onClick={() =>
+                // Hack
+                dispatch({
+                  type: 'set_cur_scenario',
+                  scenarioId: '',
+                })
+              }
+            >
+              Exit Editor
+            </ExitButton>
+          </EditorNav>
+        </ControlsContainer>
+      )}
       {scenarioModalIsShowing && (
         <ScenarioModal
           onClose={() => setScenarioModalIsShowing(false)}

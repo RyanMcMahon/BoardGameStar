@@ -90,6 +90,7 @@ export type AnyPieceOption =
 
 export interface EditorState {
   id: string;
+  store: 'included' | 'browser' | 'file';
   playerId?: string;
   version: number;
   disableSync?: boolean;
@@ -117,7 +118,7 @@ export interface CreateGameAction {
 
 export interface EditGameAction {
   type: 'edit_game';
-  config: EditorState;
+  config: EditorState & { loadAssets?: () => any };
 }
 
 export interface SetCurScenarioAction {

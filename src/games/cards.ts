@@ -2,6 +2,7 @@ import { EditorState } from '../types';
 
 export const Cards: EditorState = {
   version: 1,
+  store: 'included',
   id: 'cards',
   disableSync: true,
   name: 'Playing Cards',

@@ -58,12 +58,12 @@ export function GameSelector(props: Props) {
           ))}
         </Select>
       )}
-      <Button design="success" onClick={handleGameSelect}>
+      <Button design="primary" onClick={handleGameSelect}>
         Play
       </Button>
-      {config.store === 'file' && (
+      {['file', 'browser'].includes(config.store) && (
         <GameButton
-          design="primary"
+          design="success"
           onClick={() => {
             // TODO edit
             props.onEditGame(config);

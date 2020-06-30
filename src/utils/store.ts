@@ -57,6 +57,7 @@ if (window.indexedDB) {
 }
 
 export async function addGame(config: EditorState, assets: Assets) {
+  await deleteGame(config.id);
   return (await getDB).games.add({
     assets,
     config,

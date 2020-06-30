@@ -38,6 +38,7 @@ export function Router() {
     {
       version: 1,
       id: '',
+      store: isWebBuild ? 'browser' : 'file',
       name: '',
       curScenario: '',
       scenarios: {},

@@ -12,7 +12,7 @@ import {
   CardPiece,
   AnyPieceOption,
 } from '../../types';
-import { loadAsset, getAssetDimensions, getFilename } from '../../utils/assets';
+import { getAssetDimensions, filePrompt } from '../../utils/assets';
 
 interface Props {
   onClose: () => void;
@@ -36,12 +36,11 @@ export function DeckEditorModal(props: Props) {
   const { assets, state, deckId, dispatch, setAssets, setFiles } = props;
   const handleAddCard = async () => {
     try {
-      const files = (window as any).electron.dialog.showOpenDialogSync({
-        properties: ['openFile', 'multiSelections'],
-      });
-      files.forEach(async (file: string) => {
-        const filename = getFilename(file);
-        const asset = loadAsset(file);
+      const files = await filePrompt();
+
+      files.forEach(async (file, index: number) => {
+        const filename = file.name;
+        const asset = file.content;
         const { width, height } = await getAssetDimensions(asset);
         const id = slug.nice();
         const piece = {

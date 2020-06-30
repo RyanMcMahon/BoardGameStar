@@ -158,14 +158,10 @@ export function Games(props: Props) {
     <WebPage>
       <Content>
         <Container>
-          {!isWebBuild && (
-            <>
-              <Button design="primary" onClick={() => setShowCreateModal(true)}>
-                Create New Game
-              </Button>
-              <hr />
-            </>
-          )}
+          <Button design="primary" onClick={() => setShowCreateModal(true)}>
+            Create New Game
+          </Button>
+          <hr />
 
           {configs
             .sort((a, b) =>

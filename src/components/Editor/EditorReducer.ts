@@ -6,6 +6,7 @@ import {
   EditorState,
   AnyPieceOption,
 } from '../../types';
+import { isWebBuild } from '../../utils/meta';
 
 export function editorReducer(
   state: EditorState,
@@ -46,6 +47,7 @@ export function editorReducer(
         players: [player1.id, player2.id],
       };
       return {
+        store: isWebBuild ? 'browser' : 'file',
         name,
         version: 1,
         id: slug.nice(),
@@ -61,7 +63,11 @@ export function editorReducer(
     }
 
     case 'edit_game': {
-      return action.config;
+      const cleanConfig = {
+        ...action.config,
+      };
+      delete cleanConfig!.loadAssets;
+      return cleanConfig;
     }
 
     case 'update_game_name': {
