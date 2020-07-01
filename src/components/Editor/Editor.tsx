@@ -186,7 +186,6 @@ export function Editor(props: Props) {
   const [assets, setAssets] = React.useState<{ [key: string]: string }>(
     state.assets || {}
   );
-  const [files, setFiles] = React.useState<{ [key: string]: string }>({});
   const [deckModalId, setDeckModalId] = React.useState<string>();
   const [showControls, setShowControls] = React.useState(true);
   const [scenarioModalIsShowing, setScenarioModalIsShowing] = React.useState(
@@ -301,7 +300,6 @@ export function Editor(props: Props) {
           type: 'add_piece',
         });
         setAssets(a => ({ ...a, [filename]: asset }));
-        setFiles(a => ({ ...a, [filename]: filename }));
         setSelectedPieceIds(new Set([id]));
       });
     } catch (err) {
@@ -627,7 +625,6 @@ export function Editor(props: Props) {
           dispatch={dispatch}
           assets={assets}
           setAssets={setAssets}
-          setFiles={setFiles}
           state={state}
           onClose={() => setDeckModalId('')}
         />

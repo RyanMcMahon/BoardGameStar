@@ -21,7 +21,6 @@ interface Props {
   deckId: string;
   assets: Assets;
   setAssets: (fn: (a: Assets) => any) => void;
-  setFiles: (fn: (a: Assets) => any) => void;
 }
 
 const CardsWrapper = styled.div({
@@ -33,7 +32,7 @@ const CardsWrapper = styled.div({
 });
 
 export function DeckEditorModal(props: Props) {
-  const { assets, state, deckId, dispatch, setAssets, setFiles } = props;
+  const { assets, state, deckId, dispatch, setAssets } = props;
   const handleAddCard = async () => {
     try {
       const files = await filePrompt();
@@ -62,7 +61,6 @@ export function DeckEditorModal(props: Props) {
           type: 'add_piece',
         });
         setAssets(a => ({ ...a, [filename]: asset }));
-        setFiles(a => ({ ...a, [filename]: file }));
       });
     } catch (err) {
       console.log(err);

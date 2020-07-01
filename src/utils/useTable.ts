@@ -43,11 +43,6 @@ interface TableOptions {
   };
 }
 
-let app = new Application({
-  antialias: true, // default: false
-  transparent: true, // default: false
-});
-
 const optionsByDie: {
   [key: number]: { y: number; fontSize: number };
 } = {
@@ -85,6 +80,17 @@ export const Table = styled.div({
 
 export const useTable = (options: TableOptions) => {
   const { config } = options;
+  const [app, setApp] = React.useState<Application>();
+
+  React.useEffect(() => {
+    setApp(
+      new Application({
+        antialias: true, // default: false
+        transparent: true, // default: false
+      })
+    );
+  }, []);
+
   const [pieces, setPieces] = React.useState<RenderPiece[]>([]);
   const onUpdatePiece = options.handleUpdatePiece;
   const assets = options.assets;
@@ -119,6 +125,10 @@ export const useTable = (options: TableOptions) => {
   const [container, setContainer] = React.useState<Container>();
 
   const updateDimensions = React.useCallback(() => {
+    if (!app) {
+      return;
+    }
+
     if (container) {
       (container as Viewport).screenWidth =
         document.documentElement.clientWidth;
@@ -129,10 +139,10 @@ export const useTable = (options: TableOptions) => {
       document.documentElement.clientWidth,
       document.documentElement.clientHeight
     );
-  }, [container]);
+  }, [container, app]);
 
   React.useEffect(() => {
-    if (!stageRef.current || stageAttached) {
+    if (!stageRef.current || stageAttached || !app) {
       return;
     }
 
@@ -161,7 +171,7 @@ export const useTable = (options: TableOptions) => {
     setStageAttached(true);
 
     setContainer(container);
-  }, [stageRef, stageAttached]);
+  }, [app, stageRef, stageAttached]);
 
   React.useEffect(() => {
     if (!container) {
@@ -486,7 +496,7 @@ export const useTable = (options: TableOptions) => {
     return () => window.removeEventListener('resize', updateDimensions);
   }, [updateDimensions]);
 
-  React.useLayoutEffect(updateDimensions, []);
+  React.useLayoutEffect(updateDimensions, [app]);
 
   return {
     instance,
