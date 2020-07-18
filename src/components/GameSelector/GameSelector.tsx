@@ -2,16 +2,17 @@ import _ from 'lodash';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 
-import { GameConfig } from '../../types';
+import { Game } from '../../types';
 import { deleteGame } from '../../utils/store';
 import { Button } from '../../utils/style';
 import styled from 'styled-components';
+import { PublishModal } from '../PublishModal';
 
 interface Props {
   name: string;
-  config: GameConfig;
-  onGameSelect: (config: GameConfig) => void;
-  onEditGame: (config: GameConfig) => void;
+  config: Game;
+  onGameSelect: (config: Game) => void;
+  onEditGame: (config: Game) => void;
   onReloadConfigs: () => void;
 }
 
@@ -31,27 +32,32 @@ const GameButton = styled(Button)({
 });
 
 export function GameSelector(props: Props) {
-  const { config, name, onReloadConfigs } = props;
+  const { config: game, name, onReloadConfigs } = props;
+  const [showPublishModal, setShowPublishModal] = React.useState(false);
   const scenarioRef = React.createRef<HTMLSelectElement>();
+  console.log(game);
 
   const handleGameSelect = () => {
     if (scenarioRef && scenarioRef.current) {
       props.onGameSelect({
-        ...config,
-        curScenario: scenarioRef.current.value,
+        ...game,
+        config: {
+          ...game.config,
+          curScenario: scenarioRef.current.value,
+        },
       });
     } else {
-      props.onGameSelect(config);
+      props.onGameSelect(game);
     }
   };
 
   return (
     <>
       <GameHeader>{name}</GameHeader>
-      <ReactMarkdown source={config.description} />
-      {_.size(config.scenarios) > 1 && (
-        <Select defaultValue={config.curScenario} ref={scenarioRef}>
-          {Object.values(config.scenarios).map(scenario => (
+      <ReactMarkdown source={game.description} />
+      {_.size(game.config.scenarios) > 1 && (
+        <Select defaultValue={game.config.curScenario} ref={scenarioRef}>
+          {Object.values(game.config.scenarios).map(scenario => (
             <option key={scenario.id} value={scenario.id}>
               {scenario.name}
             </option>
@@ -61,27 +67,37 @@ export function GameSelector(props: Props) {
       <Button design="primary" onClick={handleGameSelect}>
         Play
       </Button>
-      {['file', 'browser'].includes(config.store) && (
+      <Button design="success" onClick={() => setShowPublishModal(true)}>
+        Publish
+      </Button>
+      {['file', 'browser'].includes(game.store) && (
         <GameButton
           design="success"
           onClick={() => {
             // TODO edit
-            props.onEditGame(config);
+            props.onEditGame(game);
           }}
         >
           Edit
         </GameButton>
       )}
-      {config.store === 'browser' && (
+      {game.store === 'browser' && (
         <GameButton
           design="danger"
           onClick={() => {
-            deleteGame(config.id);
+            deleteGame(game.id);
             onReloadConfigs();
           }}
         >
           Delete
         </GameButton>
+      )}
+
+      {showPublishModal && (
+        <PublishModal
+          onClose={() => setShowPublishModal(false)}
+          config={game}
+        />
       )}
     </>
   );

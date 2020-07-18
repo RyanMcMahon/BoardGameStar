@@ -1,0 +1,12 @@
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{userId}/games/{gameId}/public/{all=**} {
+      allow read: if true;
+      allow write: if userId == request.auth.uid;
+    }
+
+    match /users/{userId}/games/{gameId}/private/{all=**} {
+      allow read, write: if userId == request.auth.uid;
+    }
+  }
+}

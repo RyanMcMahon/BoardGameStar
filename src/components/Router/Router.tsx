@@ -13,7 +13,13 @@ import { isWebBuild } from '../../utils/meta';
 import { Games } from '../Games';
 import { Home } from '../Home';
 import { Editor, editorReducer } from '../Editor';
-import { EditorAction, EditorState } from '../../types';
+import { EditorAction, EditorState, Game } from '../../types';
+import { LogIn } from '../LogIn';
+import { SignUp } from '../SignUp';
+import { Store } from '../Store';
+import { MyAccount } from '../MyAccount';
+import { UserProfile } from '../UserProfile';
+import { GameProfile } from '../GamePage';
 
 interface Props {
   children: React.ReactNode;
@@ -40,6 +46,7 @@ export function Router() {
       id: '',
       store: isWebBuild ? 'browser' : 'file',
       name: '',
+      description: '',
       curScenario: '',
       scenarios: {},
       pieces: {},
@@ -70,15 +77,33 @@ export function Router() {
   return (
     <AppRouter>
       <Switch>
+        <Route path="/sign-up">
+          <SignUp />
+        </Route>
+        <Route path="/log-in">
+          <LogIn />
+        </Route>
+        <Route path="/my-account">
+          <MyAccount />
+        </Route>
+        <Route path="/users/:userId">
+          <UserProfile />
+        </Route>
         <Route path="/play/:hostId/:gameId">
           <App />
         </Route>
-        <Route path="/games">
+        <Route exact path="/games">
           {state.curScenario ? (
             <Editor dispatch={dispatch} state={state} />
           ) : (
             <Games dispatch={dispatch} />
           )}
+        </Route>
+        <Route path="/games/store">
+          <Store />
+        </Route>
+        <Route path="/games/:gameId">
+          <GameProfile />
         </Route>
         <Route path="/">
           {isWebBuild ? <Home /> : <Redirect to="games" />}

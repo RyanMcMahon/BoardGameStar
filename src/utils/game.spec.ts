@@ -1,9 +1,9 @@
 import { createNewGame } from './game';
-import { GameConfig } from '../types';
+import { Game } from '../types';
 
 jest.mock('./peer');
 
-const gameConfig: GameConfig = {
+const gameConfig: Game = {
   version: 1,
   id: '1',
   name: 'test',

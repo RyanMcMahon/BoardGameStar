@@ -5,6 +5,7 @@ import {
   PlayerOption,
   EditorState,
   AnyPieceOption,
+  Game,
 } from '../../types';
 import { isWebBuild } from '../../utils/meta';
 
@@ -14,8 +15,8 @@ export function editorReducer(
 ): EditorState {
   switch (action.type) {
     case 'create_game': {
-      const { editorConfig } = action;
-      const { name } = editorConfig;
+      const { name } = action;
+      // const { name } = editorConfig;
       const player1: PlayerOption = {
         id: slug.nice(),
         type: 'player' as const,
@@ -47,10 +48,11 @@ export function editorReducer(
         players: [player1.id, player2.id],
       };
       return {
-        store: isWebBuild ? 'browser' : 'file',
         name,
         version: 1,
         id: slug.nice(),
+        store: isWebBuild ? 'browser' : 'file',
+        description: '',
         curScenario: scenario.id,
         scenarios: {
           [scenario.id]: scenario,

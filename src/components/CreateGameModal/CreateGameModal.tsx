@@ -5,7 +5,7 @@ import { Modal } from '../Modal';
 import { EditorConfig } from '../../types';
 
 interface Props {
-  onCreate: (editorConfig: EditorConfig) => void;
+  onCreate: (name: string) => void;
   onClose: () => void;
 }
 
@@ -17,9 +17,7 @@ export function CreateGameModal(props: Props) {
     }
 
     const name = nameRef.current.value.trim();
-    props.onCreate({
-      name,
-    });
+    props.onCreate(name);
   };
 
   return (

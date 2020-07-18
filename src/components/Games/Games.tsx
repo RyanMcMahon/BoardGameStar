@@ -3,9 +3,9 @@ import React from 'react';
 import { Redirect } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { createNewGame, Game } from '../../utils/game';
-import { GameConfig, EditorConfig, EditorAction } from '../../types';
-import { Aviary } from '../../games/aviary';
+import { createNewGame, GameState } from '../../utils/game';
+import { EditorConfig, EditorAction, Game } from '../../types';
+// import { Aviary } from '../../games/aviary';
 import { Cards } from '../../games/cards';
 import { Chess } from '../../games/chess';
 import { Checkers } from '../../games/checkers';
@@ -17,6 +17,7 @@ import { Button } from '../../utils/style';
 import { CreateGameModal } from '../CreateGameModal';
 import { loadGames } from '../../utils/store';
 import { getPlayerId } from '../../utils/identity';
+import { GamesMenu } from '../GamesMenu';
 
 interface Props {
   dispatch: React.Dispatch<EditorAction>;
@@ -26,30 +27,29 @@ const loadConfigs = async () => {
   const playerId = getPlayerId();
 
   // Included Games
-  const configs: GameConfig[] = [Aviary, Checkers, Chess, Cards].map(
-    config => ({
-      ...config,
-      store: 'included',
-      playerId,
-      sendAssets: true,
-      loadAssets: () => {
-        const assets: { [key: string]: string } = {};
-        Object.values(config.pieces).forEach((piece: any) => {
-          if (piece.image) {
-            assets[piece.image] = piece.image;
-          }
-        });
-        return assets;
-      },
-    })
-  );
+  const configs: Game[] = [Checkers, Chess, Cards].map(config => ({
+    ...config,
+    store: 'included',
+    // playerId,
+    sendAssets: true,
+    loadAssets: () => {
+      const assets: { [key: string]: string } = {};
+      Object.values(config.config.pieces).forEach((piece: any) => {
+        if (piece.image) {
+          assets[piece.image] = piece.image;
+        }
+      });
+      return assets;
+    },
+  }));
 
   // Load Synced Games
   const syncConfigs = await loadGames();
   configs.push(
     ...syncConfigs.map(sync => ({
       ...sync.config,
-      playerId,
+      price: 0,
+      // playerId,
       store: 'browser' as const,
       sendAssets: false,
       loadAssets: () => sync.assets,
@@ -113,29 +113,30 @@ const Container = styled.div({
 });
 
 export function Games(props: Props) {
-  const [configs, setConfigs] = React.useState<GameConfig[]>([]);
-  const [newGame, setNewGame] = React.useState<Game>();
+  const [configs, setConfigs] = React.useState<Game[]>([]);
+  const [newGame, setNewGame] = React.useState<GameState>();
   const [showCreateModal, setShowCreateModal] = React.useState<boolean>(false);
-  const handleGameSelect = (config: GameConfig) => {
-    const { loadAssets, sendAssets } = config;
+  const handleGameSelect = (game: Game) => {
+    const { loadAssets = () => ({}), sendAssets = true } = game;
     const assets = loadAssets();
-    createNewGame(config, { assets, sendAssets }, game => {
+    createNewGame(game, { assets, sendAssets }, game => {
       setNewGame(game);
     });
   };
 
-  const handleCreateGame = (editorConfig: EditorConfig) => {
+  const handleCreateGame = (name: string) => {
     props.dispatch({
-      editorConfig,
+      name,
       type: 'create_game',
     });
   };
 
-  const handleEditGame = (config: GameConfig) => {
+  const handleEditGame = (game: Game) => {
     props.dispatch({
       config: {
-        ...config,
-        assets: config.loadAssets(),
+        ...game,
+        ...game.config,
+        assets: game.loadAssets ? game.loadAssets() : {},
       },
       type: 'edit_game',
     });
@@ -158,6 +159,8 @@ export function Games(props: Props) {
     <WebPage>
       <Content>
         <Container>
+          <GamesMenu />
+          <h1>My Games</h1>
           <Button design="primary" onClick={() => setShowCreateModal(true)}>
             Create New Game
           </Button>

@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function canPublishGame() {
+      return request.auth.token.creator && request.resource.data.price == 0 || request.auth.token.publisher;
+    }
+
+    match /games/{game} {
+      allow read: if true;
+      allow create: if canPublishGame() && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if canPublishGame() && request.auth.uid == resource.data.userId;
+
+    }
+
+    match /users/{userId} {
+      allow read: if true;
+      allow create, delete: if false;
+      allow update: if request.auth.uid == userId;
+    }
+
+    match /users/{userId}/accounts/{accountId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+
+    match /users/{userId}/payments/{paymentId} {
+      allow read: if request.auth.uid == userId;
+      allow write: if true;
+    }
+  }
+}

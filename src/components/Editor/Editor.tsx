@@ -14,6 +14,7 @@ import {
   RectPieceOption,
   CircleTokenOption,
   RenderPiece,
+  Game,
 } from '../../types';
 import { DeckEditorModal } from '../DeckEditorModal/DeckEditorModal';
 import { ScenarioModal } from '../ScenarioModal';
@@ -213,16 +214,30 @@ export function Editor(props: Props) {
   const curScenario = state.scenarios[state.curScenario];
 
   const handleSave = async () => {
-    if (state.store === 'browser') {
-      await addGame(state, assets);
+    const game: Game = {
+      id: state.id,
+      price: 0,
+      store: state.store,
+      version: state.version,
+      name: state.name,
+      description: state.description,
+      config: {
+        curScenario: state.curScenario,
+        scenarios: state.scenarios,
+        pieces: state.pieces,
+      },
+    };
+
+    if (game.store === 'browser') {
+      await addGame(game, assets);
     } else {
       const fs = window.require('fs');
       const configFile = `module.exports = ${JSON.stringify(
-        state,
+        game,
         null,
         '\t'
       )};`;
-      const outPath = `./games/${state.name}`;
+      const outPath = `./games/${game.name}`;
 
       try {
         fs.mkdirSync(outPath, { recursive: true });

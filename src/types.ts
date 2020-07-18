@@ -88,14 +88,7 @@ export type AnyPieceOption =
   | ImageTokenOption
   | RectTokenOption;
 
-export interface EditorState {
-  id: string;
-  store: 'included' | 'browser' | 'file';
-  playerId?: string;
-  version: number;
-  disableSync?: boolean;
-  name: string;
-  description?: string;
+export interface GameConfig {
   curScenario: string;
   scenarios: {
     [id: string]: ScenarioOption;
@@ -103,17 +96,41 @@ export interface EditorState {
   pieces: {
     [id: string]: AnyPieceOption;
   };
+}
+
+export interface EditorState extends GameConfig {
+  id: string;
+  version: number;
+  name: string;
+  store: 'included' | 'browser' | 'file';
+  description: string;
   assets?: Assets;
 }
-export interface GameConfig extends EditorState {
-  store: 'included' | 'file' | 'browser';
-  sendAssets: boolean;
-  loadAssets: () => Assets;
+
+// export interface GameConfig extends EditorState {
+//   store: 'included' | 'file' | 'browser';
+//   sendAssets: boolean;
+//   loadAssets: () => Assets;
+// }
+
+export interface Game {
+  id: string;
+  version: number;
+  userId?: string;
+  name: string;
+  store: 'included' | 'browser' | 'file';
+  config: GameConfig;
+  description: string;
+  // assets: string[];
+  price: number;
+  disableSync?: boolean;
+  sendAssets?: boolean;
+  loadAssets?: () => Assets;
 }
 
 export interface CreateGameAction {
   type: 'create_game';
-  editorConfig: EditorConfig;
+  name: string;
 }
 
 export interface EditGameAction {
@@ -258,7 +275,7 @@ export interface ContextMenuItem {
 
 export interface JoinEvent {
   event: 'join';
-  config: EditorState;
+  game: Game;
   hand: string[];
   board: string[];
   pieces: Pieces;

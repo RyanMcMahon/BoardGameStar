@@ -1,5 +1,5 @@
 import Dexie from 'dexie';
-import { EditorState, Assets } from '../types';
+import { Game, Assets } from '../types';
 
 interface DBFavorite {
   gameId: string;
@@ -8,7 +8,7 @@ interface DBFavorite {
 interface DBGame {
   gameId: string;
   name: string;
-  config: EditorState;
+  config: Game;
   assets: Assets;
 }
 
@@ -56,7 +56,7 @@ if (window.indexedDB) {
   resolveMockDB();
 }
 
-export async function addGame(config: EditorState, assets: Assets) {
+export async function addGame(config: Game, assets: Assets) {
   await deleteGame(config.id);
   return (await getDB).games.add({
     assets,

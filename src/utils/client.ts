@@ -10,6 +10,7 @@ import {
   ClientEvent,
   ChatEvent,
   EditorState,
+  Game,
 } from '../types';
 import { createPeer } from './peer';
 
@@ -29,7 +30,7 @@ export function useGameClient(gameId: string, hostId: string) {
   );
   const [isLoaded, setIsLoaded] = React.useState<boolean>(false);
   const [pendingAssets, setPendingAssets] = React.useState<string[]>([]);
-  const [config, setConfig] = React.useState<EditorState>();
+  const [game, setGame] = React.useState<Game>();
   const [chat, setChat] = React.useState<ChatEvent[]>([]);
   const [board, setBoard] = React.useState<string[]>([]);
   const [myHand, setMyHand] = React.useState<string[]>([]);
@@ -79,15 +80,8 @@ export function useGameClient(gameId: string, hostId: string) {
       }
 
       case 'join': {
-        const {
-          assets: a,
-          config: cfg,
-          hand,
-          board: b,
-          pieces: p,
-          chat: c,
-        } = data;
-        setConfig(cfg);
+        const { assets: a, game: g, hand, board: b, pieces: p, chat: c } = data;
+        setGame(g);
         setPieces(p);
         setMyHand(hand);
         setChat(c);
@@ -252,7 +246,7 @@ export function useGameClient(gameId: string, hostId: string) {
     playerId,
     conn,
     isLoaded,
-    config,
+    game,
     chat,
     board,
     pieces,

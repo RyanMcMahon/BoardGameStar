@@ -4,7 +4,7 @@ import Peer from 'peerjs';
 import {
   Card,
   RenderPiece,
-  GameConfig,
+  Game,
   GameEvent,
   ClientEvent,
   PlayerPiece,
@@ -45,7 +45,7 @@ interface Decks {
   [id: string]: Deck;
 }
 
-export interface Game {
+export interface GameState {
   hostId: string;
   gameId: string;
   peer: Peer;
@@ -62,18 +62,18 @@ interface GameOptions {
   sendAssets: boolean;
 }
 
-let curGame: Game;
+let curGame: GameState;
 
 export function createNewGame(
-  config: GameConfig,
+  game: Game,
   options: GameOptions,
-  cb: (game: Game) => void
+  cb: (gameState: GameState) => void
 ) {
   if (curGame) {
     curGame.peer.disconnect();
   }
 
-  const scenario = config.scenarios[config.curScenario];
+  const scenario = game.config.scenarios[game.config.curScenario];
   const hostId = getHostId();
   const gameId = getGameId();
   const peer = createPeer(getInstanceId(gameId, hostId));
@@ -82,19 +82,22 @@ export function createNewGame(
   peer.on('open', () => {
     const chat: ChatEvent[] = [];
     let hiddenPieces: Pieces = {};
-    let pieces: Pieces = Object.values(config.pieces).reduce((byId, piece) => {
-      if (piece.type !== 'card') {
-        return {
-          ...byId,
-          [piece.id]: {
-            ...piece,
-            delta: 0,
-          },
-        };
-      } else {
-        return byId;
-      }
-    }, {});
+    let pieces: Pieces = Object.values(game.config.pieces).reduce(
+      (byId, piece) => {
+        if (piece.type !== 'card') {
+          return {
+            ...byId,
+            [piece.id]: {
+              ...piece,
+              delta: 0,
+            },
+          };
+        } else {
+          return byId;
+        }
+      },
+      {}
+    );
 
     const decks: Decks = Object.values(pieces)
       .filter(p => p.type === 'deck')
@@ -143,7 +146,7 @@ export function createNewGame(
         {}
       );
 
-    Object.values(config.pieces).forEach(piece => {
+    Object.values(game.config.pieces).forEach(piece => {
       if (piece.type === 'card') {
         const countExp = (piece.counts || '1').split(',').map((t, index) => {
           const tuple = t.split(':');
@@ -177,7 +180,7 @@ export function createNewGame(
     console.log(cardsForPlayerCounts);
 
     const players: Players = {};
-    const game: Game = {
+    const gameState: GameState = {
       peer,
       hostId,
       gameId,
@@ -222,9 +225,9 @@ export function createNewGame(
       });
     };
 
-    curGame = game;
+    curGame = gameState;
     console.log(`Started Game: ${hostId}_${gameId}`);
-    cb(game);
+    cb(gameState);
 
     peer.on('connection', (conn: GamePeerDataConnection) => {
       const { playerId, name } = conn.metadata;
@@ -244,7 +247,7 @@ export function createNewGame(
         playArea.delta++;
         playArea.name = player.name;
 
-        const syncConfig = { ...config };
+        const syncConfig = { ...game };
         delete syncConfig.loadAssets;
         delete syncConfig.store;
 
@@ -259,10 +262,10 @@ export function createNewGame(
           pieces,
           chat,
           event: 'join',
-          config: syncConfig,
+          game: syncConfig,
           assets: sendAssets ? assets : Object.keys(assets),
           hand: player.hand,
-          board: game.board,
+          board: gameState.board,
           // TODO remove
           player: {
             name: player.name,
@@ -353,7 +356,7 @@ export function createNewGame(
                     ...pieces,
                     ...diceById,
                   };
-                  game.board.push(...Object.keys(diceById));
+                  gameState.board.push(...Object.keys(diceById));
                 }
               } catch (err) {
                 console.log(err);
@@ -477,7 +480,7 @@ export function createNewGame(
                   );
                 }
 
-                game.board.push(...cardIds);
+                gameState.board.push(...cardIds);
 
                 const p = cardIds
                   .map((id, index) => ({
@@ -538,7 +541,7 @@ export function createNewGame(
             case 'pick_up_cards':
               try {
                 const { cardIds } = data;
-                game.board = game.board.filter(
+                gameState.board = gameState.board.filter(
                   pieceId => !cardIds.includes(pieceId)
                 );
                 player.hand.push(...cardIds);
@@ -617,7 +620,7 @@ export function createNewGame(
                   ..._.keyBy(cards, 'id'),
                 };
                 player.hand = player.hand.filter(id => !cardIds.includes(id));
-                game.board.push(...cardIds);
+                gameState.board.push(...cardIds);
                 conn.send({
                   event: 'set_hand',
                   hand: player.hand,
@@ -643,7 +646,9 @@ export function createNewGame(
                 cardIds.forEach(id => {
                   const card = pieces[id] as Card;
                   if (decks[card.deckId]) {
-                    game.board = game.board.filter(pieceId => pieceId !== id);
+                    gameState.board = gameState.board.filter(
+                      pieceId => pieceId !== id
+                    );
                     // TODO - discard directly from the deck?
                     // decks[card.deckId].cards = decks[card.deckId].cards.filter(
                     //   cardId => cardId !== id
@@ -668,12 +673,12 @@ export function createNewGame(
             case 'discard_played':
               try {
                 const { deckId } = data;
-                const cardIds = game.board
+                const cardIds = gameState.board
                   .map(id => pieces[id])
                   .filter(p => p.type === 'card' && p.deckId === deckId)
                   .map(c => c.id);
                 decks[deckId].discarded.push(...cardIds);
-                game.board = game.board.filter(pieceId =>
+                gameState.board = gameState.board.filter(pieceId =>
                   cardIds.includes(pieceId)
                 );
                 sendToRoom({

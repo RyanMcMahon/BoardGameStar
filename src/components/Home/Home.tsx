@@ -78,7 +78,7 @@ export function Home() {
           <div className="row">
             <div className="six columns">
               <FeatureList>
-                <FeatureListPiece>✓ No Sign Up</FeatureListPiece>
+                <FeatureListPiece>✓ No Sign Up Required</FeatureListPiece>
                 <FeatureListPiece>✓ Play With Anyone</FeatureListPiece>
                 <FeatureListPiece>✓ Create Custom Games</FeatureListPiece>
                 <FeatureListPiece>✓ Free Forever</FeatureListPiece>

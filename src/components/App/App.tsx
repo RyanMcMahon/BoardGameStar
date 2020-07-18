@@ -174,7 +174,7 @@ export const App: React.FC = () => {
     playerId,
     conn,
     isLoaded,
-    config,
+    game,
     chat,
     pieces,
     board,
@@ -623,7 +623,7 @@ export const App: React.FC = () => {
       {showSettingsModal && (
         <SettingsModal
           playerId={playerId}
-          config={config}
+          config={game}
           assets={assets}
           onClose={() => setShowSettingsModal(false)}
         />

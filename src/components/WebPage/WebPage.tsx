@@ -11,6 +11,7 @@ import {
 } from '../../utils/style';
 import { isWebBuild } from '../../utils/meta';
 import { imagePrefix } from '../../utils/assets';
+import { getCurrentUser, signOut, useUser } from '../../utils/server';
 
 interface Props {
   children: React.ReactNode;
@@ -128,6 +129,7 @@ const Footer = styled.div({
 
 export function WebPage(props: Props) {
   const history = useHistory();
+  const { currentUser, isLoading } = useUser();
   const hostIdRef = React.createRef<HTMLInputElement>();
   const gameIdRef = React.createRef<HTMLInputElement>();
   const handleSubmitJoin = (e: React.FormEvent<HTMLFormElement>) => {
@@ -152,16 +154,36 @@ export function WebPage(props: Props) {
           Board Game Star
         </MenuHeader>
         <MenuSpacer />
-        <MenuJoinForm onSubmit={handleSubmitJoin}>
-          <input type="text" placeholder="Host ID" ref={hostIdRef} />
-          <input type="text" placeholder="Game ID" ref={gameIdRef} />
-          <Button design="primary" type="submit">
-            Join Game
-          </Button>
-        </MenuJoinForm>
-        <NewGameLink to="/games">
-          <NewGameButton design="primary">Start New Game</NewGameButton>
-        </NewGameLink>
+        {!isLoading && (
+          <>
+            <MenuJoinForm onSubmit={handleSubmitJoin}>
+              <input type="text" placeholder="Host ID" ref={hostIdRef} />
+              <input type="text" placeholder="Game ID" ref={gameIdRef} />
+              <Button design="primary" type="submit">
+                Join Game
+              </Button>
+            </MenuJoinForm>
+            <NewGameLink to="/games">
+              <NewGameButton design="primary">Start New Game</NewGameButton>
+            </NewGameLink>
+            {currentUser ? (
+              <NewGameLink to="/my-account">
+                <NewGameButton design="primary">
+                  {currentUser!.displayName || currentUser!.email}
+                </NewGameButton>
+              </NewGameLink>
+            ) : (
+              <>
+                <NewGameLink to="/sign-up">
+                  <NewGameButton design="primary">Sign Up</NewGameButton>
+                </NewGameLink>
+                <NewGameLink to="/log-in">
+                  <NewGameButton design="primary">Log In</NewGameButton>
+                </NewGameLink>
+              </>
+            )}
+          </>
+        )}
       </Menu>
       {props.children}
       <Footer>&copy; Copyright {new Date().getFullYear()}</Footer>

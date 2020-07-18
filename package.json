@@ -9,6 +9,8 @@
   "dependencies": {
     "@inlet/react-pixi": "^4.1.0",
     "@pixi/filter-outline": "^3.1.1",
+    "@stripe/react-stripe-js": "^1.1.2",
+    "@stripe/stripe-js": "^1.7.0",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
@@ -26,7 +28,9 @@
     "detect-browser": "^5.1.0",
     "dexie": "^3.0.1",
     "fabric": "^3.6.0",
+    "firebase": "^7.15.5",
     "lodash": "^4.17.15",
+    "npm": "^6.14.5",
     "peerjs": "^1.2.0",
     "pixi-viewport": "^4.11.3",
     "pixi.js": "^5.2.4",
