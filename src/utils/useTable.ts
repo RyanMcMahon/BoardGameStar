@@ -91,7 +91,10 @@ export const useTable = (options: TableOptions) => {
     );
   }, []);
 
-  const [pieces, setPieces] = React.useState<RenderPiece[]>([]);
+  const piecesRef = React.useRef<RenderPiece[]>([]);
+  const pieces = piecesRef.current;
+  const setPieces = (p: RenderPiece[]) => (piecesRef.current = p);
+  // const [pieces, setPieces] = React.useState<RenderPiece[]>([]);
   const onUpdatePiece = options.handleUpdatePiece;
   const assets = options.assets;
   const [selectedPieceIds, setSelectedPieceIds] = React.useState<Set<string>>(
@@ -178,7 +181,7 @@ export const useTable = (options: TableOptions) => {
       return;
     }
 
-    const piecesById = _.keyBy(pieces, 'id');
+    const piecesById = _.keyBy(piecesRef.current, 'id');
     const renderedPieces = new Set();
 
     container.children.forEach(child => {
@@ -222,7 +225,7 @@ export const useTable = (options: TableOptions) => {
       };
     });
 
-    pieces
+    piecesRef.current
       .filter(p => !renderedPieces.has(p.id))
       .forEach(piece => {
         let child: RenderItem;
@@ -375,6 +378,43 @@ export const useTable = (options: TableOptions) => {
                   height: curPiece.radius * 2,
                   width: curPiece.radius * 2,
                 });
+
+                if (curPiece.stack && el.dragging) {
+                  const stackPieces = piecesRef.current.filter(
+                    p => p.stack === curPiece.stack && p.id !== curPiece.id
+                  ); // TODO use deterministic sort
+                  const stackIds = stackPieces.map(p => p.id);
+                  const stackRenderItems = (container.children as RenderItem[]).filter(
+                    x => stackIds.includes(x.id)
+                  );
+                  const stack = stackPieces.find(
+                    p => Math.hypot(p.x - curPiece.x, p.y - curPiece.y) < 20
+                  ) || { id: '' };
+                  const nonStackables = stackRenderItems.filter(
+                    x => x.id !== stack.id
+                  );
+                  nonStackables.forEach(x => (x.alpha = 1));
+
+                  if (stack.id) {
+                    const stackRender = container.children.find(
+                      x => (x as RenderItem).id === stack.id
+                    );
+
+                    if (!stackRender) {
+                      // TODO
+                      return;
+                    }
+
+                    console.log('--- stack ----');
+                    console.log('add', curPiece.id, 'to', stack.id);
+                    console.log(stackRender);
+                    stackRender.alpha = 0.5;
+                    console.log(
+                      stack,
+                      Math.hypot(stack.x - curPiece.x, stack.y - curPiece.y)
+                    );
+                  }
+                }
               },
             });
             child.addChild(circle);
@@ -481,7 +521,7 @@ export const useTable = (options: TableOptions) => {
       });
   }, [
     container,
-    pieces,
+    piecesRef,
     assets,
     config,
     onSelectPiece,

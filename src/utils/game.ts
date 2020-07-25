@@ -231,7 +231,10 @@ export function createNewGame(
       );
       Object.values(game.config.pieces).forEach(piece => {
         if (!piecesForPlayerCounts[piece.id]) {
-          pieces[piece.id] = piece as any;
+          pieces[piece.id] = {
+            ...piece,
+            delta: 0,
+          } as any;
         }
       });
 

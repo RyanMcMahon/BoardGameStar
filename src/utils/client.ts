@@ -92,7 +92,7 @@ export function useGameClient(gameId: string, hostId: string) {
         setPieces(p);
         setMyHand(hand);
         setChat(c);
-        setBoard(prevBoard => [...b, ...prevBoard]);
+        setBoard(b); //prevBoard => [...b, ...prevBoard]);
         if (Array.isArray(a)) {
           setPendingAssets(a);
         } else {
