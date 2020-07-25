@@ -1,5 +1,13 @@
 import _ from 'lodash';
-import { Container, Sprite, Texture, Graphics, utils, Point } from 'pixi.js';
+import {
+  Container,
+  Sprite,
+  Texture,
+  Graphics,
+  utils,
+  Point,
+  Text,
+} from 'pixi.js';
 
 import { RenderPiece } from '../types';
 import { primaryColor } from './style';
@@ -46,6 +54,7 @@ export class RenderItem extends Container {
   transformer: Transformer;
   arrow: Graphics;
   outline: Graphics;
+  stackContainer?: Container;
   locked?: boolean;
   tempDragDisabled?: boolean;
   sendUpdateThrottled: () => void;
@@ -260,6 +269,37 @@ export class RenderItem extends Container {
   deselect() {
     this.removeChild(this.transformer);
     this.removeChild(this.outline);
+  }
+
+  setStack(count: number) {
+    this.clearStack();
+
+    const stackContainer = new Container();
+    const circle = new Graphics();
+    circle.beginFill(utils.string2hex('#000'));
+    circle.lineStyle(0);
+    circle.drawCircle(-5, -5, 15);
+    circle.endFill();
+    const stackCount = new Text(`${count}`, {
+      fontSize: '16px',
+      fill: 'white',
+      align: 'center',
+    });
+    stackCount.x = -5;
+    stackCount.y = -5;
+    stackCount.anchor.set(0.5);
+
+    stackContainer.addChild(circle);
+    stackContainer.addChild(stackCount);
+    this.stackContainer = stackContainer;
+    this.addChild(this.stackContainer);
+  }
+
+  clearStack() {
+    if (this.stackContainer) {
+      this.removeChild(this.stackContainer);
+      delete this.stackContainer;
+    }
   }
 
   setPosition(point: { x: number; y: number }) {

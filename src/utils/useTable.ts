@@ -389,31 +389,28 @@ export const useTable = (options: TableOptions) => {
                   );
                   const stack = stackPieces.find(
                     p => Math.hypot(p.x - curPiece.x, p.y - curPiece.y) < 20
-                  ) || { id: '' };
-                  const nonStackables = stackRenderItems.filter(
-                    x => x.id !== stack.id
                   );
-                  nonStackables.forEach(x => (x.alpha = 1));
+                  const nonStackables = stackRenderItems.filter(
+                    x => !stack || x.id !== stack.id
+                  ) as RenderItem[];
+                  nonStackables.forEach(x => (x.alpha = 1)); // TOOD stackPieces.find(p => p.id === x.id).opacity));
 
-                  if (stack.id) {
+                  if (stack) {
                     const stackRender = container.children.find(
                       x => (x as RenderItem).id === stack.id
-                    );
-
+                    ) as RenderItem;
                     if (!stackRender) {
-                      // TODO
                       return;
                     }
 
-                    console.log('--- stack ----');
-                    console.log('add', curPiece.id, 'to', stack.id);
-                    console.log(stackRender);
-                    stackRender.alpha = 0.5;
-                    console.log(
-                      stack,
-                      Math.hypot(stack.x - curPiece.x, stack.y - curPiece.y)
-                    );
+                    // TODO brightness?
+                    stackRender.alpha = 0.5; // TODO use piece opacity
+                    el.setStack((stack.pieces || [1]).length + 1);
+                  } else {
+                    el.clearStack();
                   }
+                } else {
+                  el.clearStack();
                 }
               },
             });
