@@ -1,10 +1,12 @@
+import axios from 'axios';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 import 'firebase/storage';
 import React from 'react';
-import { Game, Assets } from '../types';
+import { Game, Assets, PublicGame, PublishableGame } from '../types';
 import { PaymentMethod } from '@stripe/stripe-js';
+import { addGame } from './store';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAeH5C7Uaem7FN2OpIQAUE2uIDQEGbvSoY',
@@ -128,13 +130,38 @@ export async function updateUserSettings(userSettings: Partial<UserSettings>) {
     .set(userSettings, { merge: true });
 }
 
-export async function getAllGames(): Promise<Game[]> {
+export async function getAllGames(): Promise<PublicGame[]> {
   return ((
     await firebase
       .firestore()
       .collection('games')
       .get()
-  ).docs.map(doc => doc.data()) as unknown) as Game[];
+  ).docs.map(doc => doc.data()) as unknown) as PublicGame[];
+}
+
+export async function getGame(
+  gameId: string
+): Promise<{ game: PublicGame; user: any }> {
+  const game = (
+    await firebase
+      .firestore()
+      .collection('games')
+      .doc(gameId)
+      .get()
+  ).data() as PublicGame;
+
+  const user = (
+    await firebase
+      .firestore()
+      .collection('users')
+      .doc(game.userId)
+      .get()
+  ).data();
+
+  return {
+    game,
+    user,
+  };
 }
 
 export async function getUserGames(userId: string) {
@@ -145,25 +172,51 @@ export async function getGameStats(gameId: string) {
   // TODO
 }
 
-export async function publishGame(game: Game, assets: Assets) {
+export async function publishGame(game: PublishableGame, assets: Assets) {
   const gameId = game.id;
   const userId = getCurrentUser()?.uid;
+  const thumbnail = game.thumbnail;
+  const banner = game.banner;
+  const files = game.files;
 
   await firebase
     .firestore()
     .collection('games')
     .doc(gameId)
-    .set(game);
+    .set({
+      ...game,
+      thumbnail: thumbnail ? '_thumbnail' : undefined,
+      banner: banner ? '_banner' : undefined,
+      files: files.map(file => file.name),
+    });
 
   const storageRef = firebase.storage().ref();
+  const folder = game.price > 0 ? 'private' : 'public';
+  const basePath = `users/${userId}/games/${gameId}/${folder}`;
+
+  if (banner) {
+    await storageRef.child(`${basePath}/_banner`).putString(banner, 'data_url');
+  }
+
+  if (thumbnail) {
+    await storageRef
+      .child(`${basePath}/_thumbnail`)
+      .putString(thumbnail, 'data_url');
+  }
+
+  await Promise.all(
+    files.map(file =>
+      storageRef
+        .child(`${basePath}/${file.name}`)
+        .putString(file.content, 'data_url')
+    )
+  );
 
   return Promise.all(
     Object.entries(assets).map(([name, content]) => {
-      const folder = game.price > 0 ? 'private' : 'public';
-      const assetRef = storageRef.child(
-        `users/${userId}/games/${gameId}/${folder}/${name}`
-      );
-      return assetRef.putString(content, 'data_url');
+      return storageRef
+        .child(`${basePath}/${name}`)
+        .putString(content, 'data_url');
     })
   );
 }
@@ -215,7 +268,7 @@ export async function getUserProfile(userId: string) {
 }
 
 export async function buyGame(
-  game: Game,
+  game: PublicGame,
   paymentMethod: PaymentMethod,
   tip: number,
   tax: number // TODO
@@ -237,6 +290,59 @@ export async function buyGame(
       payment_method: paymentMethod.id,
       gameId: game.id,
     });
+}
+
+export async function downloadGame(
+  gameId: string,
+  progress: (percentage: number) => void
+) {
+  let curPrecentage = 5;
+  progress(curPrecentage);
+
+  const { data } = await axios.get(
+    `https://us-central1-boardgamestar-21111.cloudfunctions.net/games/${gameId}`
+  );
+  const { game, assets } = data;
+
+  curPrecentage += 5;
+  progress(curPrecentage);
+
+  const assetList = Object.entries(assets);
+  const percentStep = Math.floor((100 - curPrecentage) / assetList.length);
+  const loadedAssets = {} as any;
+
+  while (assetList.length) {
+    const [key, url] = assetList.pop() as any;
+    const image = await getBase64FromImageUrl(url as string);
+    curPrecentage += percentStep;
+    progress(curPrecentage);
+    loadedAssets[key] = image;
+  }
+
+  await addGame(game, loadedAssets);
+}
+
+function getBase64FromImageUrl(url: string) {
+  return new Promise(resolve => {
+    const img = new Image();
+
+    img.setAttribute('crossOrigin', 'anonymous');
+
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = (this as any).width;
+      canvas.height = (this as any).height;
+
+      const ctx = canvas.getContext('2d') as any;
+      ctx.drawImage(this, 0, 0);
+
+      const dataURL = canvas.toDataURL('image/png');
+
+      resolve(dataURL);
+    };
+
+    img.src = url;
+  });
 }
 
 // export async function requestOAuth() {

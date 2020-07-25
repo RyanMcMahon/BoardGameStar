@@ -1,12 +1,13 @@
 import { EditorState, Game } from '../types';
 
 export const Aviary: Game = {
-  price: 0,
   version: 1,
   store: 'included',
   id: 'aviary',
+  tags: [],
   disableSync: true,
   name: 'Aviary',
+  summary: '',
   description: `
   *(Compare with Arboretum)*
 

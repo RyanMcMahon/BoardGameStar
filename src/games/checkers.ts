@@ -4,9 +4,10 @@ export const Checkers: Game = {
   version: 1,
   store: 'included',
   id: 'checkers',
-  price: 0,
+  tags: [],
   disableSync: true,
   name: 'Checkers',
+  summary: '',
   description: `
   Sometimes called "The thinking man's chutes and ladders", checkers is simulated genocide that's fun for the whole family!
   `,

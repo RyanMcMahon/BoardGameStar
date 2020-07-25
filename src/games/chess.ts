@@ -4,9 +4,10 @@ export const Chess: Game = {
   version: 1,
   store: 'included',
   id: 'chess',
-  price: 0,
+  tags: [],
   disableSync: true,
   name: 'Chess',
+  summary: '',
   description: `
   The classic game of horseys and castles.
   `,

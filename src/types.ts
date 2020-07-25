@@ -26,15 +26,15 @@ export interface PieceOption {
   locked?: boolean;
   counts?: string;
   parentId?: string;
-  playerCounts?: {
-    min: number;
-    max: number;
-  };
 }
 
 export interface RectPieceOption extends PieceOption {
   width: number;
   height: number;
+}
+
+export interface StackablePieceOption {
+  stack?: string;
 }
 
 export interface ImagePieceOption extends RectPieceOption {
@@ -64,17 +64,21 @@ export interface PlayerOption extends RectPieceOption {
   color: string;
 }
 
-export interface CircleTokenOption extends PieceOption {
+export interface CircleTokenOption extends PieceOption, StackablePieceOption {
   type: 'circle';
   radius: number;
   color: string;
 }
 
-export interface ImageTokenOption extends ImagePieceOption {
+export interface ImageTokenOption
+  extends ImagePieceOption,
+    StackablePieceOption {
   type: 'image';
+  back?: string;
+  flipped?: boolean;
 }
 
-export interface RectTokenOption extends RectPieceOption {
+export interface RectTokenOption extends RectPieceOption, StackablePieceOption {
   type: 'rect';
   color: string;
 }
@@ -98,12 +102,19 @@ export interface GameConfig {
   };
 }
 
-export interface EditorState extends GameConfig {
+export interface GameProps {
   id: string;
   version: number;
   name: string;
   store: 'included' | 'browser' | 'file';
+  thumbnail?: string;
+  tags: string[];
+  rules?: string;
+  summary: string;
   description: string;
+}
+
+export interface EditorState extends GameConfig, GameProps {
   assets?: Assets;
 }
 
@@ -113,19 +124,31 @@ export interface EditorState extends GameConfig {
 //   loadAssets: () => Assets;
 // }
 
-export interface Game {
-  id: string;
-  version: number;
-  userId?: string;
-  name: string;
-  store: 'included' | 'browser' | 'file';
+export interface Game extends GameProps {
   config: GameConfig;
-  description: string;
   // assets: string[];
-  price: number;
   disableSync?: boolean;
   sendAssets?: boolean;
   loadAssets?: () => Assets;
+}
+
+export interface PublicGame extends Game {
+  store: 'browser';
+  userId: string;
+  price: number;
+  disableSync: true;
+  banner?: string;
+  files: string[];
+}
+
+export interface UploadedFile {
+  content: string;
+  type: string;
+  name: string;
+}
+
+export interface PublishableGame extends Omit<PublicGame, 'files'> {
+  files: UploadedFile[];
 }
 
 export interface CreateGameAction {
@@ -163,9 +186,9 @@ export interface RemoveScenarioAction {
   scenarioId: string;
 }
 
-export interface UpdateGameNameAction {
-  type: 'update_game_name';
-  name: string;
+export interface UpdateGame {
+  type: 'update_game';
+  game: Partial<Game>;
 }
 
 export interface AddPieceAction {
@@ -200,7 +223,7 @@ export interface RemovePieceAction {
 export type EditorAction =
   | CreateGameAction
   | EditGameAction
-  | UpdateGameNameAction
+  | UpdateGame
   | SetCurScenarioAction
   | AddScenarioAction
   | DuplicateScenarioAction
@@ -219,6 +242,12 @@ export type CardPiece = CardOption & Piece;
 export type CircleTokenPiece = CircleTokenOption & Piece;
 export type ImageTokenPiece = ImageTokenOption & Piece;
 export type RectTokenPiece = RectTokenOption & Piece;
+
+export interface StackPiece extends Piece, ImagePieceOption {
+  type: 'stack';
+  image: 'string';
+  pieces: string[];
+}
 
 export interface DicePiece extends Piece {
   id: string;
@@ -258,6 +287,7 @@ export type RenderPiece =
   | PlayerPiece
   | CircleTokenPiece
   | ImageTokenPiece
+  | StackPiece
   | RectTokenPiece;
 
 export interface Card {
@@ -290,6 +320,12 @@ export interface JoinEvent {
   };
 }
 
+export interface PlayerJoinEvent {
+  event: 'player_join';
+  board: string[];
+  pieces: Pieces;
+}
+
 export interface SetHandEvent {
   event: 'set_hand';
   hand: string[];
@@ -300,6 +336,17 @@ export interface UpdatePieceEvent {
   pieces: {
     [id: string]: RenderPiece;
   };
+}
+
+export interface StopDragEvent {
+  event: 'stop_drag';
+  ids: string[];
+}
+
+export interface SplitStackEvent {
+  event: 'split_stack';
+  id: string;
+  count: number;
 }
 
 export interface RemoveFromBoardEvent {
@@ -458,6 +505,8 @@ export type ClientEvent =
   | DiscardPlayedEvent
   | RequestAssetEvent
   | RevealPieceEvent
+  | StopDragEvent
+  | SplitStackEvent
   | UpdatePieceEvent;
 
 export type GameEvent =
@@ -469,6 +518,7 @@ export type GameEvent =
   | DeckPeekEvent
   | DeckPeekResultsEvent
   | JoinEvent
+  | PlayerJoinEvent
   | RemoveFromBoardEvent
   | SetHandEvent
   | AssetLoadedEvent

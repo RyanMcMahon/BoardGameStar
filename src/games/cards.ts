@@ -2,11 +2,12 @@ import { EditorState, Game } from '../types';
 
 export const Cards: Game = {
   version: 1,
-  price: 0,
   store: 'included',
   id: 'cards',
+  tags: [],
   disableSync: true,
   name: 'Playing Cards',
+  summary: '',
   description: `
   There are 57,939 card games, over 9 of which are playable on Earth!
   `,

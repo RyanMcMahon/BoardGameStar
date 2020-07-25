@@ -9,7 +9,6 @@ import { EditorConfig, EditorAction, Game } from '../../types';
 import { Cards } from '../../games/cards';
 import { Chess } from '../../games/chess';
 import { Checkers } from '../../games/checkers';
-import { WebPage, Content } from '../WebPage';
 import { GameSelector } from '../GameSelector';
 import { isWebBuild } from '../../utils/meta';
 import { loadAsset } from '../../utils/assets';
@@ -17,7 +16,6 @@ import { Button } from '../../utils/style';
 import { CreateGameModal } from '../CreateGameModal';
 import { loadGames } from '../../utils/store';
 import { getPlayerId } from '../../utils/identity';
-import { GamesMenu } from '../GamesMenu';
 
 interface Props {
   dispatch: React.Dispatch<EditorAction>;
@@ -112,6 +110,13 @@ const Container = styled.div({
   padding: '2rem 0',
 });
 
+const GamesWrapper = styled.div({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(6, 1fr)',
+  gridGap: '1rem',
+  gridAutoRows: 'minmax(100px, 300px)',
+});
+
 export function Games(props: Props) {
   const [configs, setConfigs] = React.useState<Game[]>([]);
   const [newGame, setNewGame] = React.useState<GameState>();
@@ -156,16 +161,15 @@ export function Games(props: Props) {
   }
 
   return (
-    <WebPage>
-      <Content>
-        <Container>
-          <GamesMenu />
-          <h1>My Games</h1>
-          <Button design="primary" onClick={() => setShowCreateModal(true)}>
-            Create New Game
-          </Button>
-          <hr />
+    <>
+      <Container>
+        <h1>My Games</h1>
+        <Button design="primary" onClick={() => setShowCreateModal(true)}>
+          Create New Game
+        </Button>
+        <hr />
 
+        <GamesWrapper>
           {configs
             .sort((a, b) =>
               a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
@@ -180,15 +184,15 @@ export function Games(props: Props) {
                 onReloadConfigs={load}
               />
             ))}
-        </Container>
+        </GamesWrapper>
+      </Container>
 
-        {showCreateModal && (
-          <CreateGameModal
-            onCreate={handleCreateGame}
-            onClose={() => setShowCreateModal(false)}
-          />
-        )}
-      </Content>
-    </WebPage>
+      {showCreateModal && (
+        <CreateGameModal
+          onCreate={handleCreateGame}
+          onClose={() => setShowCreateModal(false)}
+        />
+      )}
+    </>
   );
 }

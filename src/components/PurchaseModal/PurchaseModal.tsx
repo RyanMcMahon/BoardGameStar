@@ -8,7 +8,7 @@ import {
   useUser,
   getCustomerData,
   buyGame,
-} from '../../utils/server';
+} from '../../utils/api';
 import { Modal } from '../Modal';
 import { Game } from '../../types';
 

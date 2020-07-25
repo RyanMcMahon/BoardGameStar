@@ -13,10 +13,12 @@ import {
   CardPiece,
   DeckPiece,
   ChatEvent,
+  Piece,
 } from '../types';
 
 import { getHostId, getGameId, getInstanceId } from './identity';
 import { createPeer } from './peer';
+import { count } from 'console';
 
 interface GamePeerDataConnection extends Peer.DataConnection {
   send: (event: GameEvent) => void;
@@ -106,48 +108,27 @@ export function createNewGame(
           ...byId,
           [deck.id]: {
             ...deck,
+            count: 0,
+            total: 0,
             cards: [],
             discarded: [],
           },
         }),
         {}
       );
-    Object.values(decks).forEach(deck => {
-      (pieces[deck.id] as DeckPiece).total = 0; //deck.cards.length;
-      (pieces[deck.id] as DeckPiece).count = 0; //deck.cards.length;
-    });
+
     const shuffleDiscarded = (deckId: string) => {
       decks[deckId].cards.push(...decks[deckId].discarded.splice(0));
       decks[deckId].cards = _.shuffle(decks[deckId].cards);
     };
 
-    // Create Cards
     const maxPlayers = scenario.players.length;
-    const cardsForPlayerCounts: {
-      [deckId: string]: {
-        [playerCount: number]: string[];
-      };
-    } = Object.keys(decks)
-      .map(deckId => [
-        deckId,
-        [...Array(maxPlayers)].reduce(
-          (agg, x, index) => ({
-            ...agg,
-            [index + 1]: [],
-          }),
-          {}
-        ),
-      ])
-      .reduce(
-        (agg, [deckId, cardMap]) => ({
-          ...agg,
-          [deckId]: cardMap,
-        }),
-        {}
-      );
+    const piecesForPlayerCounts: {
+      [pieceId: string]: number[];
+    } = {};
 
     Object.values(game.config.pieces).forEach(piece => {
-      if (piece.type === 'card') {
+      if (piece.counts) {
         const countExp = (piece.counts || '1').split(',').map((t, index) => {
           const tuple = t.split(':');
           if (tuple.length < 2) {
@@ -161,23 +142,15 @@ export function createNewGame(
             index + 1 < countExp.length
               ? countExp[index + 1][0] - 1
               : maxPlayers;
-          // console.log(min, max, count);
+
+          piecesForPlayerCounts[piece.id] = new Array(maxPlayers).fill(0);
           for (let i = min; i <= max; i++) {
-            for (let k = 0; k < count; k++) {
-              const cardCopy = {
-                ...piece,
-                id: slug.nice(),
-                parentId: piece.id,
-                delta: 0,
-              };
-              cardsForPlayerCounts[piece.deckId][i].push(cardCopy.id);
-              pieces[cardCopy.id] = cardCopy;
-            }
+            piecesForPlayerCounts[piece.id][i] = count;
           }
         });
       }
     });
-    console.log(cardsForPlayerCounts);
+    console.log(piecesForPlayerCounts);
 
     const players: Players = {};
     const gameState: GameState = {
@@ -185,14 +158,18 @@ export function createNewGame(
       hostId,
       gameId,
       pieces,
-      board: scenario.pieces.filter(
-        pieceId => pieces[pieceId] && pieces[pieceId].type !== 'card'
-      ),
+      board: [],
+      // scenario.pieces.filter(
+      //   pieceId => pieces[pieceId] && pieces[pieceId].type !== 'card'
+      // ),
     };
     const clients: GamePeerDataConnection[] = [];
     const sendToRoom = (event: GameEvent) => {
       clients.forEach(client => client.send(event));
     };
+
+    const getCardsForDeck = (deckId: string) =>
+      Object.values(pieces).filter(p => p.deckId === deckId);
 
     const updateDeckCount = (deckId: string) => {
       const count = decks[deckId].cards.length;
@@ -201,7 +178,7 @@ export function createNewGame(
         return;
       }
       piece.count = count;
-      piece.total = cardsForPlayerCounts[deckId][_.size(players)].length;
+      piece.total = getCardsForDeck(piece.id).length;
       piece.delta++;
       console.log('update_piece', piece.delta);
       sendToRoom({
@@ -222,6 +199,55 @@ export function createNewGame(
           }),
           {}
         ),
+      });
+    };
+
+    const updatePlayerCount = () => {
+      const playerCount = Object.keys(players).length;
+      pieces = Object.entries(piecesForPlayerCounts).reduce(
+        (agg, [id, counts]) => {
+          const piece = game.config.pieces[id];
+          const offset = {
+            x: ((piece as any).width || (piece as any).radius * 2) * 1.2,
+            y: ((piece as any).height || (piece as any).radius * 2) * 1.2,
+          };
+          const ret: Pieces = { ...agg };
+
+          for (let i = 0; i < counts[playerCount]; i++) {
+            const copy = {
+              ...piece,
+              x: piece.x + (i % 10) * offset.x,
+              y: piece.y + Math.floor(i / 10) * offset.y,
+              id: slug.nice(),
+              parentId: id,
+              delta: 0,
+            };
+            ret[copy.id] = copy as any;
+          }
+
+          return ret;
+        },
+        {}
+      );
+      Object.values(game.config.pieces).forEach(piece => {
+        if (!piecesForPlayerCounts[piece.id]) {
+          pieces[piece.id] = piece as any;
+        }
+      });
+
+      Object.values(decks).forEach(deck => {
+        deck.cards = _.shuffle(getCardsForDeck(deck.id).map(c => c.id));
+        updateDeckCount(deck.id);
+      });
+
+      gameState.board = Object.values(pieces)
+        .filter(piece => piece.type !== 'card')
+        .map(p => p.id);
+
+      sendToRoom({
+        pieces,
+        board: gameState.board,
+        event: 'player_join',
       });
     };
 
@@ -251,11 +277,7 @@ export function createNewGame(
         delete syncConfig.loadAssets;
         delete syncConfig.store;
 
-        // look at cards and adjust to player counts
-        Object.values(decks).forEach(deck => {
-          deck.cards = _.shuffle(cardsForPlayerCounts[deck.id][playerCount]);
-          updateDeckCount(deck.id);
-        });
+        updatePlayerCount();
 
         console.log(pieces);
         conn.send({
@@ -537,6 +559,51 @@ export function createNewGame(
                 console.log(err);
               }
               break;
+
+            case 'stop_drag': {
+              try {
+                const { ids } = data;
+                ids.forEach(id => {
+                  const piece = pieces[id];
+                  const relatedPieces = Object.values(pieces).filter(
+                    p => p.parentId === piece.parentId
+                  );
+                  // TODO check distance on related pieces (use same sort as frontend)
+                  // If within distance, create stack out of related pieces
+                });
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+            }
+
+            case 'split_stack': {
+              try {
+                const { id, count } = data;
+                const stack = pieces[id];
+                const bottom = stack.pieces.slice(0, count - 1);
+                const top = stack.pieces.slice(count);
+
+                if (!top.length) {
+                  return;
+                }
+
+                if (bottom.length === 1) {
+                  // replace with piece
+                } else {
+                  // update original stack
+                }
+
+                if (top.length === 1) {
+                  // replace with piece
+                } else {
+                  // create new stack
+                }
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+            }
 
             case 'pick_up_cards':
               try {

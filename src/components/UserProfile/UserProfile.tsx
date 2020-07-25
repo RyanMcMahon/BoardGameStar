@@ -1,7 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { WebPage, Content } from '../WebPage';
 import { Button } from '../../utils/style';
 import { Link, Redirect, useParams } from 'react-router-dom';
 import {
@@ -10,7 +9,7 @@ import {
   signOut,
   getUserProfile,
   UserSettings,
-} from '../../utils/server';
+} from '../../utils/api';
 import { Game } from '../../types';
 
 export function UserProfile() {
@@ -32,15 +31,13 @@ export function UserProfile() {
   }
 
   return (
-    <WebPage>
-      <Content>
-        <h1>{profile.displayName}</h1>
-        {profile.profile}
+    <>
+      <h1>{profile.displayName}</h1>
+      {profile.profile}
 
-        {games.map(game => (
-          <div>{game.name}</div>
-        ))}
-      </Content>
-    </WebPage>
+      {games.map(game => (
+        <div>{game.name}</div>
+      ))}
+    </>
   );
 }

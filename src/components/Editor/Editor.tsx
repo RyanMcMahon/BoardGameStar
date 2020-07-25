@@ -15,11 +15,14 @@ import {
   CircleTokenOption,
   RenderPiece,
   Game,
+  PublicGame,
+  StackablePieceOption,
 } from '../../types';
 import { DeckEditorModal } from '../DeckEditorModal/DeckEditorModal';
 import { ScenarioModal } from '../ScenarioModal';
 import { addGame } from '../../utils/store';
 import { FaExpand } from 'react-icons/fa';
+import { EditGameModal } from '../EditGameModal';
 
 interface Props {
   state: EditorState;
@@ -86,7 +89,7 @@ const EditorNav = styled.div({
   flexDirection: 'row',
 });
 
-const PieceCountContainer = styled.div({
+const InlineInputContainer = styled.div({
   input: {
     marginLeft: '1rem',
     width: '75px',
@@ -189,6 +192,7 @@ export function Editor(props: Props) {
   );
   const [deckModalId, setDeckModalId] = React.useState<string>();
   const [showControls, setShowControls] = React.useState(true);
+  const [showEditGameModal, setShowEditGameModal] = React.useState(false);
   const [scenarioModalIsShowing, setScenarioModalIsShowing] = React.useState(
     false
   );
@@ -214,12 +218,14 @@ export function Editor(props: Props) {
   const curScenario = state.scenarios[state.curScenario];
 
   const handleSave = async () => {
-    const game: Game = {
+    const game: Game | PublicGame = {
       id: state.id,
-      price: 0,
+      tags: state.tags,
       store: state.store,
       version: state.version,
       name: state.name,
+      thumbnail: state.thumbnail,
+      summary: state.summary,
       description: state.description,
       config: {
         curScenario: state.curScenario,
@@ -263,12 +269,12 @@ export function Editor(props: Props) {
     });
   };
 
-  const handleUpdateGameName = (e: React.FormEvent<HTMLInputElement>) => {
-    dispatch({
-      type: 'update_game_name',
-      name: e.currentTarget.value || state.name,
-    });
-  };
+  // const handleUpdateGameName = (e: React.FormEvent<HTMLInputElement>) => {
+  //   dispatch({
+  //     type: 'update_game_name',
+  //     name: e.currentTarget.value || state.name,
+  //   });
+  // };
 
   const handleAddPlayer = () => {
     const id = slug.nice();
@@ -451,12 +457,16 @@ export function Editor(props: Props) {
                 <FaExpand />
               </FullScreenButton>
             </div>
-            <label>New Game</label>
+            <label>Edit {state.name}</label>
+            <Button design="primary" onClick={() => setShowEditGameModal(true)}>
+              Properties
+            </Button>
+            {/* <label>Edit Game</label>
             <input
               type="text"
               value={state.name}
               onChange={handleUpdateGameName}
-            />
+            /> */}
 
             <label>Scenarios</label>
             {Object.values(state.scenarios).length > 1 && (
@@ -521,24 +531,72 @@ export function Editor(props: Props) {
               <>
                 <label>Selected Piece</label>
                 {selectedPiece.type !== 'player' && (
-                  <PieceCountContainer>
-                    Min Players For Piece
+                  <>
+                    <InlineInputContainer>
+                      Min Players For Piece
+                      <input
+                        type="number"
+                        value={(selectedPiece.counts || '1:1').split(':')[0]}
+                        onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                          const playerCount = e.currentTarget.value;
+                          const [, c] = (selectedPiece.counts || '1:1').split(
+                            ':'
+                          );
+
+                          dispatch({
+                            type: 'update_piece',
+                            piece: {
+                              id: selectedPieceId,
+                              counts: `${playerCount}:${c}`,
+                            } as AnyPieceOption,
+                          });
+                        }}
+                      />
+                    </InlineInputContainer>
+                    <InlineInputContainer>
+                      Piece Count
+                      <input
+                        type="number"
+                        value={(selectedPiece.counts || '1:1').split(':')[1]}
+                        onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                          const count = e.currentTarget.value;
+                          const [p] = (selectedPiece.counts || '1:1').split(
+                            ':'
+                          );
+
+                          dispatch({
+                            type: 'update_piece',
+                            piece: {
+                              id: selectedPieceId,
+                              counts: `${p}:${count}`,
+                            } as AnyPieceOption,
+                          });
+                        }}
+                      />
+                    </InlineInputContainer>
+                    Counts: {selectedPiece.counts || '1:1'}
+                  </>
+                )}
+                {['rect', 'circle', 'image'].includes(selectedPiece.type) && (
+                  <InlineInputContainer>
+                    Stacking Class
                     <input
-                      type="number"
-                      value={(selectedPiece.counts || '1:').split(':')[0]}
+                      type="text"
+                      value={(selectedPiece as StackablePieceOption).stack}
                       onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                        const playerCount = e.currentTarget.value;
+                        const stack = e.currentTarget.value;
                         dispatch({
                           type: 'update_piece',
                           piece: {
+                            stack,
                             id: selectedPieceId,
-                            counts: `${playerCount}:1`,
                           } as AnyPieceOption,
                         });
                       }}
                     />
-                  </PieceCountContainer>
+                  </InlineInputContainer>
                 )}
+
                 {selectedPiece.hasOwnProperty('color') && (
                   <>
                     <input
@@ -642,6 +700,18 @@ export function Editor(props: Props) {
           setAssets={setAssets}
           state={state}
           onClose={() => setDeckModalId('')}
+        />
+      )}
+      {showEditGameModal && (
+        <EditGameModal
+          game={state}
+          onUpdate={(game: Partial<Game>) =>
+            dispatch({
+              game,
+              type: 'update_game',
+            })
+          }
+          onClose={() => setShowEditGameModal(false)}
         />
       )}
       {/* <FPSStats /> */}

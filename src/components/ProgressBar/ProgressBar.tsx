@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { primaryColor } from '../../utils/style';
 
 interface Props {
   complete: number;
@@ -14,7 +15,7 @@ const Wrapper = styled.div({
 
 const ProgressIndicator = styled.div<{ complete: number }>(
   ({ complete }: { complete: number }) => ({
-    backgroundColor: '#08c',
+    backgroundColor: primaryColor,
     height: '1rem',
     width: `${complete}%`,
     borderRadius: '4px',

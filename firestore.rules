@@ -9,7 +9,6 @@ service cloud.firestore {
       allow read: if true;
       allow create: if canPublishGame() && request.auth.uid == request.resource.data.userId;
       allow update, delete: if canPublishGame() && request.auth.uid == resource.data.userId;
-
     }
 
     match /users/{userId} {

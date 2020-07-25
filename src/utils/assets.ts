@@ -1,14 +1,9 @@
 import { isWebBuild } from './meta';
+import { UploadedFile } from '../types';
 
 window.require = window.require || (() => {});
 const fs = window.require('fs');
 const path = window.require('path');
-
-export interface UploadedFile {
-  content: string;
-  type: string;
-  name: string;
-}
 
 export const imagePrefix = isWebBuild ? '/' : '';
 
@@ -47,11 +42,18 @@ export function getAssetDimensions(asset: string) {
   });
 }
 
-export async function filePrompt(): Promise<UploadedFile[]> {
+interface FilePromptOptions {
+  multiple: boolean;
+}
+
+export async function filePrompt(
+  options?: FilePromptOptions
+): Promise<UploadedFile[]> {
+  const { multiple = true } = options || {};
   return new Promise(resolve => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.multiple = true;
+    input.multiple = multiple;
 
     input.onchange = async (e: any) => {
       if (!e.target) {

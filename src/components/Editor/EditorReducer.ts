@@ -52,6 +52,8 @@ export function editorReducer(
         version: 1,
         id: slug.nice(),
         store: isWebBuild ? 'browser' : 'file',
+        tags: [],
+        summary: '',
         description: '',
         curScenario: scenario.id,
         scenarios: {
@@ -72,10 +74,10 @@ export function editorReducer(
       return cleanConfig;
     }
 
-    case 'update_game_name': {
+    case 'update_game': {
       return {
         ...state,
-        name: action.name,
+        ...action.game,
       };
     }
 

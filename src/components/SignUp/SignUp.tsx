@@ -1,15 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { WebPage, Content } from '../WebPage';
 import { Button } from '../../utils/style';
 import { Link, Redirect } from 'react-router-dom';
-import {
-  signUp,
-  SignUpForm,
-  getCurrentUser,
-  useUser,
-} from '../../utils/server';
+import { signUp, SignUpForm, getCurrentUser, useUser } from '../../utils/api';
 
 export function SignUp() {
   const { currentUser } = useUser();
@@ -25,10 +19,8 @@ export function SignUp() {
   }
 
   return (
-    <WebPage>
-      <Content>
-        <form onSubmit={handleSubmit}>
-          {/* <input
+    <form onSubmit={handleSubmit}>
+      {/* <input
             type="text"
             value={form.displayName}
             onChange={e => {
@@ -36,33 +28,31 @@ export function SignUp() {
               setForm(f => ({ ...f, displayName }));
             }}
           /> */}
-          <label>
-            Email
-            <input
-              type="email"
-              value={form.email}
-              onChange={e => {
-                const email = e.currentTarget.value;
-                setForm(f => ({ ...f, email }));
-              }}
-            />
-          </label>
-          <label>
-            Password
-            <input
-              type="password"
-              value={form.password}
-              onChange={e => {
-                const password = e.currentTarget.value;
-                setForm(f => ({ ...f, password }));
-              }}
-            />
-          </label>
-          <Button design="primary" type="button" onClick={handleSubmit}>
-            Sign Up
-          </Button>
-        </form>
-      </Content>
-    </WebPage>
+      <label>
+        Email
+        <input
+          type="email"
+          value={form.email}
+          onChange={e => {
+            const email = e.currentTarget.value;
+            setForm(f => ({ ...f, email }));
+          }}
+        />
+      </label>
+      <label>
+        Password
+        <input
+          type="password"
+          value={form.password}
+          onChange={e => {
+            const password = e.currentTarget.value;
+            setForm(f => ({ ...f, password }));
+          }}
+        />
+      </label>
+      <Button design="primary" type="button" onClick={handleSubmit}>
+        Sign Up
+      </Button>
+    </form>
   );
 }

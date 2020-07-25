@@ -1,10 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { WebPage, Content } from '../WebPage';
 import { Button } from '../../utils/style';
 import { Link, Redirect } from 'react-router-dom';
-import { signUp, getCurrentUser, useUser } from '../../utils/server';
+import { signUp, getCurrentUser, useUser } from '../../utils/api';
 
 export function GamesMenu() {
   return (

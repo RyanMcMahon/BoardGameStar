@@ -79,6 +79,13 @@ export function useGameClient(gameId: string, hostId: string) {
         break;
       }
 
+      case 'player_join': {
+        const { board: b, pieces: p } = data;
+        setPieces(p);
+        setBoard(b);
+        break;
+      }
+
       case 'join': {
         const { assets: a, game: g, hand, board: b, pieces: p, chat: c } = data;
         setGame(g);

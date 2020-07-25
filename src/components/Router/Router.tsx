@@ -20,6 +20,7 @@ import { Store } from '../Store';
 import { MyAccount } from '../MyAccount';
 import { UserProfile } from '../UserProfile';
 import { GameProfile } from '../GamePage';
+import { WebPage, Content } from '../WebPage';
 
 interface Props {
   children: React.ReactNode;
@@ -46,6 +47,8 @@ export function Router() {
       id: '',
       store: isWebBuild ? 'browser' : 'file',
       name: '',
+      tags: [],
+      summary: '',
       description: '',
       curScenario: '',
       scenarios: {},
@@ -77,38 +80,53 @@ export function Router() {
   return (
     <AppRouter>
       <Switch>
-        <Route path="/sign-up">
-          <SignUp />
-        </Route>
-        <Route path="/log-in">
-          <LogIn />
-        </Route>
-        <Route path="/my-account">
-          <MyAccount />
-        </Route>
-        <Route path="/users/:userId">
-          <UserProfile />
-        </Route>
         <Route path="/play/:hostId/:gameId">
           <App />
         </Route>
-        <Route exact path="/games">
+
+        <Route path="/editor">
           {state.curScenario ? (
             <Editor dispatch={dispatch} state={state} />
           ) : (
-            <Games dispatch={dispatch} />
+            <Redirect to="/games" />
           )}
         </Route>
-        <Route path="/games/store">
-          <Store />
-        </Route>
-        <Route path="/games/:gameId">
-          <GameProfile />
-        </Route>
+
         <Route path="/">
-          {isWebBuild ? <Home /> : <Redirect to="games" />}
+          <WebPage>
+            <Switch>
+              <Route path="/sign-up">
+                <SignUp />
+              </Route>
+              <Route path="/log-in">
+                <LogIn />
+              </Route>
+              <Route path="/my-account">
+                <MyAccount />
+              </Route>
+              <Route path="/users/:userId">
+                <UserProfile />
+              </Route>
+              <Route path="/games/:gameId">
+                <GameProfile />
+              </Route>
+
+              <Route exact path="/games">
+                {state.curScenario ? (
+                  <Redirect to="/editor" />
+                ) : (
+                  <Games dispatch={dispatch} />
+                )}
+              </Route>
+
+              <Route exact path="/">
+                <Store />
+              </Route>
+            </Switch>
+          </WebPage>
         </Route>
       </Switch>
+
       {showUpdateModal && (
         <UpdateModal
           onClose={() => setShowUpdateModal(false)}

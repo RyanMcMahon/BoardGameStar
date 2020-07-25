@@ -1,12 +1,12 @@
 import _ from 'lodash';
 import React from 'react';
-import ReactMarkdown from 'react-markdown';
 
 import { Game } from '../../types';
 import { deleteGame } from '../../utils/store';
 import { Button } from '../../utils/style';
 import styled from 'styled-components';
 import { PublishModal } from '../PublishModal';
+import { DropdownButton } from '../DropdownButton';
 
 interface Props {
   name: string;
@@ -15,6 +15,12 @@ interface Props {
   onEditGame: (config: Game) => void;
   onReloadConfigs: () => void;
 }
+
+const GameImage = styled.img({
+  width: '100%',
+  height: '200px',
+  objectFit: 'cover',
+});
 
 const GameHeader = styled.h3({
   margin: '2rem 0 .5rem',
@@ -52,9 +58,12 @@ export function GameSelector(props: Props) {
   };
 
   return (
-    <>
+    <div>
+      <GameImage
+        src={game.thumbnail ? game.thumbnail : 'board_game_star.png'}
+      />
       <GameHeader>{name}</GameHeader>
-      <ReactMarkdown source={game.description} />
+      {game.summary}
       {_.size(game.config.scenarios) > 1 && (
         <Select defaultValue={game.config.curScenario} ref={scenarioRef}>
           {Object.values(game.config.scenarios).map(scenario => (
@@ -64,9 +73,32 @@ export function GameSelector(props: Props) {
           ))}
         </Select>
       )}
-      <Button design="primary" onClick={handleGameSelect}>
-        Play
-      </Button>
+
+      <DropdownButton
+        items={[
+          {
+            label: 'Edit',
+            fn: () => props.onEditGame(game),
+          },
+          {
+            label: 'Publish',
+            fn: () => setShowPublishModal(true),
+          },
+          {
+            label: 'Delete',
+            fn: () => {
+              deleteGame(game.id);
+              onReloadConfigs();
+            },
+          },
+        ]}
+        disabled={false}
+      >
+        <Button design="primary" onClick={handleGameSelect}>
+          Play
+        </Button>
+      </DropdownButton>
+      {/* 
       <Button design="success" onClick={() => setShowPublishModal(true)}>
         Publish
       </Button>
@@ -91,7 +123,7 @@ export function GameSelector(props: Props) {
         >
           Delete
         </GameButton>
-      )}
+      )} */}
 
       {showPublishModal && (
         <PublishModal
@@ -99,6 +131,6 @@ export function GameSelector(props: Props) {
           config={game}
         />
       )}
-    </>
+    </div>
   );
 }
