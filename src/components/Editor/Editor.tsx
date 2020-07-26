@@ -202,6 +202,7 @@ export function Editor(props: Props) {
     singleSelection: true,
     config: tableConfig,
     onDblClickDeck: (id: string) => setDeckModalId(id),
+    handleDragEnd: () => {},
     handleUpdatePiece: p =>
       dispatch({
         type: 'update_piece',

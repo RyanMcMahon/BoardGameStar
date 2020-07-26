@@ -14,6 +14,11 @@ import {
   DeckPiece,
   ChatEvent,
   Piece,
+  StackPiece,
+  StackablePieceOption,
+  CircleTokenPiece,
+  ImageTokenPiece,
+  RectTokenPiece,
 } from '../types';
 
 import { getHostId, getGameId, getInstanceId } from './identity';
@@ -568,9 +573,52 @@ export function createNewGame(
                 const { ids } = data;
                 ids.forEach(id => {
                   const piece = pieces[id];
-                  const relatedPieces = Object.values(pieces).filter(
-                    p => p.parentId === piece.parentId
-                  );
+                  const bottom = gameState.board
+                    .map(id => pieces[id])
+                    .find(
+                      p =>
+                        p.stack === piece.stack &&
+                        p.id !== id &&
+                        Math.hypot(p.x - piece.x, p.y - piece.y) < 20
+                    ) as CircleTokenPiece | ImageTokenPiece | RectTokenPiece;
+
+                  if (bottom) {
+                    console.log('stacking');
+                    console.log('top', piece);
+                    console.log('bottom', bottom);
+                    const stack: StackPiece = {
+                      ...bottom,
+                      id: slug.nice(),
+                      type: 'stack',
+                      pieces: [
+                        ...(bottom.pieces || [bottom.id]),
+                        ...(piece.pieces || [piece.id]),
+                      ],
+                      counts: null,
+                      delta: 0,
+                    };
+                    console.log('stack', stack);
+                    pieces[stack.id] = stack;
+                    gameState.board = gameState.board.filter(
+                      i => ![id, bottom.id].includes(i)
+                    );
+                    gameState.board.push(stack.id);
+                    console.log('gamestate board', gameState.board);
+                    sendToRoom({
+                      ids: [id, bottom.id],
+                      event: 'remove_from_board',
+                    });
+                    sendToRoom({
+                      event: 'update_piece',
+                      pieces: {
+                        [stack.id]: stack,
+                      },
+                    });
+                    sendToRoom({
+                      pieces: [stack.id],
+                      event: 'add_to_board',
+                    });
+                  }
                   // TODO check distance on related pieces (use same sort as frontend)
                   // If within distance, create stack out of related pieces
                 });

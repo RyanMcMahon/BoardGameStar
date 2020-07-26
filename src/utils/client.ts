@@ -19,6 +19,7 @@ interface ClientPeerDataConnection extends Peer.DataConnection {
 }
 
 export function useGameClient(gameId: string, hostId: string) {
+  const [, setRenderCount] = React.useState<number>(1);
   const [failedConnection, setFailedConnection] = React.useState(false);
   const [checkTimeout, setCheckTimeout] = React.useState(false);
   const [playerId, setPlayerId] = React.useState<string>('');
@@ -201,6 +202,7 @@ export function useGameClient(gameId: string, hostId: string) {
         break;
       }
     }
+    setRenderCount(c => c + 1);
   }, []);
 
   React.useEffect(() => {

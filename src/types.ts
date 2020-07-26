@@ -35,6 +35,7 @@ export interface RectPieceOption extends PieceOption {
 
 export interface StackablePieceOption {
   stack?: string;
+  pieces?: string[];
 }
 
 export interface ImagePieceOption extends RectPieceOption {
@@ -243,10 +244,11 @@ export type CircleTokenPiece = CircleTokenOption & Piece;
 export type ImageTokenPiece = ImageTokenOption & Piece;
 export type RectTokenPiece = RectTokenOption & Piece;
 
-export interface StackPiece extends Piece, ImagePieceOption {
+export interface StackPiece extends Piece {
   type: 'stack';
-  image: 'string';
   pieces: string[];
+  x: number;
+  y: number;
 }
 
 export interface DicePiece extends Piece {

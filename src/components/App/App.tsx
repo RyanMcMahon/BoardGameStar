@@ -165,6 +165,10 @@ const tableConfig = {
   player: {
     draggable: true,
   },
+  stack: {
+    selectable: true,
+    draggable: true,
+  },
 };
 
 export const App: React.FC = () => {
@@ -269,7 +273,17 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleDragEnd = (id: string) => {
+    if (conn) {
+      conn.send({
+        event: 'stop_drag',
+        ids: [id],
+      });
+    }
+  };
+
   const table = useTable({
+    handleDragEnd,
     handleUpdatePiece,
     assets,
     // handCounts,
@@ -473,12 +487,23 @@ export const App: React.FC = () => {
     setTablePieces(
       board
         .map(id => {
-          if (pieces[id].type === 'player') {
+          const piece = pieces[id];
+          if (piece.type === 'player' && piece.playerId) {
             return {
-              ...pieces[id],
-              name: `${pieces[id].name} (${
-                handCounts[pieces[id].playerId]
+              ...piece,
+              name: `${piece.name} (${
+                handCounts[piece.playerId]
               } cards in hand)`,
+            };
+          } else if (piece.type === 'stack') {
+            return {
+              ...pieces[piece.pieces.slice(-1)[0]],
+              id: piece.id,
+              x: piece.x,
+              y: piece.y,
+              pieces: piece.pieces,
+              delta: piece.delta,
+              counts: piece.counts,
             };
           } else {
             return pieces[id];

@@ -15,7 +15,7 @@ import { Transformer } from './Transformer';
 
 export type RenderItemPiece = RenderPiece & { height: number; width: number };
 
-interface ImagePieceOptions {
+interface RenderItemOptions {
   piece: RenderItemPiece;
   texture: Texture;
   uniformScaling?: boolean;
@@ -23,11 +23,12 @@ interface ImagePieceOptions {
   rotatable?: boolean;
   resizable?: boolean;
   onSync: (el: RenderItem, curPiece: RenderPiece) => void;
-  restrictTransform?: (dimensions: {
-    curPiece: RenderPiece;
-    width: number;
-    height: number;
-  }) => { width: number; height: number };
+  onDragEnd?: () => void;
+  // restrictTransform?: (dimensions: {
+  //   curPiece: RenderPiece;
+  //   width: number;
+  //   height: number;
+  // }) => { width: number; height: number };
 }
 
 export class RenderItem extends Container {
@@ -59,6 +60,7 @@ export class RenderItem extends Container {
   tempDragDisabled?: boolean;
   sendUpdateThrottled: () => void;
   onSync: (curPiece: RenderPiece) => void;
+  onDragEnd?: () => void;
 
   constructor({
     piece,
@@ -68,8 +70,8 @@ export class RenderItem extends Container {
     rotatable,
     resizable,
     onSync,
-    restrictTransform,
-  }: ImagePieceOptions) {
+    onDragEnd,
+  }: RenderItemOptions) {
     super();
     this.id = piece.id;
     this.cursor = 'grab';
@@ -83,6 +85,7 @@ export class RenderItem extends Container {
     this.transforming = false;
     this.outline = new Graphics();
     this.onSync = (curPiece: RenderPiece) => onSync(this, curPiece);
+    this.onDragEnd = onDragEnd;
     this.sendUpdateThrottled = _.throttle(this.sendUpdate, 50, {
       leading: false,
       trailing: true,
@@ -205,6 +208,10 @@ export class RenderItem extends Container {
   }
 
   handleMouseUp() {
+    if (this.dragging && this.onDragEnd) {
+      this.onDragEnd();
+    }
+
     this.dragging = false;
     this.data = null;
     this.cursor = 'grab';
@@ -271,28 +278,31 @@ export class RenderItem extends Container {
     this.removeChild(this.outline);
   }
 
-  setStack(count: number) {
+  setStack(count?: number) {
     this.clearStack();
+    count = count || this.piece.pieces?.length;
 
-    const stackContainer = new Container();
-    const circle = new Graphics();
-    circle.beginFill(utils.string2hex('#000'));
-    circle.lineStyle(0);
-    circle.drawCircle(-5, -5, 15);
-    circle.endFill();
-    const stackCount = new Text(`${count}`, {
-      fontSize: '16px',
-      fill: 'white',
-      align: 'center',
-    });
-    stackCount.x = -5;
-    stackCount.y = -5;
-    stackCount.anchor.set(0.5);
+    if (count) {
+      const stackContainer = new Container();
+      const circle = new Graphics();
+      circle.beginFill(utils.string2hex('#000'));
+      circle.lineStyle(0);
+      circle.drawCircle(-5, -5, 15);
+      circle.endFill();
+      const stackCount = new Text(`${count}`, {
+        fontSize: '16px',
+        fill: 'white',
+        align: 'center',
+      });
+      stackCount.x = -5;
+      stackCount.y = -5;
+      stackCount.anchor.set(0.5);
 
-    stackContainer.addChild(circle);
-    stackContainer.addChild(stackCount);
-    this.stackContainer = stackContainer;
-    this.addChild(this.stackContainer);
+      stackContainer.addChild(circle);
+      stackContainer.addChild(stackCount);
+      this.stackContainer = stackContainer;
+      this.addChild(this.stackContainer);
+    }
   }
 
   clearStack() {
@@ -333,6 +343,7 @@ export class RenderItem extends Container {
     this.zIndex = piece.layer;
     this.setPosition(piece);
     this.setDimensions(piece);
+    this.setStack();
     this.onSync(piece);
   }
 
