@@ -55,8 +55,11 @@ export class RenderItem extends Container {
   transformer: Transformer;
   arrow: Graphics;
   outline: Graphics;
+  stackMenu?: Container;
   stackContainer?: Container;
   locked?: boolean;
+  isSelected?: boolean;
+  hasFocus?: boolean;
   tempDragDisabled?: boolean;
   sendUpdateThrottled: () => void;
   onSync: (curPiece: RenderPiece) => void;
@@ -267,15 +270,75 @@ export class RenderItem extends Container {
     }
   }
 
+  checkForStackMenu() {
+    if (!this.piece.pieces || (this.piece.pieces.length || 0) < 2) {
+      return;
+    }
+
+    if (this.hasFocus || this.isSelected) {
+      if (this.stackMenu) {
+        this.stackMenu.destroy();
+      }
+
+      const stackCount = this.piece.pieces.length;
+      const menu = new Container();
+      for (let i = 0; i < stackCount; i++) {
+        const stackItem = new Graphics();
+        stackItem.beginFill(0x000000);
+        stackItem.drawRoundedRect(50, i * 20, 30, 18, 4);
+        stackItem.alpha = i === 0 ? 0.8 : 0.4;
+        stackItem.endFill();
+        stackItem.interactive = true;
+
+        if (i !== stackCount - 1) {
+          stackItem.on('mouseover', () => {
+            menu.children.forEach((child, index) => {
+              if (index <= i) {
+                child.alpha = 0.8;
+              }
+            });
+            console.log('hover split stack', stackCount - i - 1);
+          });
+          stackItem.on('mouseout', () => {
+            menu.children.forEach((child, index) => {
+              if (index > 0 && index <= i) {
+                child.alpha = 0.4;
+              }
+            });
+            // stackItem.alpha = 0.4;
+            // console.log('hover split stack', stackCount - i);
+          });
+          stackItem.on('mouseup', () => {
+            console.log('split stack', stackCount - i);
+          });
+        }
+        menu.addChild(stackItem);
+      }
+      // menu.on('mousemove', () => {
+      //   console.log('split stack');
+      //   this.nonSelectClick = true;
+      // });
+
+      this.addChild(menu);
+      this.stackMenu = menu;
+    } else if (this.stackMenu) {
+      this.stackMenu.destroy();
+    }
+  }
+
   select() {
+    this.isSelected = true;
     this.addChild(this.transformer);
     this.addChild(this.outline);
     this.updateOutline();
+    this.checkForStackMenu();
   }
 
   deselect() {
+    this.isSelected = false;
     this.removeChild(this.transformer);
     this.removeChild(this.outline);
+    this.checkForStackMenu();
   }
 
   setStack(count?: number) {
