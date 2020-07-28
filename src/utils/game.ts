@@ -568,59 +568,40 @@ export function createNewGame(
               }
               break;
 
-            case 'stop_drag': {
+            case 'create_stack': {
               try {
                 const { ids } = data;
-                ids.forEach(id => {
-                  const piece = pieces[id];
-                  const bottom = gameState.board
-                    .map(id => pieces[id])
-                    .find(
-                      p =>
-                        p.stack === piece.stack &&
-                        p.id !== id &&
-                        Math.hypot(p.x - piece.x, p.y - piece.y) < 20
-                    ) as CircleTokenPiece | ImageTokenPiece | RectTokenPiece;
-
-                  if (bottom) {
-                    console.log('stacking');
-                    console.log('top', piece);
-                    console.log('bottom', bottom);
-                    const stack: StackPiece = {
-                      ...bottom,
-                      id: slug.nice(),
-                      type: 'stack',
-                      pieces: [
-                        ...(bottom.pieces || [bottom.id]),
-                        ...(piece.pieces || [piece.id]),
-                      ],
-                      counts: null,
-                      delta: 0,
-                    };
-                    console.log('stack', stack);
-                    pieces[stack.id] = stack;
-                    gameState.board = gameState.board.filter(
-                      i => ![id, bottom.id].includes(i)
-                    );
-                    gameState.board.push(stack.id);
-                    console.log('gamestate board', gameState.board);
-                    sendToRoom({
-                      ids: [id, bottom.id],
-                      event: 'remove_from_board',
-                    });
-                    sendToRoom({
-                      event: 'update_piece',
-                      pieces: {
-                        [stack.id]: stack,
-                      },
-                    });
-                    sendToRoom({
-                      pieces: [stack.id],
-                      event: 'add_to_board',
-                    });
-                  }
-                  // TODO check distance on related pieces (use same sort as frontend)
-                  // If within distance, create stack out of related pieces
+                const top = pieces[ids.slice(-1)[0]];
+                const bottom = pieces[ids[0]];
+                const stack: StackPiece = {
+                  ...top,
+                  x: bottom.x,
+                  y: bottom.y,
+                  id: slug.nice(),
+                  type: 'stack',
+                  pieces: [
+                    ...(bottom.pieces || [bottom.id]),
+                    ...(top.pieces || [top.id]),
+                  ],
+                  counts: null,
+                  delta: 0,
+                };
+                pieces[stack.id] = stack;
+                gameState.board = gameState.board.filter(i => !ids.includes(i));
+                gameState.board.push(stack.id);
+                sendToRoom({
+                  ids,
+                  event: 'remove_from_board',
+                });
+                sendToRoom({
+                  event: 'update_piece',
+                  pieces: {
+                    [stack.id]: stack,
+                  },
+                });
+                sendToRoom({
+                  pieces: [stack.id],
+                  event: 'add_to_board',
                 });
               } catch (err) {
                 console.log(err);
@@ -633,23 +614,70 @@ export function createNewGame(
                 const { id, count } = data;
                 const stack = pieces[id];
                 const bottom = stack.pieces.slice(0, count - 1);
-                const top = stack.pieces.slice(count);
+                const top = stack.pieces.slice(count - 1);
+
+                const piecesToRemove: string[] = [];
+                const piecesToAdd: string[] = [];
+                const updatedPieces: Pieces = {};
 
                 if (!top.length) {
                   return;
                 }
 
                 if (bottom.length === 1) {
-                  // replace with piece
+                  const [bottomId] = bottom;
+                  const bottomPiece = pieces[bottomId];
+                  piecesToRemove.push(stack.id);
+                  piecesToAdd.push(bottomId);
+
+                  bottomPiece.x = stack.x;
+                  bottomPiece.y = stack.y;
+                  bottomPiece.delta++;
+                  updatedPieces[bottomId] = bottomPiece;
+                  // TODO delete stack
                 } else {
-                  // update original stack
+                  stack.pieces = bottom;
+                  updatedPieces[stack.id] = stack;
                 }
 
                 if (top.length === 1) {
-                  // replace with piece
+                  const [topId] = top;
+                  const topPiece = pieces[topId];
+                  piecesToAdd.push(topId);
+
+                  // TODO get width
+                  topPiece.x = stack.x + 50;
+                  topPiece.y = stack.y + 50;
+                  topPiece.delta++;
+                  updatedPieces[topId] = topPiece;
                 } else {
-                  // create new stack
+                  const topStack: StackPiece = {
+                    ...pieces[top[0]],
+                    id: slug.nice(),
+                    type: 'stack',
+                    pieces: top,
+                    counts: null,
+                    delta: 0,
+                    x: stack.x + 50,
+                    y: stack.y + 50,
+                  };
+                  pieces[topStack.id] = topStack;
+                  updatedPieces[topStack.id] = topStack;
+                  piecesToAdd.push(topStack.id);
                 }
+
+                sendToRoom({
+                  event: 'update_piece',
+                  pieces: updatedPieces,
+                });
+                sendToRoom({
+                  event: 'remove_from_board',
+                  ids: piecesToRemove,
+                });
+                sendToRoom({
+                  event: 'add_to_board',
+                  pieces: piecesToAdd,
+                });
               } catch (err) {
                 console.log(err);
               }

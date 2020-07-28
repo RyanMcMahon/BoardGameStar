@@ -273,17 +273,28 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleDragEnd = (id: string) => {
+  const handleCreateStack = (ids: string[]) => {
     if (conn) {
       conn.send({
-        event: 'stop_drag',
-        ids: [id],
+        ids,
+        event: 'create_stack',
+      });
+    }
+  };
+
+  const handleSplitStack = (id: string, count: number) => {
+    if (conn) {
+      conn.send({
+        id,
+        count,
+        event: 'split_stack',
       });
     }
   };
 
   const table = useTable({
-    handleDragEnd,
+    handleCreateStack,
+    handleSplitStack,
     handleUpdatePiece,
     assets,
     // handCounts,

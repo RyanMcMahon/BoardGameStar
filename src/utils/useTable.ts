@@ -36,7 +36,8 @@ interface PieceConfig {
 
 interface TableOptions {
   singleSelection?: boolean;
-  handleDragEnd: (id: string) => void;
+  handleCreateStack: (ids: string[]) => void;
+  handleSplitStack: (id: string, count: number) => void;
   handleUpdatePiece: (
     piece: Partial<RenderPiece> & { id: string },
     throttled: boolean
@@ -317,7 +318,8 @@ function getRenderItem(
     piecesById,
     assets,
     config,
-    handleDragEnd,
+    handleCreateStack,
+    handleSplitStack,
     onDblClickCard,
     onDblClickDeck,
   }: TableOptions & {
@@ -428,8 +430,21 @@ function getRenderItem(
         ...pieceConfig,
         piece,
         texture: Texture.from(image),
+        onSplitStack: (count: number) => handleSplitStack(piece.id, count),
+        onDragEnd: () => {
+          const curPiece = piecesRef.current.find(p => p.id === piece.id);
+          if (!curPiece) {
+            return;
+          }
+          const bottom = findStackBottom(piecesRef, curPiece);
+          if (bottom) {
+            handleCreateStack([bottom.id, curPiece.id]);
+          }
+        },
         onSync: (el, curPiece) => {
           el.setDimensions(curPiece as ImageTokenPiece);
+
+          showStackPrompt(piecesRef, container, el, curPiece);
         },
       });
       child.scale.copyFrom(container.scale);
@@ -454,7 +469,26 @@ function getRenderItem(
       const circle = new Graphics();
       const child = new RenderItem({
         ...pieceConfig,
-        onDragEnd: () => handleDragEnd(piece.id),
+        onDragEnd: () => {
+          const curPiece = piecesRef.current.find(p => p.id === piece.id);
+          if (!curPiece) {
+            return;
+          }
+          const bottom = findStackBottom(piecesRef, curPiece);
+          // piecesRef.current.find(
+          //   p =>
+          //     p.stack === curPiece.stack &&
+          //     p.id !== curPiece.id &&
+          //     Math.hypot(p.x - curPiece.x, p.y - curPiece.y) < 20
+          // );
+          if (bottom) {
+            handleCreateStack([bottom.id, curPiece.id]);
+            //   ...(bottom.pieces || [bottom.id]),
+            //   ...(curPiece.pieces || [curPiece.id]),
+            // ]);
+          }
+        },
+        onSplitStack: (count: number) => handleSplitStack(piece.id, count),
         piece: {
           ...piece,
           width: piece.radius * 2,
@@ -474,39 +508,40 @@ function getRenderItem(
             width: curPiece.radius * 2,
           });
 
-          if (curPiece.stack && el.dragging) {
-            const stackPieces = piecesRef.current.filter(
-              p => p.stack === curPiece.stack && p.id !== curPiece.id
-            ); // TODO use deterministic sort
-            const stackIds = stackPieces.map(p => p.id);
-            const stackRenderItems = (container.children as RenderItem[]).filter(
-              x => stackIds.includes(x.id)
-            );
-            const stack = stackPieces.find(
-              p => Math.hypot(p.x - curPiece.x, p.y - curPiece.y) < 20
-            );
-            const nonStackables = stackRenderItems.filter(
-              x => !stack || x.id !== stack.id
-            ) as RenderItem[];
-            nonStackables.forEach(x => (x.alpha = 1)); // TOOD stackPieces.find(p => p.id === x.id).opacity));
+          showStackPrompt(piecesRef, container, el, curPiece);
+          // if (curPiece.stack && el.dragging) {
+          //   const stackPieces = piecesRef.current.filter(
+          //     p => p.stack === curPiece.stack && p.id !== curPiece.id
+          //   ); // TODO use deterministic sort
+          //   const stackIds = stackPieces.map(p => p.id);
+          //   const stackRenderItems = (container.children as RenderItem[]).filter(
+          //     x => stackIds.includes(x.id)
+          //   );
+          //   const stack = stackPieces.find(
+          //     p => Math.hypot(p.x - curPiece.x, p.y - curPiece.y) < 20
+          //   );
+          //   const nonStackables = stackRenderItems.filter(
+          //     x => !stack || x.id !== stack.id
+          //   ) as RenderItem[];
+          //   nonStackables.forEach(x => (x.alpha = 1)); // TOOD stackPieces.find(p => p.id === x.id).opacity));
 
-            if (stack) {
-              const stackRender = container.children.find(
-                x => (x as RenderItem).id === stack.id
-              ) as RenderItem;
-              if (!stackRender) {
-                return;
-              }
+          //   if (stack) {
+          //     const stackRender = container.children.find(
+          //       x => (x as RenderItem).id === stack.id
+          //     ) as RenderItem;
+          //     if (!stackRender) {
+          //       return;
+          //     }
 
-              // TODO brightness?
-              stackRender.alpha = 0.5; // TODO use piece opacity
-              el.setStack((stack.pieces || [1]).length + 1);
-            } else {
-              el.setStack();
-            }
-          } else {
-            el.setStack();
-          }
+          //     // TODO brightness?
+          //     stackRender.alpha = 0.5; // TODO use piece opacity
+          //     el.setStack((stack.pieces || [1]).length + 1);
+          //   } else {
+          //     el.setStack();
+          //   }
+          // } else {
+          //   el.setStack();
+          // }
         },
       });
       // const id = new Text(`${piece.id.slice(0, 5)}`, {
@@ -583,4 +618,58 @@ function getRenderItem(
     default:
       return;
   }
+}
+
+function showStackPrompt(
+  piecesRef: React.MutableRefObject<RenderPiece[]>,
+  container: Container,
+  el: RenderItem,
+  curPiece: RenderPiece
+) {
+  if (curPiece.stack && el.dragging) {
+    const stackPieces = piecesRef.current.filter(
+      p => p.stack === curPiece.stack && p.id !== curPiece.id
+    );
+    const stackIds = stackPieces.map(p => p.id);
+    const stackRenderItems = (container.children as RenderItem[]).filter(x =>
+      stackIds.includes(x.id)
+    );
+    // const stack = stackPieces.find(
+    //   p => Math.hypot(p.x - curPiece.x, p.y - curPiece.y) < 20
+    // );
+    const stack = findStackBottom(piecesRef, curPiece);
+    const nonStackables = stackRenderItems.filter(
+      x => !stack || x.id !== stack.id
+    ) as RenderItem[];
+    nonStackables.forEach(x => (x.alpha = 1)); // TOOD stackPieces.find(p => p.id === x.id).opacity));
+
+    if (stack) {
+      const stackRender = container.children.find(
+        x => (x as RenderItem).id === stack.id
+      ) as RenderItem;
+      if (!stackRender) {
+        return;
+      }
+
+      // TODO brightness?
+      stackRender.alpha = 0.5; // TODO use piece opacity
+      el.setStack((stack.pieces || [1]).length + 1);
+    } else {
+      el.setStack();
+    }
+  } else {
+    el.setStack();
+  }
+}
+
+function findStackBottom(
+  piecesRef: React.MutableRefObject<RenderPiece[]>,
+  curPiece: RenderPiece
+) {
+  return piecesRef.current.find(
+    p =>
+      p.stack === curPiece.stack &&
+      p.id !== curPiece.id &&
+      Math.hypot(p.x - curPiece.x, p.y - curPiece.y) < 20
+  );
 }

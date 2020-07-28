@@ -24,6 +24,7 @@ interface RenderItemOptions {
   resizable?: boolean;
   onSync: (el: RenderItem, curPiece: RenderPiece) => void;
   onDragEnd?: () => void;
+  onSplitStack?: (count: number) => void;
   // restrictTransform?: (dimensions: {
   //   curPiece: RenderPiece;
   //   width: number;
@@ -64,6 +65,7 @@ export class RenderItem extends Container {
   sendUpdateThrottled: () => void;
   onSync: (curPiece: RenderPiece) => void;
   onDragEnd?: () => void;
+  onSplitStack?: (count: number) => void;
 
   constructor({
     piece,
@@ -74,6 +76,7 @@ export class RenderItem extends Container {
     resizable,
     onSync,
     onDragEnd,
+    onSplitStack,
   }: RenderItemOptions) {
     super();
     this.id = piece.id;
@@ -89,6 +92,7 @@ export class RenderItem extends Container {
     this.outline = new Graphics();
     this.onSync = (curPiece: RenderPiece) => onSync(this, curPiece);
     this.onDragEnd = onDragEnd;
+    this.onSplitStack = onSplitStack;
     this.sendUpdateThrottled = _.throttle(this.sendUpdate, 50, {
       leading: false,
       trailing: true,
@@ -271,7 +275,11 @@ export class RenderItem extends Container {
   }
 
   checkForStackMenu() {
-    if (!this.piece.pieces || (this.piece.pieces.length || 0) < 2) {
+    if (
+      !this.onSplitStack ||
+      !this.piece.pieces ||
+      (this.piece.pieces.length || 0) < 2
+    ) {
       return;
     }
 
@@ -286,7 +294,7 @@ export class RenderItem extends Container {
         const stackItem = new Graphics();
         stackItem.beginFill(0x000000);
         stackItem.drawRoundedRect(50, i * 20, 30, 18, 4);
-        stackItem.alpha = i === 0 ? 0.8 : 0.4;
+        stackItem.alpha = 0.4;
         stackItem.endFill();
         stackItem.interactive = true;
 
@@ -301,7 +309,7 @@ export class RenderItem extends Container {
           });
           stackItem.on('mouseout', () => {
             menu.children.forEach((child, index) => {
-              if (index > 0 && index <= i) {
+              if (index <= i) {
                 child.alpha = 0.4;
               }
             });
@@ -309,6 +317,7 @@ export class RenderItem extends Container {
             // console.log('hover split stack', stackCount - i);
           });
           stackItem.on('mouseup', () => {
+            this.onSplitStack!(stackCount - i);
             console.log('split stack', stackCount - i);
           });
         }

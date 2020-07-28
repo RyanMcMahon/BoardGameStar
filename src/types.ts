@@ -340,8 +340,8 @@ export interface UpdatePieceEvent {
   };
 }
 
-export interface StopDragEvent {
-  event: 'stop_drag';
+export interface CreateStackEvent {
+  event: 'create_stack';
   ids: string[];
 }
 
@@ -507,7 +507,7 @@ export type ClientEvent =
   | DiscardPlayedEvent
   | RequestAssetEvent
   | RevealPieceEvent
-  | StopDragEvent
+  | CreateStackEvent
   | SplitStackEvent
   | UpdatePieceEvent;
 
