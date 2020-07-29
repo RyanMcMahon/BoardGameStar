@@ -309,8 +309,8 @@ export interface JoinEvent {
   event: 'join';
   game: Game;
   hand: string[];
-  board: string[];
-  pieces: Pieces;
+  // board: string[];
+  // pieces: Pieces;
   chat: ChatEvent[];
   assets:
     | string[]
@@ -489,6 +489,15 @@ export interface ChatEvent {
   message: string;
 }
 
+export interface LocalPieceUpdate {
+  event: 'local_piece_update';
+  pieces: Pieces;
+}
+
+export interface LoadComplete {
+  event: 'load_complete';
+}
+
 export type ClientEvent =
   | ChatEvent
   | RollDiceEvent
@@ -512,6 +521,8 @@ export type ClientEvent =
   | UpdatePieceEvent;
 
 export type GameEvent =
+  | LocalPieceUpdate
+  | LoadComplete
   | ChatEvent
   | AddToBoardEvent
   | DiceCountEvent

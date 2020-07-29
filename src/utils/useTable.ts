@@ -200,6 +200,12 @@ export const useTable = (options: TableOptions) => {
       }
 
       renderedPieces.add(renderItem.id);
+
+      // TODO select
+      // if (renderItem.piece.delta === curPiece.delta) {
+      //   return;
+      // }
+
       renderItem.locked = curPiece.locked;
 
       if (!renderItem.transforming && !renderItem.dragging) {

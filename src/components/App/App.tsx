@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import * as _ from 'lodash';
-// import FPSStats from 'react-fps-stats';
+import FPSStats from 'react-fps-stats';
 import { Viewport } from 'pixi-viewport';
 import { useParams, Link, Redirect } from 'react-router-dom';
 
@@ -186,7 +186,7 @@ export const App: React.FC = () => {
     assets,
     percentLoaded,
     handCounts,
-    setPieces,
+    updatePieces,
     failedConnection,
     // TODO
     // myDice,
@@ -236,10 +236,7 @@ export const App: React.FC = () => {
       });
     }
 
-    setPieces(p => ({
-      ...p,
-      ...updatedPiecesById,
-    }));
+    updatePieces(updatedPiecesById);
 
     sendUpdatedPieces(updatedPiecesById);
   };
@@ -498,26 +495,31 @@ export const App: React.FC = () => {
     setTablePieces(
       board
         .map(id => {
-          const piece = pieces[id];
-          if (piece.type === 'player' && piece.playerId) {
-            return {
-              ...piece,
-              name: `${piece.name} (${
-                handCounts[piece.playerId]
-              } cards in hand)`,
-            };
-          } else if (piece.type === 'stack') {
-            return {
-              ...pieces[piece.pieces.slice(-1)[0]],
-              id: piece.id,
-              x: piece.x,
-              y: piece.y,
-              pieces: piece.pieces,
-              delta: piece.delta,
-              counts: piece.counts,
-            };
-          } else {
-            return pieces[id];
+          try {
+            const piece = pieces[id];
+            if (piece.type === 'player' && piece.playerId) {
+              return {
+                ...piece,
+                name: `${piece.name} (${
+                  handCounts[piece.playerId]
+                } cards in hand)`,
+              };
+            } else if (piece.type === 'stack') {
+              return {
+                ...pieces[piece.pieces.slice(-1)[0]],
+                id: piece.id,
+                x: piece.x,
+                y: piece.y,
+                pieces: piece.pieces,
+                delta: piece.delta,
+                counts: piece.counts,
+              };
+            } else {
+              return pieces[id];
+            }
+          } catch (err) {
+            debugger;
+            return {} as any;
           }
         })
         .filter(
@@ -656,7 +658,7 @@ export const App: React.FC = () => {
         />
       )}
 
-      {showSettingsModal && (
+      {game && showSettingsModal && (
         <SettingsModal
           playerId={playerId}
           config={game}
@@ -694,7 +696,7 @@ export const App: React.FC = () => {
           </LoadingContainer>
         </LoadingPage>
       )}
-      {/* <FPSStats /> */}
+      <FPSStats />
     </MainContainer>
   );
 };

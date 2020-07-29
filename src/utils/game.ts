@@ -89,6 +89,7 @@ export function createNewGame(
   peer.on('open', () => {
     const chat: ChatEvent[] = [];
     let hiddenPieces: Pieces = {};
+    // let pieces : Pieces = {};
     let pieces: Pieces = Object.values(game.config.pieces).reduce(
       (byId, piece) => {
         if (piece.type !== 'card') {
@@ -106,7 +107,7 @@ export function createNewGame(
       {}
     );
 
-    const decks: Decks = Object.values(pieces)
+    let decks: Decks = Object.values(pieces)
       .filter(p => p.type === 'deck')
       .reduce(
         (byId, deck) => ({
@@ -209,8 +210,15 @@ export function createNewGame(
 
     const updatePlayerCount = () => {
       const playerCount = Object.keys(players).length;
-      pieces = Object.entries(piecesForPlayerCounts).reduce(
-        (agg, [id, counts]) => {
+      for (let pieceId in pieces) {
+        if (piecesForPlayerCounts[pieceId]) {
+          delete pieces[pieceId];
+        }
+      }
+
+      pieces = {
+        ...pieces,
+        ...Object.entries(piecesForPlayerCounts).reduce((agg, [id, counts]) => {
           const piece = game.config.pieces[id];
           const offset = {
             x: ((piece as any).width || (piece as any).radius * 2) * 1.2,
@@ -231,17 +239,24 @@ export function createNewGame(
           }
 
           return ret;
-        },
-        {}
-      );
-      Object.values(game.config.pieces).forEach(piece => {
-        if (!piecesForPlayerCounts[piece.id]) {
-          pieces[piece.id] = {
-            ...piece,
-            delta: 0,
-          } as any;
-        }
-      });
+        }, {}),
+      };
+
+      // decks = Object.values(pieces)
+      //   .filter(p => p.type === 'deck')
+      //   .reduce(
+      //     (byId, deck) => ({
+      //       ...byId,
+      //       [deck.id]: {
+      //         ...deck,
+      //         count: 0,
+      //         total: 0,
+      //         cards: [],
+      //         discarded: [],
+      //       },
+      //     }),
+      //     {}
+      //   );
 
       Object.values(decks).forEach(deck => {
         deck.cards = _.shuffle(getCardsForDeck(deck.id).map(c => c.id));
@@ -280,6 +295,7 @@ export function createNewGame(
         playArea.playerId = playerId;
         playArea.delta++;
         playArea.name = player.name;
+        pieces[playArea.id] = playArea;
 
         const syncConfig = { ...game };
         delete syncConfig.loadAssets;
@@ -287,15 +303,14 @@ export function createNewGame(
 
         updatePlayerCount();
 
-        console.log(pieces);
         conn.send({
-          pieces,
+          // pieces,
           chat,
           event: 'join',
           game: syncConfig,
           assets: sendAssets ? assets : Object.keys(assets),
           hand: player.hand,
-          board: gameState.board,
+          // board: gameState.board,
           // TODO remove
           player: {
             name: player.name,
