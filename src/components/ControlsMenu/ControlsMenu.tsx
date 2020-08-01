@@ -20,7 +20,7 @@ import {
 } from 'react-icons/fa';
 
 import { maxMobileWidth, theShadow } from '../../utils/style';
-import { RenderPiece, ChatEvent } from '../../types';
+import { RenderPiece, ChatEvent, Pieces, StackPiece } from '../../types';
 
 export interface ControlsMenuItem {
   icon: ReactNode;
@@ -31,6 +31,7 @@ export interface ControlsMenuItem {
 interface Props {
   selectedPieces: RenderPiece[];
   // items: ControlsMenuItem[];
+  pieces: Pieces;
   chat: ChatEvent[];
   lastReadChat: number;
   onShowChat: () => void;
@@ -103,6 +104,7 @@ const UnreadIcon = styled(FaCommentDots)({
 
 export function ControlsMenu(props: Props) {
   const {
+    pieces,
     selectedPieces,
     chat,
     lastReadChat,
@@ -165,6 +167,58 @@ export function ControlsMenu(props: Props) {
           ]
         );
         // }
+        break;
+
+      case 'stack':
+        if (
+          (selectedPieces as StackPiece[]).every(p =>
+            p.pieces.every(c => pieces[c].back)
+          )
+        ) {
+          items.push(
+            ...[
+              {
+                icon: <FaSync />,
+                label: 'Flip Tokens',
+                fn: () =>
+                  onUpdatePieces(
+                    (selectedPieces as StackPiece[])
+                      .reduce(
+                        (arr: StackPiece[], stack: StackPiece) => [
+                          ...arr,
+                          ...stack.pieces.map(id => pieces[id] as StackPiece),
+                        ],
+                        []
+                      )
+                      .map((piece: RenderPiece) => ({
+                        ...piece,
+                        flipped: !piece.flipped,
+                      }))
+                  ),
+              },
+            ]
+          );
+        }
+        break;
+
+      case 'image':
+        if (selectedPieces.every(p => p.back)) {
+          items.push(
+            ...[
+              {
+                icon: <FaSync />,
+                label: 'Flip Token',
+                fn: () =>
+                  onUpdatePieces(
+                    selectedPieces.map(piece => ({
+                      ...piece,
+                      flipped: !piece.flipped,
+                    }))
+                  ),
+              },
+            ]
+          );
+        }
         break;
 
       case 'money':

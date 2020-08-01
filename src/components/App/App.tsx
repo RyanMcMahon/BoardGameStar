@@ -653,6 +653,7 @@ export const App: React.FC = () => {
       </AppContainer>
 
       <ControlsMenu
+        pieces={pieces}
         selectedPieces={selectedPieces}
         chat={chat}
         lastReadChat={lastReadChat}

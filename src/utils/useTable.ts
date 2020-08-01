@@ -22,6 +22,7 @@ import {
   ImageTokenPiece,
   RectTokenPiece,
   Transaction,
+  ImageTokenOption,
 } from '../types';
 import { RenderItem, RenderItemPiece } from './render-item';
 import { primaryColor } from './style';
@@ -554,10 +555,13 @@ function getRenderItem(
     }
 
     case 'image': {
+      const faceUpTexture = textures[piece.image];
+      const faceDownTexture = textures[piece.back || piece.image];
+
       const child = new RenderItem({
         ...pieceConfig,
         piece,
-        texture: textures[piece.image], //Texture.from(image),
+        texture: faceUpTexture, //Texture.from(image),
         onSplitStack: (count: number) => handleSplitStack(piece.id, count),
         onDragEnd: () => {
           const curPiece = piecesRef.current.find(p => p.id === piece.id);
@@ -571,6 +575,12 @@ function getRenderItem(
         },
         onSync: (el, curPiece) => {
           el.setDimensions(curPiece as ImageTokenPiece);
+
+          if ((curPiece as ImageTokenPiece).flipped) {
+            el.sprite.texture = faceDownTexture;
+          } else {
+            el.sprite.texture = faceUpTexture;
+          }
 
           showStackPrompt(piecesRef, container, el, curPiece);
         },

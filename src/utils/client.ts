@@ -15,6 +15,7 @@ import {
   Pieces,
 } from '../types';
 import { createPeer } from './peer';
+import { update } from 'lodash';
 
 interface ClientPeerDataConnection extends Peer.DataConnection {
   send: (event: ClientEvent) => void;

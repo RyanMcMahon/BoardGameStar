@@ -568,6 +568,31 @@ export function Editor(props: Props) {
             {!!selectedPiece && (
               <>
                 <label>Selected Piece</label>
+                {selectedPiece.type === 'image' && (
+                  <>
+                    {selectedPiece.back && (
+                      <img src={assets[selectedPiece.back]} />
+                    )}
+                    <Button
+                      design="primary"
+                      onClick={async () => {
+                        const [file] = await filePrompt({ multiple: false });
+                        const filename = file.name;
+                        const asset = file.content;
+                        setAssets(a => ({ ...a, [filename]: asset }));
+                        dispatch({
+                          type: 'update_piece',
+                          piece: {
+                            ...selectedPiece,
+                            back: filename,
+                          },
+                        });
+                      }}
+                    >
+                      Add Back
+                    </Button>
+                  </>
+                )}
                 {selectedPiece.type === 'money' && (
                   <>
                     <InlineInputContainer>
