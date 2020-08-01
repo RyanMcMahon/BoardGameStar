@@ -19,6 +19,8 @@ import {
   CircleTokenPiece,
   ImageTokenPiece,
   RectTokenPiece,
+  MoneyTokenPiece,
+  MoneyTokenOption,
 } from '../types';
 
 import { getHostId, getGameId, getInstanceId } from './identity';
@@ -210,9 +212,16 @@ export function createNewGame(
 
     const updatePlayerCount = () => {
       const playerCount = Object.keys(players).length;
+
+      console.log('piecesForPlayerCounts', Object.keys(piecesForPlayerCounts));
       for (let pieceId in pieces) {
-        if (piecesForPlayerCounts[pieceId]) {
+        const piece = pieces[pieceId];
+        if (
+          piecesForPlayerCounts[pieceId] ||
+          piecesForPlayerCounts[piece.parentId]
+        ) {
           delete pieces[pieceId];
+          console.log('delete', pieceId);
         }
       }
 
@@ -242,22 +251,6 @@ export function createNewGame(
         }, {}),
       };
 
-      // decks = Object.values(pieces)
-      //   .filter(p => p.type === 'deck')
-      //   .reduce(
-      //     (byId, deck) => ({
-      //       ...byId,
-      //       [deck.id]: {
-      //         ...deck,
-      //         count: 0,
-      //         total: 0,
-      //         cards: [],
-      //         discarded: [],
-      //       },
-      //     }),
-      //     {}
-      //   );
-
       Object.values(decks).forEach(deck => {
         deck.cards = _.shuffle(getCardsForDeck(deck.id).map(c => c.id));
         updateDeckCount(deck.id);
@@ -267,6 +260,7 @@ export function createNewGame(
         .filter(piece => piece.type !== 'card')
         .map(p => p.id);
 
+      console.log('final pieces', pieces);
       sendToRoom({
         pieces,
         board: gameState.board,
@@ -345,6 +339,78 @@ export function createNewGame(
               try {
                 chat.push(data);
                 sendToRoom(data);
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'transaction':
+              try {
+                const { amount } = data;
+                const { from, to } = data.transaction;
+                const fromPiece = pieces[from.id];
+                let moneyTemplate = (fromPiece.type === 'money'
+                  ? fromPiece
+                  : {
+                      ...Object.values(pieces).find(p => p.type === 'money'),
+                      x: 0, // TODO
+                      y: 0, // TODO
+                    }) as MoneyTokenPiece;
+
+                if (fromPiece.balance < amount) {
+                  console.error('Insufficient Funds');
+                  return;
+                }
+
+                const toPiece: MoneyTokenPiece | PlayerPiece = to.id
+                  ? (pieces[to.id] as MoneyTokenPiece | PlayerPiece)
+                  : {
+                      ...moneyTemplate,
+                      id: slug.nice(),
+                      x: moneyTemplate.x + moneyTemplate.width + 40,
+                      // y: moneyTemplate.y + moneyTemplate.height,
+                      balance: 0,
+                      delta: 0,
+                    };
+
+                if (!toPiece) {
+                  console.error('Unknown Recipient');
+                  return;
+                }
+
+                fromPiece.balance -= amount;
+                fromPiece.delta++;
+                toPiece.balance = (toPiece.balance || 0) + amount;
+                toPiece.delta++;
+
+                if (
+                  fromPiece.balance === 0 &&
+                  Object.values(pieces).find(
+                    p => p.type === 'money' && p.id !== fromPiece.id
+                  )
+                ) {
+                  fromPiece.type = 'deleted';
+                  sendToRoom({
+                    event: 'remove_from_board',
+                    ids: [fromPiece.id],
+                  });
+                }
+
+                sendToRoom({
+                  event: 'update_piece',
+                  pieces: {
+                    [fromPiece.id]: fromPiece,
+                    [toPiece.id]: toPiece,
+                  },
+                });
+
+                if (!to.id) {
+                  sendToRoom({
+                    event: 'add_to_board',
+                    pieces: [toPiece.id],
+                  });
+                  pieces[toPiece.id] = toPiece;
+                }
               } catch (err) {
                 console.log(err);
               }

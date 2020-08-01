@@ -5,7 +5,7 @@ import { Link, useHistory } from 'react-router-dom';
 import {
   primaryColor,
   primaryHighlightColor,
-  breakPoints,
+  breakpoints,
   Button,
   theShadow,
 } from '../../utils/style';
@@ -13,6 +13,7 @@ import { isWebBuild } from '../../utils/meta';
 import { imagePrefix } from '../../utils/assets';
 import { getCurrentUser, signOut, useUser } from '../../utils/api';
 import { TagSelect } from '../TagSelect/TagSelect';
+import { FaBars } from 'react-icons/fa';
 
 interface Props {
   children: React.ReactNode;
@@ -40,70 +41,49 @@ const Menu = styled.div({
   fontWeight: 'bold',
   boxShadow: theShadow,
   zIndex: 1000,
-  [breakPoints.mobile]: {
-    flexDirection: 'column',
-  },
+  // [breakpoints.mobile]: {
+  //   flexDirection: 'column',
+  // },
 });
 
 const MenuHeader = styled(Link)({
   color: '#fff',
-  fontSize: '2rem',
+  fontSize: '28px',
   textDecoration: 'none',
   margin: '0 1rem',
-  paddingLeft: '32px',
+  // paddingLeft: '32px',
+  position: 'relative',
+  top: '-3px',
   '> img': {
-    position: 'absolute',
-    left: '.5rem',
+    position: 'relative',
+    top: '6px',
+    // left: '.5rem',
   },
   ':hover': {
     color: '#fff',
   },
 });
 
-const MenuSpacer = styled.div({
-  flex: 1,
+const SideMenuButton = styled(FaBars)({
+  fontSize: '28px',
+  color: '#fff',
+  display: 'inline-block',
+  cursor: 'pointer',
+  position: 'relative',
+  top: '6px',
+  marginLeft: '1.5rem',
+  [breakpoints.desktop]: {
+    display: 'none',
+  },
 });
 
-// const MenuJoinForm = styled.form({
-//   marginLeft: '1rem',
-//   display: 'flex',
-//   flexDirection: 'row',
-//   '> input': {
-//     fontSize: '1.2rem',
-//     color: '#333',
-//     margin: '0 1rem 0 0',
-//     width: '100px',
-//     ':nth-child(1)': {
-//       width: '180px',
-//     },
-//   },
-//   [breakPoints.mobile]: {
-//     marginRight: '1rem',
-//     marginTop: '1rem',
-//     '> button': {
-//       flex: 1,
-//     },
-//     '> input': {
-//       width: '33%',
-//       marginBottom: '.5rem',
-//       ':nth-child(1)': {
-//         width: '33%',
-//       },
-//     },
-//   },
-//   [breakPoints.tablet]: {
-//     '> input': {
-//       width: '80px',
-//       ':nth-child(1)': {
-//         width: '80px',
-//       },
-//     },
-//   },
+// const MenuSpacer = styled.div({
+//   flex: 1,
 // });
 
 const NewGameLink = styled(Link)({
   textDecoration: 'none',
-  [breakPoints.mobile]: {
+  [breakpoints.mobile]: {
     width: '100%',
     boxSizing: 'border-box',
     display: 'flex',
@@ -136,6 +116,14 @@ const SideMenu = styled.div({
   backgroundColor: '#f0f0f0',
   width: '240px',
   padding: '2rem 1rem',
+  position: 'fixed',
+  height: '100vh',
+  overflowY: 'scroll',
+  zIndex: 900,
+  [breakpoints.desktop]: {
+    height: 'auto',
+    position: 'relative',
+  },
 });
 
 const Footer = styled.div({
@@ -171,11 +159,11 @@ export function WebPage(props: Props) {
   return (
     <Page>
       <Menu>
+        <SideMenuButton />
         <MenuHeader to="/">
           <img src="favicon-32x32_white.png" alt="favicon" />
           Board Game Star
         </MenuHeader>
-        <MenuSpacer />
       </Menu>
 
       <ContentContainer>

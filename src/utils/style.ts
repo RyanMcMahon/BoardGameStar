@@ -18,9 +18,10 @@ export const theShadow = `0px 3px 7px rgba(0, 0, 0, 0.5)`;
 export const maxMobileWidth = 650;
 export const minTabletWidth = maxMobileWidth + 1;
 export const maxTabletWidth = 900;
-export const breakPoints = {
+export const breakpoints = {
   mobile: `@media (max-width: ${maxMobileWidth}px)`,
   tablet: `@media (min-width: ${minTabletWidth}px) and (max-width: ${maxTabletWidth}px)`,
+  desktop: `@media (min-width: ${maxTabletWidth}px)`,
 };
 
 const buttonStyles: {

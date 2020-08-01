@@ -16,6 +16,7 @@ import {
   FaDiceFive,
   FaRandom,
   FaSync,
+  FaMoneyBillAlt,
 } from 'react-icons/fa';
 
 import { maxMobileWidth, theShadow } from '../../utils/style';
@@ -42,6 +43,7 @@ interface Props {
   onShuffleDiscarded: (deckId: string) => void;
   onDiscardPlayed: (deckId: string) => void;
   onDiscardSelected: (cardIds: string[]) => void;
+  onPromptTransaction: (bankId: string) => void;
   onClearSelectedPieces: () => void;
   onShowDiceModal: () => void;
   onZoomIn: () => void;
@@ -112,6 +114,7 @@ export function ControlsMenu(props: Props) {
     onDiscardPlayed,
     onDiscardSelected,
     onClearSelectedPieces,
+    onPromptTransaction,
     onShowDiceModal,
     onZoomIn,
     onZoomOut,
@@ -162,6 +165,20 @@ export function ControlsMenu(props: Props) {
           ]
         );
         // }
+        break;
+
+      case 'money':
+        if (selectedPieces.length === 1) {
+          items.push(
+            ...[
+              {
+                icon: <FaMoneyBillAlt />,
+                label: 'Transaction',
+                fn: () => onPromptTransaction(selectedPieces[0].id),
+              },
+            ]
+          );
+        }
         break;
 
       case 'card':

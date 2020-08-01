@@ -12,7 +12,7 @@ import { Checkers } from '../../games/checkers';
 import { GameSelector } from '../GameSelector';
 import { isWebBuild } from '../../utils/meta';
 import { loadAsset } from '../../utils/assets';
-import { Button } from '../../utils/style';
+import { Button, breakpoints } from '../../utils/style';
 import { CreateGameModal } from '../CreateGameModal';
 import { loadGames } from '../../utils/store';
 import { getPlayerId } from '../../utils/identity';
@@ -112,9 +112,25 @@ const Container = styled.div({
 
 const GamesWrapper = styled.div({
   display: 'grid',
-  gridTemplateColumns: 'repeat(6, 1fr)',
   gridGap: '1rem',
-  gridAutoRows: 'minmax(100px, 300px)',
+  // gridAutoRows: 'minmax(100px, 300px)',
+  ...[0, 300, 600, 900, 1200, 1500, 1800].reduce(
+    (agg, breakpoint, index, arr) => ({
+      ...agg,
+      [`@media (min-width: ${breakpoint}px) and (max-width: ${arr[index + 1] ||
+        999999}px)`]: {
+        gridTemplateColumns: `repeat(${breakpoint / 300}, 1fr)`,
+      },
+    }),
+    {}
+  ),
+  // gridTemplateColumns: 'repeat(6, 1fr)',
+  // [breakPoints.tablet]: {
+  //   gridTemplateColumns: 'repeat(3, 1fr)',
+  // },
+  // [breakPoints.mobile]: {
+  //   gridTemplateColumns: 'repeat(2, 1fr)',
+  // },
 });
 
 export function Games(props: Props) {

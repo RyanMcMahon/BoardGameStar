@@ -103,6 +103,7 @@ export class RenderItem extends Container {
     sprite.y = 0;
     sprite.height = piece.height;
     sprite.width = piece.width;
+    sprite.scale.set(1);
     this.sprite = sprite;
     this.addChild(sprite);
 

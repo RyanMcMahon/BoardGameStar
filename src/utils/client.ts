@@ -37,6 +37,7 @@ interface ClientState {
   };
   peekingCards: string[];
   peekingDiscardedCards: string[];
+  renderCount: number;
 }
 
 function clientReducer(state: ClientState, data: GameEvent) {
@@ -64,6 +65,7 @@ function clientReducer(state: ClientState, data: GameEvent) {
         ...state,
         pieces: p,
         board: b,
+        renderCount: state.renderCount + 1,
       };
     }
 
@@ -75,6 +77,7 @@ function clientReducer(state: ClientState, data: GameEvent) {
         chat: c,
         myHand: hand,
         game: g,
+        renderCount: state.renderCount + 1,
       };
 
       if (Array.isArray(a)) {
@@ -117,6 +120,7 @@ function clientReducer(state: ClientState, data: GameEvent) {
       return {
         ...state,
         board: [...state.board, ...pieces],
+        renderCount: state.renderCount + 1,
       };
     }
 
@@ -128,6 +132,7 @@ function clientReducer(state: ClientState, data: GameEvent) {
           ...state.handCounts,
           ...c,
         },
+        renderCount: state.renderCount + 1,
       };
     }
 
@@ -136,6 +141,7 @@ function clientReducer(state: ClientState, data: GameEvent) {
       return {
         ...state,
         myDice: diceIds,
+        renderCount: state.renderCount + 1,
       };
     }
 
@@ -147,6 +153,7 @@ function clientReducer(state: ClientState, data: GameEvent) {
           ...state.diceCounts,
           ...c,
         },
+        renderCount: state.renderCount + 1,
       };
     }
 
@@ -158,6 +165,7 @@ function clientReducer(state: ClientState, data: GameEvent) {
           ...state.peekingPlayers,
           [playerId]: peeking ? deckId : '',
         },
+        renderCount: state.renderCount + 1,
       };
     }
 
@@ -167,6 +175,7 @@ function clientReducer(state: ClientState, data: GameEvent) {
         ...state,
         peekingCards: cardIds,
         peekingDiscardedCards: discardedCardIds,
+        renderCount: state.renderCount + 1,
       };
     }
 
@@ -182,6 +191,7 @@ function clientReducer(state: ClientState, data: GameEvent) {
       return {
         ...state,
         board: boardCopy,
+        renderCount: state.renderCount + 1,
       };
     }
 
@@ -190,6 +200,7 @@ function clientReducer(state: ClientState, data: GameEvent) {
       return {
         ...state,
         myHand: h,
+        renderCount: state.renderCount + 1,
       };
     }
 
@@ -208,6 +219,7 @@ function clientReducer(state: ClientState, data: GameEvent) {
           ...pieces,
           ...u,
         },
+        renderCount: state.renderCount + 1,
       };
     }
 
@@ -218,6 +230,7 @@ function clientReducer(state: ClientState, data: GameEvent) {
           ...state.pieces,
           ...data.pieces,
         },
+        renderCount: state.renderCount + 1,
       };
     }
 
@@ -228,7 +241,7 @@ function clientReducer(state: ClientState, data: GameEvent) {
 }
 
 export function useGameClient(gameId: string, hostId: string) {
-  const [, setRenderCount] = React.useState<number>(1);
+  // const [, setRenderCount] = React.useState<number>(1);
   const [failedConnection, setFailedConnection] = React.useState(false);
   const [checkTimeout, setCheckTimeout] = React.useState(false);
   const [playerId, setPlayerId] = React.useState<string>('');
@@ -279,6 +292,7 @@ export function useGameClient(gameId: string, hostId: string) {
       peekingPlayers: {},
       peekingCards: [],
       peekingDiscardedCards: [],
+      renderCount: 0,
     },
     (state: ClientState) => state
   );
@@ -297,6 +311,7 @@ export function useGameClient(gameId: string, hostId: string) {
     peekingPlayers,
     peekingCards,
     peekingDiscardedCards,
+    renderCount,
   } = state;
 
   const updatePieces = (p: Pieces) =>
@@ -320,142 +335,6 @@ export function useGameClient(gameId: string, hostId: string) {
     },
     [conn, assets]
   );
-
-  // const processEvent = React.useCallback((data: GameEvent) => {
-  //   switch (data.event) {
-  //     case 'asset_loaded': {
-  //       const { asset } = data;
-  //       Object.entries(asset).forEach(([key, value]) => {
-  //         setAssets(a => ({ ...a, [key]: value }));
-  //         setPendingAssets(pending => pending.filter(a => a !== key));
-  //       });
-  //       break;
-  //     }
-
-  //     case 'player_join': {
-  //       const { board: b, pieces: p } = data;
-  //       setPieces(p);
-  //       setBoard(b);
-  //       break;
-  //     }
-
-  //     case 'join': {
-  //       const { assets: a, game: g, hand, board: b, pieces: p, chat: c } = data;
-  //       setGame(g);
-  //       setPieces(p);
-  //       setMyHand(hand);
-  //       setChat(c);
-  //       setBoard(b); //prevBoard => [...b, ...prevBoard]);
-  //       if (Array.isArray(a)) {
-  //         setPendingAssets(a);
-  //       } else {
-  //         // Fake loader to give time to read "Facts"
-  //         setTimeout(
-  //           () => setPercentLoaded(_.random(20, 30)),
-  //           _.random(200, 600)
-  //         );
-  //         setTimeout(
-  //           () => setPercentLoaded(_.random(50, 70)),
-  //           _.random(800, 1200)
-  //         );
-  //         setTimeout(
-  //           () => setPercentLoaded(_.random(80, 99)),
-  //           _.random(1200, 2000)
-  //         );
-  //         setTimeout(() => {
-  //           setAssets(a);
-  //           setIsLoaded(true);
-  //         }, _.random(3100, 3500));
-  //         setAssets(a);
-  //         setIsLoaded(true);
-  //       }
-  //       break;
-  //     }
-
-  //     case 'chat': {
-  //       setChat(c => [...c, data]);
-  //       break;
-  //     }
-
-  //     case 'add_to_board': {
-  //       const { pieces } = data;
-  //       setBoard(b => [...b, ...pieces]);
-  //       break;
-  //     }
-
-  //     case 'hand_count': {
-  //       const { counts: c } = data;
-  //       setHandCounts(counts => ({ ...counts, ...c }));
-  //       break;
-  //     }
-
-  //     case 'set_dice': {
-  //       const { diceIds } = data;
-  //       setMyDice(diceIds);
-  //       break;
-  //     }
-
-  //     case 'dice_counts': {
-  //       const { counts: c } = data;
-  //       setDiceCounts(counts => ({ ...counts, ...c }));
-  //       break;
-  //     }
-
-  //     case 'deck_peek': {
-  //       const { deckId, playerId, peeking } = data;
-  //       setPeekingPlayers(p => ({
-  //         [playerId]: peeking ? deckId : '',
-  //       }));
-  //       break;
-  //     }
-
-  //     case 'deck_peek_results': {
-  //       const { cardIds, discardedCardIds } = data;
-  //       setPeekingCards(cardIds);
-  //       setPeekingDiscardedCards(discardedCardIds);
-  //       break;
-  //     }
-
-  //     case 'remove_from_board': {
-  //       const { ids } = data;
-  //       setBoard(b => {
-  //         const boardCopy = [...b];
-  //         ids.forEach(id => {
-  //           const index = boardCopy.findIndex(pieceId => pieceId === id);
-  //           if (index > -1) {
-  //             boardCopy.splice(index, 1);
-  //           }
-  //         });
-  //         return boardCopy;
-  //       });
-  //       break;
-  //     }
-
-  //     case 'set_hand': {
-  //       const { hand: h } = data;
-  //       setMyHand(h);
-  //       break;
-  //     }
-
-  //     case 'update_piece': {
-  //       const { pieces: updatedPieces } = data;
-  //       setPieces(p => {
-  //         const u = { ...updatedPieces };
-  //         for (let i in u) {
-  //           if (p[i] && u[i].delta <= p[i].delta) {
-  //             delete u[i];
-  //           }
-  //         }
-  //         return {
-  //           ...p,
-  //           ...u,
-  //         };
-  //       });
-  //       break;
-  //     }
-  //   }
-  //   setRenderCount(c => c + 1);
-  // }, []);
 
   React.useEffect(() => {
     if (isLoaded) {
@@ -526,5 +405,6 @@ export function useGameClient(gameId: string, hostId: string) {
     peekingPlayers,
     peekingCards,
     peekingDiscardedCards,
+    renderCount,
   };
 }

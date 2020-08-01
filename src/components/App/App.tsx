@@ -6,18 +6,20 @@ import { Viewport } from 'pixi-viewport';
 import { useParams, Link, Redirect } from 'react-router-dom';
 
 import { useGameClient } from '../../utils/client';
-import { Button, breakPoints, maxMobileWidth } from '../../utils/style';
+import { Button, breakpoints, maxMobileWidth } from '../../utils/style';
 import { Table, useTable } from '../../utils/useTable';
 import { ControlsModal } from '../ControlsModal';
 import { InviteModal } from '../InviteModal';
 
 import { Hand } from '../Hand';
+import { PlayerHand } from '../PlayerHand';
 import { DeckModal } from '../DeckModal';
+import { TransactionModal } from '../TransactionModal';
 import { RenameModal } from '../RenameModal';
 import { ProgressBar } from '../ProgressBar';
 import { facts } from '../../utils/facts';
 import { setName } from '../../utils/identity';
-import { RenderPiece, PlayerPiece, DiceSet } from '../../types';
+import { RenderPiece, PlayerPiece, DiceSet, Transaction } from '../../types';
 import { ControlsMenu } from '../ControlsMenu';
 import { DiceModal } from '../DiceModal';
 import { Chat } from '../Chat';
@@ -39,39 +41,39 @@ const AppContainer = styled.div({
   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%23bdc5ca' fill-opacity='0.50' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
 });
 
-const PlayerContainer = styled.div({
-  userSelect: 'none',
-  position: 'fixed',
-  top: 0,
-  right: 0,
-  bottom: 0,
-  width: '430px',
-  display: 'flex',
-  flexDirection: 'column',
-  backgroundColor: '#fafafa',
-  zIndex: 1000,
-  [breakPoints.mobile]: {
-    width: '100%',
-  },
-});
+// const PlayerContainer = styled.div({
+//   userSelect: 'none',
+//   position: 'fixed',
+//   top: 0,
+//   right: 0,
+//   bottom: 0,
+//   width: '430px',
+//   display: 'flex',
+//   flexDirection: 'column',
+//   backgroundColor: '#fafafa',
+//   zIndex: 1000,
+//   [breakPoints.mobile]: {
+//     width: '100%',
+//   },
+// });
 
-const PlayerName = styled.div<{ color: string }>(
-  (props: { color: string }) => ({
-    margin: 0,
-    padding: 10,
-    background: props.color,
-    fontSize: '2rem',
-    color: '#fff',
-    cursor: 'pointer',
-  })
-);
+// const PlayerName = styled.div<{ color: string }>(
+//   (props: { color: string }) => ({
+//     margin: 0,
+//     padding: 10,
+//     background: props.color,
+//     fontSize: '2rem',
+//     color: '#fff',
+//     cursor: 'pointer',
+//   })
+// );
 
-const PlayerLinksContainer = styled.div({
-  padding: '1rem',
-  '> button:nth-child(n+2)': {
-    marginLeft: '1rem',
-  },
-});
+// const PlayerLinksContainer = styled.div({
+//   padding: '1rem',
+//   '> button:nth-child(n+2)': {
+//     marginLeft: '1rem',
+//   },
+// });
 
 const TogglePlayerContainerButton = styled.div({
   userSelect: 'none',
@@ -87,7 +89,7 @@ const TogglePlayerContainerButton = styled.div({
   color: '#fff',
   zIndex: 2000,
   cursor: 'pointer',
-  [breakPoints.mobile]: {
+  [breakpoints.mobile]: {
     fontSize: '70px',
     lineHeight: '24px',
     height: '40px',
@@ -143,6 +145,10 @@ const tableConfig = {
     draggable: true,
     rotatable: true,
   },
+  money: {
+    selectable: true,
+    draggable: true,
+  },
   image: {
     selectable: true,
     draggable: true,
@@ -188,6 +194,7 @@ export const App: React.FC = () => {
     handCounts,
     updatePieces,
     failedConnection,
+    renderCount,
     // TODO
     // myDice,
     // diceCounts,
@@ -195,6 +202,10 @@ export const App: React.FC = () => {
     // peekingCards,
     // peekingDiscardedCards,
   } = useGameClient(gameId, hostId);
+  const players = Object.values(pieces).filter(
+    p => p.type === 'player' && p.playerId
+  ) as PlayerPiece[];
+  const player = players.find(p => p.playerId === playerId);
 
   let sendUpdatedPiecesRef = React.useRef<
     (updatedPieces: { [id: string]: RenderPiece }) => void
@@ -289,27 +300,89 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleSubmitTransaction = (
+    transaction: Transaction,
+    amount: number
+  ) => {
+    if (conn) {
+      conn.send({
+        event: 'transaction',
+        transaction,
+        amount,
+      });
+      setTransactionModalOptions(null);
+    }
+  };
+
+  const handlePromptTransaction = (id: string) => {
+    if (!player) {
+      return;
+    }
+
+    const bank = pieces[id];
+    setTransactionModalOptions([
+      {
+        to: {
+          id: player.id,
+          name: 'You',
+        },
+        from: {
+          id,
+          name: 'Bank',
+          max: bank.balance,
+        },
+      },
+      {
+        from: {
+          id: player.id,
+          name: 'You',
+          max: bank.balance,
+        },
+        to: {
+          id,
+          name: 'Bank',
+        },
+      },
+      {
+        from: {
+          id,
+          name: 'Bank',
+          max: bank.balance,
+        },
+        to: {
+          name: 'New Bank',
+        },
+      },
+    ]);
+  };
+
   const table = useTable({
     handleCreateStack,
     handleSplitStack,
     handleUpdatePiece,
+    handleSubmitTransaction,
     assets,
     // handCounts,
     config: tableConfig,
     onDblClickDeck: (id: string) => setDrawModalId(id),
     onDblClickCard: handlePickUpCard,
+    onDblClickMoney: handlePromptTransaction,
   });
   const fact = React.useMemo(() => _.sample(facts), []);
   const {
     setSelectedPieceIds,
     selectedPieceIds,
-    setPieces: setTablePieces,
+    setRenderCount,
     container,
+    setPieces: setTablePieces,
   } = table;
   const [showPlayerControls, setShowPlayerControls] = React.useState<boolean>(
     true
   );
   const [drawModalId, setDrawModalId] = React.useState<string>('');
+  const [transactionModalOptions, setTransactionModalOptions] = React.useState<
+    Transaction[] | null
+  >(null);
   const [showSettingsModal, setShowSettingsModal] = React.useState<boolean>(
     false
   );
@@ -486,12 +559,8 @@ export const App: React.FC = () => {
     }
   }, [conn, sendUpdatedPieces]);
 
-  const players = Object.values(pieces).filter(
-    p => p.type === 'player' && p.playerId
-  ) as PlayerPiece[];
-  const player = players.find(p => p.playerId === playerId);
-
   React.useEffect(() => {
+    // console.log(renderCount);
     setTablePieces(
       board
         .map(id => {
@@ -531,7 +600,16 @@ export const App: React.FC = () => {
                 players.length >= parseInt(piece.counts.split(':')[0], 10)))
         )
     );
-  }, [board, pieces, players.length, setTablePieces, handCounts]);
+    setRenderCount(renderCount); // Force re-render
+  }, [
+    board,
+    pieces,
+    players.length,
+    setTablePieces,
+    handCounts,
+    renderCount,
+    setRenderCount,
+  ]);
 
   if (!gameId) {
     return <Redirect to="/" />;
@@ -543,54 +621,34 @@ export const App: React.FC = () => {
         <AppContext.Provider value={{ state, dispatch }}>
           {isLoaded && <Table ref={table.stageRef} />}
         </AppContext.Provider>
-
+        {/* 
         <TogglePlayerContainerButton
           onClick={() => setShowPlayerControls(!showPlayerControls)}
         >
           {showPlayerControls ? <>&rsaquo;</> : <>&lsaquo;</>}
-        </TogglePlayerContainerButton>
+        </TogglePlayerContainerButton> */}
 
-        {showPlayerControls && (
-          <PlayerContainer>
-            {player && (
-              <PlayerName color={player.color} onClick={handlePromptRename}>
-                {player.name}
-              </PlayerName>
-            )}
-            <HandContainer>
-              <Hand
-                assets={assets}
-                pieces={pieces}
-                hand={myHand}
-                playCards={handlePlayCards}
-                passCards={handlePassCards}
-                discard={handleDiscard}
-                players={
-                  Object.values(pieces).filter(
-                    p =>
-                      p.type === 'player' &&
-                      p.playerId &&
-                      p.playerId !== (player || {}).playerId
-                  ) as PlayerPiece[]
-                }
-              />
-            </HandContainer>
-            <PlayerLinksContainer>
-              <Button
-                design="primary"
-                onClick={() => setShowControlsModal(true)}
-              >
-                Controls
-              </Button>
-              <Button design="primary" onClick={() => setShowInviteModal(true)}>
-                Invite
-              </Button>
-
-              <Link to="/games" className="u-pull-right">
-                <Button design="danger">Leave Game</Button>
-              </Link>
-            </PlayerLinksContainer>
-          </PlayerContainer>
+        {game && (
+          <PlayerHand
+            config={game.config}
+            assets={assets}
+            pieces={pieces}
+            hand={myHand}
+            onRename={handlePromptRename}
+            playCards={handlePlayCards}
+            passCards={handlePassCards}
+            discard={handleDiscard}
+            promptTransaction={setTransactionModalOptions}
+            player={player}
+            players={
+              Object.values(pieces).filter(
+                p =>
+                  p.type === 'player' &&
+                  p.playerId &&
+                  p.playerId !== (player || {}).playerId
+              ) as PlayerPiece[]
+            }
+          />
         )}
       </AppContainer>
 
@@ -605,6 +663,7 @@ export const App: React.FC = () => {
         onShuffleDiscarded={handleShuffleDiscarded}
         onDiscardPlayed={handleDiscardPlayed}
         onDiscardSelected={handleDiscard}
+        onPromptTransaction={handlePromptTransaction}
         onClearSelectedPieces={() => setSelectedPieceIds(new Set())}
         onShowDiceModal={() => setShowDiceModal(true)}
         onZoomIn={() => container && (container as Viewport).zoom(-200)}
@@ -667,6 +726,14 @@ export const App: React.FC = () => {
         />
       )}
 
+      {transactionModalOptions && (
+        <TransactionModal
+          transactions={transactionModalOptions}
+          onClose={() => setTransactionModalOptions(null)}
+          onSubmit={handleSubmitTransaction}
+        />
+      )}
+
       {/* {(peekingCards.length || peekingDiscardedCards.length) && (
         <DeckPeekModal
           pieces={pieces}
@@ -696,7 +763,7 @@ export const App: React.FC = () => {
           </LoadingContainer>
         </LoadingPage>
       )}
-      <FPSStats />
+      {/* <FPSStats /> */}
     </MainContainer>
   );
 };

@@ -63,6 +63,7 @@ export interface PlayerOption extends RectPieceOption {
   type: 'player';
   name: string;
   color: string;
+  balance?: number;
 }
 
 export interface CircleTokenOption extends PieceOption, StackablePieceOption {
@@ -79,6 +80,11 @@ export interface ImageTokenOption
   flipped?: boolean;
 }
 
+export interface MoneyTokenOption extends ImagePieceOption {
+  type: 'money';
+  balance: number;
+}
+
 export interface RectTokenOption extends RectPieceOption, StackablePieceOption {
   type: 'rect';
   color: string;
@@ -91,9 +97,11 @@ export type AnyPieceOption =
   | PlayerOption
   | CircleTokenOption
   | ImageTokenOption
+  | MoneyTokenOption
   | RectTokenOption;
 
 export interface GameConfig {
+  currency?: string;
   curScenario: string;
   scenarios: {
     [id: string]: ScenarioOption;
@@ -189,7 +197,7 @@ export interface RemoveScenarioAction {
 
 export interface UpdateGame {
   type: 'update_game';
-  game: Partial<Game>;
+  game: Partial<Omit<Game, 'config'> & GameConfig>;
 }
 
 export interface AddPieceAction {
@@ -201,6 +209,7 @@ export interface AddPieceAction {
     | PlayerOption
     | CircleTokenOption
     | ImageTokenOption
+    | MoneyTokenOption
     | RectTokenOption;
 }
 
@@ -213,6 +222,7 @@ export interface UpdatePieceAction {
     | PlayerOption
     | CircleTokenOption
     | ImageTokenOption
+    | MoneyTokenOption
     | RectTokenOption;
 }
 
@@ -242,6 +252,7 @@ export type BoardPiece = BoardOption & Piece;
 export type CardPiece = CardOption & Piece;
 export type CircleTokenPiece = CircleTokenOption & Piece;
 export type ImageTokenPiece = ImageTokenOption & Piece;
+export type MoneyTokenPiece = MoneyTokenOption & Piece;
 export type RectTokenPiece = RectTokenOption & Piece;
 
 export interface StackPiece extends Piece {
@@ -288,6 +299,7 @@ export type RenderPiece =
   | DeletedPiece
   | PlayerPiece
   | CircleTokenPiece
+  | MoneyTokenPiece
   | ImageTokenPiece
   | StackPiece
   | RectTokenPiece;
@@ -303,6 +315,34 @@ export interface Card {
 export interface ContextMenuItem {
   label: string;
   fn: () => void;
+}
+
+// export interface PlayerTransactionParticipant {
+//   type: 'player';
+//   id: string;
+//   name: string;
+// }
+
+// export interface PieceTransactionParticipant {
+//   type: 'piece';
+//   id?: string;
+//   name: string;
+// }
+
+// type TransactionParticipant =
+//   | PlayerTransactionParticipant
+//   | PieceTransactionParticipant;
+
+export interface Transaction {
+  from: {
+    name: string;
+    id: string;
+    max: number;
+  };
+  to: {
+    name: string;
+    id?: string;
+  };
 }
 
 export interface JoinEvent {
@@ -483,6 +523,12 @@ export interface DeckPeekResultsEvent {
   discardedCardIds: string[];
 }
 
+export interface TransactionEvent {
+  event: 'transaction';
+  transaction: Transaction;
+  amount: number;
+}
+
 export interface ChatEvent {
   event: 'chat';
   playerId: string;
@@ -499,6 +545,7 @@ export interface LoadComplete {
 }
 
 export type ClientEvent =
+  | TransactionEvent
   | ChatEvent
   | RollDiceEvent
   | DrawCardsEvent

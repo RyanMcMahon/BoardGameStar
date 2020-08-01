@@ -10,6 +10,7 @@ import {
   Container,
   Text,
   Application,
+  TextureUvs,
 } from 'pixi.js';
 
 import {
@@ -20,10 +21,10 @@ import {
   CardPiece,
   ImageTokenPiece,
   RectTokenPiece,
+  Transaction,
 } from '../types';
 import { RenderItem, RenderItemPiece } from './render-item';
 import { primaryColor } from './style';
-import { render } from '@testing-library/react';
 
 interface PieceConfig {
   [key: string]: {
@@ -38,14 +39,20 @@ interface TableOptions {
   singleSelection?: boolean;
   handleCreateStack: (ids: string[]) => void;
   handleSplitStack: (id: string, count: number) => void;
+  handleSubmitTransaction: (transaction: Transaction, amount: number) => void;
   handleUpdatePiece: (
     piece: Partial<RenderPiece> & { id: string },
     throttled: boolean
   ) => void;
   onDblClickDeck?: (id: string) => void;
   onDblClickCard?: (id: string) => void;
+  onDblClickMoney?: (id: string) => void;
   assets: Assets;
   config: PieceConfig;
+}
+
+interface Textures {
+  [key: string]: Texture;
 }
 
 const optionsByDie: {
@@ -84,8 +91,10 @@ export const Table = styled.div({
 });
 
 export const useTable = (options: TableOptions) => {
-  const { config } = options;
+  const { assets, config } = options;
   const [app, setApp] = React.useState<Application>();
+  const [, setRenderCount] = React.useState<number>(0);
+  const [textures, setTextures] = React.useState<Textures>({});
 
   React.useEffect(() => {
     setApp(
@@ -96,13 +105,35 @@ export const useTable = (options: TableOptions) => {
     );
   }, []);
 
+  React.useEffect(() => {
+    setTextures(loadedTextures => {
+      const unloadedAssets = { ...assets };
+      for (let asset in loadedTextures) {
+        delete unloadedAssets[asset];
+      }
+      const t = Object.entries(unloadedAssets).reduce(
+        (agg, [key, asset]) => ({
+          ...agg,
+          [key]: Texture.from(asset, {
+            // resolution: 300,
+            // width: 100,
+            // height: 100,
+          }),
+        }),
+        {}
+      );
+      // console.log(loadedTextures);
+      return { ...loadedTextures, ...t };
+    });
+  }, [assets]);
+
   const piecesRef = React.useRef<RenderPiece[]>([]);
   const setPieces = (p: RenderPiece[]) => {
     piecesRef.current = p;
   };
   // const [pieces, setPieces] = React.useState<RenderPiece[]>([]);
   const onUpdatePiece = options.handleUpdatePiece;
-  const assets = options.assets;
+  // const assets = options.assets;
   const [selectedPieceIds, setSelectedPieceIds] = React.useState<Set<string>>(
     new Set()
   );
@@ -186,6 +217,7 @@ export const useTable = (options: TableOptions) => {
     if (!container) {
       return;
     }
+    // console.log('render');
 
     const piecesById = _.keyBy(piecesRef.current, 'id');
     const renderedPieces = new Set();
@@ -250,6 +282,7 @@ export const useTable = (options: TableOptions) => {
           container,
           piecesRef,
           piecesById,
+          textures,
         });
 
         if (child) {
@@ -291,6 +324,7 @@ export const useTable = (options: TableOptions) => {
     piecesRef,
     options,
     assets,
+    textures,
     config,
     onSelectPiece,
     selectedPieceIds,
@@ -313,6 +347,7 @@ export const useTable = (options: TableOptions) => {
     stageRef,
     selectedPieceIds,
     setSelectedPieceIds,
+    setRenderCount,
   };
 };
 
@@ -323,19 +358,26 @@ function getRenderItem(
     container,
     piecesById,
     assets,
+    textures,
     config,
     handleCreateStack,
     handleSplitStack,
+    handleSubmitTransaction,
     onDblClickCard,
+    onDblClickMoney,
     onDblClickDeck,
   }: TableOptions & {
     piecesRef: React.MutableRefObject<RenderPiece[]>;
     container: Container;
+    textures: Textures;
     piecesById: {
       [id: string]: RenderPiece;
     };
   }
 ) {
+  if (!assets[piece.image]) {
+    console.log('no asset for', piece);
+  }
   const image = assets[piece.image] || piece.image;
   const pieceConfig = config[piece.type];
 
@@ -431,11 +473,91 @@ function getRenderItem(
       return child;
     }
 
+    case 'money': {
+      const text = new Text(``, {
+        fontFamily: 'Arial',
+        fontSize: 28,
+        fill: 0xffffff,
+        align: 'center',
+      });
+      text.x = piece.width / 2;
+      text.y = -30;
+      text.anchor.set(0.5);
+      const rect = new Graphics();
+
+      const child = new RenderItem({
+        ...pieceConfig,
+        piece,
+        texture: Texture.from(image), //textures[piece.image], //Texture.from(image),
+        onDragEnd: () => {
+          const curPiece = piecesRef.current.find(p => p.id === piece.id);
+          if (!curPiece) {
+            return;
+          }
+          const bank = findBank(piecesRef, curPiece);
+          if (bank) {
+            handleSubmitTransaction(
+              {
+                from: {
+                  name: '',
+                  id: curPiece.id,
+                  max: curPiece.balance,
+                },
+                to: {
+                  name: '',
+                  id: bank.id,
+                },
+              },
+              curPiece.balance
+            );
+          }
+        },
+        onSync: (el, curPiece) => {
+          el.setDimensions(curPiece as ImageTokenPiece);
+
+          text.x = curPiece.width / 2;
+          text.text = curPiece.balance;
+          rect.clear();
+          rect.beginFill(utils.string2hex('#333'));
+          rect.drawRoundedRect(
+            curPiece.width / 2 - text.width / 2 - 8,
+            -30 - text.height / 2 - 4,
+            text.width + 16,
+            text.height + 8,
+            8
+          );
+          rect.endFill();
+
+          if (el.dragging) {
+            const bank = findBank(piecesRef, curPiece);
+
+            if (bank) {
+              text.alpha = 0;
+              rect.alpha = 0;
+              el.alpha = 0.5;
+            } else {
+              text.alpha = 1;
+              rect.alpha = 1;
+              el.alpha = 1;
+            }
+          }
+        },
+      });
+      child.addChild(rect);
+      child.addChild(text);
+
+      if (onDblClickMoney) {
+        child.on('dblclick', () => onDblClickMoney!(piece.id));
+      }
+
+      return child;
+    }
+
     case 'image': {
       const child = new RenderItem({
         ...pieceConfig,
         piece,
-        texture: Texture.from(image),
+        texture: textures[piece.image], //Texture.from(image),
         onSplitStack: (count: number) => handleSplitStack(piece.id, count),
         onDragEnd: () => {
           const curPiece = piecesRef.current.find(p => p.id === piece.id);
@@ -453,7 +575,7 @@ function getRenderItem(
           showStackPrompt(piecesRef, container, el, curPiece);
         },
       });
-      child.scale.copyFrom(container.scale);
+      // child.scale.copyFrom(container.scale);
       return child;
     }
 
@@ -462,10 +584,23 @@ function getRenderItem(
         ...pieceConfig,
         piece,
         texture: Texture.WHITE,
+        onSplitStack: (count: number) => handleSplitStack(piece.id, count),
+        onDragEnd: () => {
+          const curPiece = piecesRef.current.find(p => p.id === piece.id);
+          if (!curPiece) {
+            return;
+          }
+          const bottom = findStackBottom(piecesRef, curPiece);
+          if (bottom) {
+            handleCreateStack([bottom.id, curPiece.id]);
+          }
+        },
         onSync: (el, curPiece) => {
           el.setDimensions(curPiece as RectTokenPiece);
+          showStackPrompt(piecesRef, container, el, curPiece);
         },
       });
+      // child.scale.set(1);
 
       child.sprite.tint = utils.string2hex(piece.color);
       return child;
@@ -515,47 +650,8 @@ function getRenderItem(
           });
 
           showStackPrompt(piecesRef, container, el, curPiece);
-          // if (curPiece.stack && el.dragging) {
-          //   const stackPieces = piecesRef.current.filter(
-          //     p => p.stack === curPiece.stack && p.id !== curPiece.id
-          //   ); // TODO use deterministic sort
-          //   const stackIds = stackPieces.map(p => p.id);
-          //   const stackRenderItems = (container.children as RenderItem[]).filter(
-          //     x => stackIds.includes(x.id)
-          //   );
-          //   const stack = stackPieces.find(
-          //     p => Math.hypot(p.x - curPiece.x, p.y - curPiece.y) < 20
-          //   );
-          //   const nonStackables = stackRenderItems.filter(
-          //     x => !stack || x.id !== stack.id
-          //   ) as RenderItem[];
-          //   nonStackables.forEach(x => (x.alpha = 1)); // TOOD stackPieces.find(p => p.id === x.id).opacity));
-
-          //   if (stack) {
-          //     const stackRender = container.children.find(
-          //       x => (x as RenderItem).id === stack.id
-          //     ) as RenderItem;
-          //     if (!stackRender) {
-          //       return;
-          //     }
-
-          //     // TODO brightness?
-          //     stackRender.alpha = 0.5; // TODO use piece opacity
-          //     el.setStack((stack.pieces || [1]).length + 1);
-          //   } else {
-          //     el.setStack();
-          //   }
-          // } else {
-          //   el.setStack();
-          // }
         },
       });
-      // const id = new Text(`${piece.id.slice(0, 5)}`, {
-      //   fontSize: '16px',
-      //   fill: 'black',
-      // });
-      // id.x = 25;
-      // id.y = -10;
 
       child.addChild(circle);
       return child;
@@ -675,6 +771,18 @@ function findStackBottom(
   return piecesRef.current.find(
     p =>
       p.stack === curPiece.stack &&
+      p.id !== curPiece.id &&
+      Math.hypot(p.x - curPiece.x, p.y - curPiece.y) < 20
+  );
+}
+
+function findBank(
+  piecesRef: React.MutableRefObject<RenderPiece[]>,
+  curPiece: RenderPiece
+) {
+  return piecesRef.current.find(
+    p =>
+      p.type === 'money' &&
       p.id !== curPiece.id &&
       Math.hypot(p.x - curPiece.x, p.y - curPiece.y) < 20
   );

@@ -64,9 +64,9 @@ const ControlsContainer = styled.div({
   flexDirection: 'column',
   backgroundColor: '#fafafa',
   padding: '1rem',
-  button: {
-    marginTop: '.5rem',
-  },
+  // button: {
+  //   marginTop: '.5rem',
+  // },
   'label:nth-child(n+2)': {
     marginTop: '2rem',
   },
@@ -139,6 +139,12 @@ const ToggleControlsButton = styled.div({
   cursor: 'pointer',
 });
 
+const ButtonGrid = styled.div({
+  display: 'grid',
+  gridGap: '.5rem',
+  gridTemplateColumns: `repeat(2, 1fr)`,
+});
+
 const tableConfig = {
   board: {
     selectable: true,
@@ -153,6 +159,12 @@ const tableConfig = {
     resizable: true,
   },
   card: {
+    selectable: true,
+    draggable: true,
+    rotatable: true,
+    resizable: true,
+  },
+  money: {
     selectable: true,
     draggable: true,
     rotatable: true,
@@ -204,6 +216,7 @@ export function Editor(props: Props) {
     onDblClickDeck: (id: string) => setDeckModalId(id),
     handleCreateStack: () => {},
     handleSplitStack: () => {},
+    handleSubmitTransaction: () => {},
     handleUpdatePiece: p =>
       dispatch({
         type: 'update_piece',
@@ -230,6 +243,7 @@ export function Editor(props: Props) {
       summary: state.summary,
       description: state.description,
       config: {
+        currency: state.currency,
         curScenario: state.curScenario,
         scenarios: state.scenarios,
         pieces: state.pieces,
@@ -336,6 +350,11 @@ export function Editor(props: Props) {
     layer: 3,
     cards: [],
     name: 'Deck',
+  });
+  const handleAddMoney = createNewImagePiece({
+    type: 'money',
+    layer: 9,
+    balance: Infinity,
   });
   const handleAddImageToken = createNewImagePiece({ type: 'image', layer: 5 });
 
@@ -510,29 +529,96 @@ export function Editor(props: Props) {
             </Button>
 
             <label>Pieces</label>
-            <Button design="primary" onClick={handleAddPlayer}>
-              Add Player
-            </Button>
-            <Button design="primary" onClick={handleAddBoard}>
-              Add Board
-            </Button>
-            <Button design="primary" onClick={handleAddCircle}>
-              Add Circle Token
-            </Button>
-            <Button design="primary" onClick={handleAddImageToken}>
-              Add Image Token
-            </Button>
-            <Button design="primary" onClick={handleAddRect}>
-              Add Rect Token
-            </Button>
-            <Button design="primary" onClick={handleAddDeck}>
-              Add Deck
-            </Button>
+            <ButtonGrid>
+              <Button
+                className="u-full-width"
+                design="primary"
+                onClick={handleAddPlayer}
+              >
+                Add Player
+              </Button>
+              <Button
+                className="u-full-width"
+                design="primary"
+                onClick={handleAddBoard}
+              >
+                Add Board
+              </Button>
+              <Button design="primary" onClick={handleAddCircle}>
+                Add Circle
+              </Button>
+              <Button design="primary" onClick={handleAddImageToken}>
+                Add Image
+              </Button>
+              <Button design="primary" onClick={handleAddRect}>
+                Add Rect
+              </Button>
+              <Button design="primary" onClick={handleAddDeck}>
+                Add Deck
+              </Button>
+              <Button
+                className="u-full-width"
+                design="primary"
+                onClick={handleAddMoney}
+              >
+                Add Money
+              </Button>
+            </ButtonGrid>
 
             {!!selectedPiece && (
               <>
                 <label>Selected Piece</label>
-                {selectedPiece.type !== 'player' && (
+                {selectedPiece.type === 'money' && (
+                  <>
+                    <InlineInputContainer>
+                      Balance
+                      <input
+                        type="text"
+                        value={selectedPiece.balance}
+                        onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                          const value = e.currentTarget.value;
+                          const balance =
+                            value.toLowerCase() === 'Infinity'
+                              ? Infinity
+                              : parseInt(value, 10);
+
+                          dispatch({
+                            type: 'update_piece',
+                            piece: {
+                              id: selectedPieceId,
+                              balance: balance,
+                            } as AnyPieceOption,
+                          });
+                        }}
+                      />
+                    </InlineInputContainer>
+                    <InlineInputContainer>
+                      Currency
+                      <input
+                        type="text"
+                        value={state.currency}
+                        onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                          const currency = e.currentTarget.value;
+
+                          dispatch({
+                            game: {
+                              currency,
+                            },
+                            type: 'update_game',
+                          });
+                          // dispatch({
+                          //   type: 'update_piece',
+                          //   piece: {
+                          //     id: selectedPieceId,
+                          //     balance: balance,
+                          //   } as AnyPieceOption,
+                          // });
+                        }}
+                      />
+                    </InlineInputContainer>
+                  </>
+                )}
+                {!['player', 'money'].includes(selectedPiece.type) && (
                   <>
                     <InlineInputContainer>
                       Min Players For Piece
@@ -576,7 +662,7 @@ export function Editor(props: Props) {
                         }}
                       />
                     </InlineInputContainer>
-                    Counts: {selectedPiece.counts || '1:1'}
+                    {/* Counts: {selectedPiece.counts || '1:1'} */}
                   </>
                 )}
                 {['rect', 'circle', 'image'].includes(selectedPiece.type) && (
