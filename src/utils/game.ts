@@ -21,6 +21,8 @@ import {
   RectTokenPiece,
   MoneyTokenPiece,
   MoneyTokenOption,
+  GamePromptAnswer,
+  GamePrompt,
 } from '../types';
 
 import { getHostId, getGameId, getInstanceId } from './identity';
@@ -172,6 +174,15 @@ export function createNewGame(
       // ),
     };
     const clients: GamePeerDataConnection[] = [];
+    const prompts: {
+      [promptId: string]: {
+        players: string[];
+        prompt: GamePrompt;
+        answers: {
+          [playerId: string]: GamePromptAnswer[];
+        };
+      };
+    } = {};
     const sendToRoom = (event: GameEvent) => {
       clients.forEach(client => client.send(event));
     };
@@ -274,6 +285,7 @@ export function createNewGame(
 
     peer.on('connection', (conn: GamePeerDataConnection) => {
       const { playerId, name } = conn.metadata;
+      // TODO spectator
       const playerCount = Object.keys(players).length + 1;
       const player: Player = players[playerId] || {
         conn,
@@ -649,6 +661,55 @@ export function createNewGame(
               }
               break;
 
+            case 'prompt_players':
+              try {
+                const prompt = { ...data.prompt, id: slug.nice() };
+                prompts[prompt.id] = {
+                  prompt,
+                  answers: {},
+                  players: data.players,
+                };
+                sendToRoom({
+                  ...data,
+                  prompt,
+                });
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
+            case 'prompt_submission':
+              try {
+                const { answers, promptId } = data;
+                const prompt = prompts[promptId];
+
+                if (answers) {
+                  prompt.answers[playerId] = answers;
+                } else {
+                  delete prompt.answers[playerId];
+                }
+
+                if (prompt.players.every(id => prompt.answers[id])) {
+                  sendToRoom({
+                    promptId,
+                    results: prompt.answers,
+                    event: 'prompt_results',
+                  });
+                } else {
+                  sendToRoom({
+                    promptId,
+                    results: Object.keys(prompt.answers).reduce(
+                      (agg, id) => ({ ...agg, [id]: true }),
+                      {}
+                    ),
+                    event: 'prompt_results',
+                  });
+                }
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
             case 'create_stack': {
               try {
                 const { ids } = data;
@@ -696,6 +757,7 @@ export function createNewGame(
                 const stack = pieces[id];
                 const bottom = stack.pieces.slice(0, count - 1);
                 const top = stack.pieces.slice(count - 1);
+                debugger;
 
                 const piecesToRemove: string[] = [];
                 const piecesToAdd: string[] = [];
@@ -718,6 +780,7 @@ export function createNewGame(
                   // TODO delete stack
                 } else {
                   stack.pieces = bottom;
+                  stack.delta++;
                   updatedPieces[stack.id] = stack;
                 }
 
@@ -726,9 +789,9 @@ export function createNewGame(
                   const topPiece = pieces[topId];
                   piecesToAdd.push(topId);
 
-                  // TODO get width
-                  topPiece.x = stack.x + 50;
-                  topPiece.y = stack.y + 50;
+                  topPiece.x =
+                    stack.x + (topPiece.width || topPiece.radius * 2) + 20;
+                  topPiece.y = stack.y;
                   topPiece.delta++;
                   updatedPieces[topId] = topPiece;
                 } else {
@@ -739,7 +802,7 @@ export function createNewGame(
                     pieces: top,
                     counts: null,
                     delta: 0,
-                    x: stack.x + 50,
+                    x: stack.x + (stack.width || stack.radius * 2) + 20,
                     y: stack.y + 50,
                   };
                   pieces[topStack.id] = topStack;

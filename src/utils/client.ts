@@ -13,6 +13,8 @@ import {
   Game,
   Assets,
   Pieces,
+  PromptPlayersEvent,
+  PromptResultsEvent,
 } from '../types';
 import { createPeer } from './peer';
 import { update } from 'lodash';
@@ -38,11 +40,39 @@ interface ClientState {
   };
   peekingCards: string[];
   peekingDiscardedCards: string[];
+  activePrompts: PromptPlayersEvent[];
+  promptResults: {
+    [promptId: string]: PromptResultsEvent;
+  };
   renderCount: number;
 }
 
 function clientReducer(state: ClientState, data: GameEvent) {
   switch (data.event) {
+    case 'prompt_players': {
+      return {
+        ...state,
+        activePrompts: [...state.activePrompts, data],
+      };
+    }
+
+    case 'clear_prompt_result': {
+      return {
+        ...state,
+        activePrompts: state.activePrompts.slice(1),
+      };
+    }
+
+    case 'prompt_results': {
+      return {
+        ...state,
+        promptResults: {
+          ...state.promptResults,
+          [data.promptId]: data,
+        },
+      };
+    }
+
     case 'asset_loaded': {
       const { asset } = data;
       const assets = { ...state.assets };
@@ -293,6 +323,8 @@ export function useGameClient(gameId: string, hostId: string) {
       peekingPlayers: {},
       peekingCards: [],
       peekingDiscardedCards: [],
+      activePrompts: [],
+      promptResults: {},
       renderCount: 0,
     },
     (state: ClientState) => state
@@ -312,8 +344,12 @@ export function useGameClient(gameId: string, hostId: string) {
     peekingPlayers,
     peekingCards,
     peekingDiscardedCards,
+    activePrompts,
+    promptResults,
     renderCount,
   } = state;
+
+  const clearPrompt = () => dispatch({ event: 'clear_prompt_result' });
 
   const updatePieces = (p: Pieces) =>
     dispatch({ event: 'local_piece_update', pieces: p });
@@ -406,6 +442,9 @@ export function useGameClient(gameId: string, hostId: string) {
     peekingPlayers,
     peekingCards,
     peekingDiscardedCards,
+    activePrompts,
+    promptResults,
+    clearPrompt,
     renderCount,
   };
 }

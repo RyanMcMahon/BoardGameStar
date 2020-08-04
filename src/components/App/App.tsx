@@ -19,12 +19,22 @@ import { RenameModal } from '../RenameModal';
 import { ProgressBar } from '../ProgressBar';
 import { facts } from '../../utils/facts';
 import { setName } from '../../utils/identity';
-import { RenderPiece, PlayerPiece, DiceSet, Transaction } from '../../types';
+import {
+  RenderPiece,
+  PlayerPiece,
+  DiceSet,
+  Transaction,
+  GamePrompt,
+  GamePromptAnswer,
+} from '../../types';
 import { ControlsMenu } from '../ControlsMenu';
 import { DiceModal } from '../DiceModal';
 import { Chat } from '../Chat';
 import { SettingsModal } from '../SettingsModal';
 import { AppContext, initialState, appReducer } from './AppContext';
+import { PromptSelectModal } from '../PromptSelectModal';
+import { config } from 'process';
+import { PlayerPromptModal } from '../PlayerPromptModal/PlayerPromptModal';
 
 const MainContainer = styled.div({
   height: '100%',
@@ -194,6 +204,9 @@ export const App: React.FC = () => {
     handCounts,
     updatePieces,
     failedConnection,
+    activePrompts,
+    promptResults,
+    clearPrompt,
     renderCount,
     // TODO
     // myDice,
@@ -206,6 +219,9 @@ export const App: React.FC = () => {
     p => p.type === 'player' && p.playerId
   ) as PlayerPiece[];
   const player = players.find(p => p.playerId === playerId);
+  const [showPromptSelectModal, setShowPromptSelectModal] = React.useState(
+    false
+  );
 
   let sendUpdatedPiecesRef = React.useRef<
     (updatedPieces: { [id: string]: RenderPiece }) => void
@@ -311,6 +327,28 @@ export const App: React.FC = () => {
         amount,
       });
       setTransactionModalOptions(null);
+    }
+  };
+
+  const handleSelectPrompt = (prompt: GamePrompt, players: string[]) => {
+    if (conn) {
+      conn.send({
+        event: 'prompt_players',
+        prompt,
+        players,
+      });
+      setShowPromptSelectModal(false);
+    }
+  };
+
+  const handleSubmitAnswers = (answers?: GamePromptAnswer[]) => {
+    if (conn) {
+      conn.send({
+        answers,
+        event: 'prompt_submission',
+        promptId: activePrompts[0].prompt.id || '',
+      });
+      setShowPromptSelectModal(false);
     }
   };
 
@@ -639,6 +677,7 @@ export const App: React.FC = () => {
             passCards={handlePassCards}
             discard={handleDiscard}
             promptTransaction={setTransactionModalOptions}
+            onPromptPlayers={() => setShowPromptSelectModal(true)}
             player={player}
             players={
               Object.values(pieces).filter(
@@ -732,6 +771,29 @@ export const App: React.FC = () => {
           transactions={transactionModalOptions}
           onClose={() => setTransactionModalOptions(null)}
           onSubmit={handleSubmitTransaction}
+        />
+      )}
+
+      {showPromptSelectModal && (
+        <PromptSelectModal
+          onClose={() => setShowPromptSelectModal(false)}
+          onSelectPrompt={handleSelectPrompt}
+          prompts={game?.config.prompts || []}
+          players={players}
+        />
+      )}
+
+      {!!activePrompts.length && (
+        <PlayerPromptModal
+          assets={assets}
+          pieces={pieces}
+          hand={myHand}
+          event={activePrompts[0]}
+          onClose={clearPrompt}
+          onSubmitAnswers={handleSubmitAnswers}
+          results={promptResults[activePrompts[0].prompt.id || '']}
+          players={players}
+          playerId={playerId}
         />
       )}
 

@@ -100,8 +100,28 @@ export type AnyPieceOption =
   | MoneyTokenOption
   | RectTokenOption;
 
+export interface GamePromptInput {
+  type: 'text' | 'number' | 'hand';
+  label: string;
+}
+
+export interface GamePrompt {
+  id?: string;
+  title: string;
+  inputs: GamePromptInput[];
+}
+
+export type GamePromptAnswer = string | number | null;
+
+export interface GamePromptSubmission {
+  promptId: string;
+  playerId: string;
+  answers: GamePromptAnswer[];
+}
+
 export interface GameConfig {
   currency?: string;
+  prompts?: GamePrompt[];
   curScenario: string;
   scenarios: {
     [id: string]: ScenarioOption;
@@ -535,6 +555,26 @@ export interface ChatEvent {
   message: string;
 }
 
+export interface PromptPlayersEvent {
+  event: 'prompt_players';
+  prompt: GamePrompt;
+  players: string[];
+}
+
+export interface PromptSubmissionEvent {
+  event: 'prompt_submission';
+  promptId: string;
+  answers?: GamePromptAnswer[];
+}
+
+export interface PromptResultsEvent {
+  event: 'prompt_results';
+  promptId: string;
+  results: {
+    [playerId: string]: GamePromptAnswer[] | boolean;
+  };
+}
+
 export interface LocalPieceUpdate {
   event: 'local_piece_update';
   pieces: Pieces;
@@ -544,8 +584,14 @@ export interface LoadComplete {
   event: 'load_complete';
 }
 
+export interface ClearPromptResult {
+  event: 'clear_prompt_result';
+}
+
 export type ClientEvent =
   | TransactionEvent
+  | PromptPlayersEvent
+  | PromptSubmissionEvent
   | ChatEvent
   | RollDiceEvent
   | DrawCardsEvent
@@ -568,6 +614,9 @@ export type ClientEvent =
   | UpdatePieceEvent;
 
 export type GameEvent =
+  | ClearPromptResult
+  | PromptPlayersEvent
+  | PromptResultsEvent
   | LocalPieceUpdate
   | LoadComplete
   | ChatEvent

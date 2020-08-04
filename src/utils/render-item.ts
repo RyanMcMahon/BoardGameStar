@@ -294,7 +294,13 @@ export class RenderItem extends Container {
       for (let i = 0; i < stackCount; i++) {
         const stackItem = new Graphics();
         stackItem.beginFill(0x000000);
-        stackItem.drawRoundedRect(50, i * 20, 30, 18, 4);
+        stackItem.drawRoundedRect(
+          (this.piece.width || this.piece.radius * 2) + 10,
+          i * 20,
+          30,
+          18,
+          4
+        );
         stackItem.alpha = 0.4;
         stackItem.endFill();
         stackItem.interactive = true;

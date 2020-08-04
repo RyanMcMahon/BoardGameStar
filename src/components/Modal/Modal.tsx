@@ -5,6 +5,7 @@ import { theShadow } from '../../utils/style';
 interface Props {
   zIndex?: number;
   children: React.ReactNode;
+  hideCloseButton?: boolean;
   onClose(): void;
 }
 
@@ -24,6 +25,7 @@ const ModalOverlay = styled.div<ModalProps>((props: ModalProps) => ({
 
 const ModalWrapper = styled.div<ModalProps>((props: ModalProps) => ({
   maxHeight: 'calc(100% - 100px)',
+  maxWidth: '90%',
   display: 'flex',
   position: 'fixed',
   top: '50%',
@@ -62,7 +64,9 @@ export function Modal(props: Props) {
         zIndex={(props.zIndex || DEFAULT_ZINDEX) - 1}
       />
       <ModalWrapper zIndex={props.zIndex || DEFAULT_ZINDEX}>
-        <CloseButton onClick={props.onClose}>&#10005;</CloseButton>
+        {!props.hideCloseButton && (
+          <CloseButton onClick={props.onClose}>&#10005;</CloseButton>
+        )}
         <ModalContent>{props.children}</ModalContent>
       </ModalWrapper>
     </>

@@ -29,6 +29,7 @@ interface Props {
   playCards: (ids: string[], faceDown: boolean) => void;
   passCards: (ids: string[], playerId: string) => void;
   promptTransaction: (transactions: Transaction[]) => void;
+  onPromptPlayers: () => void;
   player: PlayerPiece | undefined;
   players: PlayerPiece[];
   discard: (ids: string[]) => void;
@@ -205,6 +206,7 @@ export function PlayerHand(props: Props): JSX.Element {
     passCards,
     discard,
     promptTransaction,
+    onPromptPlayers,
     pieces,
     player,
     players,
@@ -364,6 +366,10 @@ export function PlayerHand(props: Props): JSX.Element {
               {player.name}
             </PlayerName>
           )}
+
+          <Button design="primary" onClick={onPromptPlayers}>
+            Prompt Players
+          </Button>
 
           <ButtonControls>
             <Button

@@ -17,12 +17,15 @@ import {
   Game,
   PublicGame,
   StackablePieceOption,
+  GamePrompt,
 } from '../../types';
 import { DeckEditorModal } from '../DeckEditorModal/DeckEditorModal';
 import { ScenarioModal } from '../ScenarioModal';
 import { addGame } from '../../utils/store';
 import { FaExpand } from 'react-icons/fa';
 import { EditGameModal } from '../EditGameModal';
+import { EditPromptModal } from '../EditPromptModal';
+import { Prompt } from 'react-router-dom';
 
 interface Props {
   state: EditorState;
@@ -93,6 +96,13 @@ const InlineInputContainer = styled.div({
   input: {
     marginLeft: '1rem',
     width: '75px',
+  },
+});
+
+const PromptsWrapper = styled.div({
+  marginBottom: '.5rem',
+  [Button]: {
+    marginLeft: '.5rem',
   },
 });
 
@@ -202,6 +212,10 @@ export function Editor(props: Props) {
   const [assets, setAssets] = React.useState<{ [key: string]: string }>(
     state.assets || {}
   );
+  const [selectedPrompt, setSelectedPrompt] = React.useState<number | null>(0);
+  const [promptModalIndex, setPromptModalIndex] = React.useState<number | null>(
+    null
+  );
   const [deckModalId, setDeckModalId] = React.useState<string>();
   const [showControls, setShowControls] = React.useState(true);
   const [showEditGameModal, setShowEditGameModal] = React.useState(false);
@@ -243,6 +257,7 @@ export function Editor(props: Props) {
       summary: state.summary,
       description: state.description,
       config: {
+        prompts: state.prompts,
         currency: state.currency,
         curScenario: state.curScenario,
         scenarios: state.scenarios,
@@ -528,6 +543,52 @@ export function Editor(props: Props) {
               Duplicate Scenario
             </Button>
 
+            <label>Prompts</label>
+            {state.prompts && (
+              <PromptsWrapper>
+                <select
+                  onChange={e => {
+                    const index = parseInt(e.currentTarget.value, 10);
+                    setSelectedPrompt(index);
+                  }}
+                >
+                  {(state.prompts || []).map((prompt: GamePrompt, index) => (
+                    <option key={index} value={index}>
+                      {prompt.title}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  design="primary"
+                  onClick={() => setPromptModalIndex(selectedPrompt)}
+                >
+                  Edit Prompt
+                </Button>
+              </PromptsWrapper>
+            )}
+            <Button
+              className="u-full-width"
+              design="primary"
+              onClick={() => {
+                const prompts = [
+                  ...(state.prompts || []),
+                  {
+                    title: '',
+                    inputs: [],
+                  },
+                ];
+                dispatch({
+                  game: {
+                    prompts,
+                  },
+                  type: 'update_game',
+                });
+                setPromptModalIndex(prompts.length - 1);
+              }}
+            >
+              Add Prompt
+            </Button>
+
             <label>Pieces</label>
             <ButtonGrid>
               <Button
@@ -571,7 +632,10 @@ export function Editor(props: Props) {
                 {selectedPiece.type === 'image' && (
                   <>
                     {selectedPiece.back && (
-                      <img src={assets[selectedPiece.back]} />
+                      <img
+                        alt="selected piece"
+                        src={assets[selectedPiece.back]}
+                      />
                     )}
                     <Button
                       design="primary"
@@ -805,6 +869,28 @@ export function Editor(props: Props) {
           }}
         />
       )}
+
+      {promptModalIndex !== null &&
+        state.prompts &&
+        state.prompts[promptModalIndex] && (
+          <EditPromptModal
+            prompt={state.prompts[promptModalIndex]}
+            onClose={() => setPromptModalIndex(null)}
+            onUpdate={prompt => {
+              dispatch({
+                game: {
+                  prompts: [
+                    ...(state.prompts || []).slice(0, promptModalIndex),
+                    prompt,
+                    ...(state.prompts || []).slice(promptModalIndex + 1),
+                  ],
+                },
+                type: 'update_game',
+              });
+            }}
+          />
+        )}
+
       {deckModalId && (
         <DeckEditorModal
           deckId={deckModalId}
@@ -815,6 +901,7 @@ export function Editor(props: Props) {
           onClose={() => setDeckModalId('')}
         />
       )}
+
       {showEditGameModal && (
         <EditGameModal
           game={state}
