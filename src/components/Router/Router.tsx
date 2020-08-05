@@ -83,6 +83,9 @@ export function Router() {
         <Route path="/play/:hostId/:gameId">
           <App />
         </Route>
+        <Route path="/spectate/:hostId/:gameId">
+          <App spectator={true} />
+        </Route>
 
         <Route path="/editor">
           {state.curScenario ? (

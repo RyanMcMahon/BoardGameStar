@@ -119,7 +119,7 @@ const LoadingPage = styled.div({
   bottom: 0,
   left: 0,
   backgroundColor: '#fff',
-  zIndex: 3000,
+  zIndex: 90000,
 });
 
 const LoadingContainer = styled.div({
@@ -187,7 +187,7 @@ const tableConfig = {
   },
 };
 
-export const App: React.FC = () => {
+export function App(props: { spectator?: boolean }) {
   const [state, dispatch] = React.useReducer(appReducer, initialState);
   const { gameId = '', hostId = '' } = useParams();
   const {
@@ -214,7 +214,7 @@ export const App: React.FC = () => {
     // peekingPlayers,
     // peekingCards,
     // peekingDiscardedCards,
-  } = useGameClient(gameId, hostId);
+  } = useGameClient(gameId, hostId, props.spectator);
   const players = Object.values(pieces).filter(
     p => p.type === 'player' && p.playerId
   ) as PlayerPiece[];
@@ -303,6 +303,8 @@ export const App: React.FC = () => {
         ids,
         event: 'create_stack',
       });
+
+      setSelectedPieceIds(new Set());
     }
   };
 
@@ -313,6 +315,7 @@ export const App: React.FC = () => {
         count,
         event: 'split_stack',
       });
+      setSelectedPieceIds(new Set());
     }
   };
 
@@ -326,6 +329,7 @@ export const App: React.FC = () => {
         transaction,
         amount,
       });
+      setSelectedPieceIds(new Set());
       setTransactionModalOptions(null);
     }
   };
@@ -395,6 +399,7 @@ export const App: React.FC = () => {
   };
 
   const table = useTable({
+    spectator: props.spectator,
     handleCreateStack,
     handleSplitStack,
     handleUpdatePiece,
@@ -425,7 +430,7 @@ export const App: React.FC = () => {
     false
   );
   const [showRenameModal, setShowRenameModal] = React.useState<boolean>(false);
-  const [showInviteModal, setShowInviteModal] = React.useState<boolean>(false);
+  const [showInviteModal, setShowInviteModal] = React.useState<boolean>(true);
   const [showDiceModal, setShowDiceModal] = React.useState<boolean>(false);
   const [lastReadChat, setLastReadChat] = React.useState<number>(0);
   const [showChat, setShowChat] = React.useState<boolean>(false);
@@ -666,7 +671,7 @@ export const App: React.FC = () => {
           {showPlayerControls ? <>&rsaquo;</> : <>&lsaquo;</>}
         </TogglePlayerContainerButton> */}
 
-        {game && (
+        {!props.spectator && game && (
           <PlayerHand
             config={game.config}
             assets={assets}
@@ -691,25 +696,27 @@ export const App: React.FC = () => {
         )}
       </AppContainer>
 
-      <ControlsMenu
-        pieces={pieces}
-        selectedPieces={selectedPieces}
-        chat={chat}
-        lastReadChat={lastReadChat}
-        onShowChat={() => setShowChat(true)}
-        allUnlocked={allUnlocked}
-        onUpdatePieces={handleUpdatePieces}
-        onShowDrawModal={setDrawModalId}
-        onShuffleDiscarded={handleShuffleDiscarded}
-        onDiscardPlayed={handleDiscardPlayed}
-        onDiscardSelected={handleDiscard}
-        onPromptTransaction={handlePromptTransaction}
-        onClearSelectedPieces={() => setSelectedPieceIds(new Set())}
-        onShowDiceModal={() => setShowDiceModal(true)}
-        onZoomIn={() => container && (container as Viewport).zoom(-200)}
-        onZoomOut={() => container && (container as Viewport).zoom(200)}
-        onShowSettingsModal={() => setShowSettingsModal(true)}
-      />
+      {!props.spectator && (
+        <ControlsMenu
+          pieces={pieces}
+          selectedPieces={selectedPieces}
+          chat={chat}
+          lastReadChat={lastReadChat}
+          onShowChat={() => setShowChat(true)}
+          allUnlocked={allUnlocked}
+          onUpdatePieces={handleUpdatePieces}
+          onShowDrawModal={setDrawModalId}
+          onShuffleDiscarded={handleShuffleDiscarded}
+          onDiscardPlayed={handleDiscardPlayed}
+          onDiscardSelected={handleDiscard}
+          onPromptTransaction={handlePromptTransaction}
+          onClearSelectedPieces={() => setSelectedPieceIds(new Set())}
+          onShowDiceModal={() => setShowDiceModal(true)}
+          onZoomIn={() => container && (container as Viewport).zoom(-200)}
+          onZoomOut={() => container && (container as Viewport).zoom(200)}
+          onShowSettingsModal={() => setShowSettingsModal(true)}
+        />
+      )}
 
       {drawModalId && (
         <DeckModal
@@ -733,8 +740,11 @@ export const App: React.FC = () => {
 
       {showInviteModal && (
         <InviteModal
+          playerId={playerId}
+          players={players}
           hostId={hostId}
           gameId={gameId}
+          onRename={handleRename}
           onClose={() => setShowInviteModal(false)}
         />
       )}
@@ -829,4 +839,4 @@ export const App: React.FC = () => {
       {/* <FPSStats /> */}
     </MainContainer>
   );
-};
+}

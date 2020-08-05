@@ -34,6 +34,7 @@ interface GamePeerDataConnection extends Peer.DataConnection {
   metadata: {
     playerId: string;
     name: string;
+    spectator?: boolean;
   };
 }
 
@@ -284,52 +285,71 @@ export function createNewGame(
     cb(gameState);
 
     peer.on('connection', (conn: GamePeerDataConnection) => {
-      const { playerId, name } = conn.metadata;
-      // TODO spectator
-      const playerCount = Object.keys(players).length + 1;
-      const player: Player = players[playerId] || {
-        conn,
-        name: name || `Player ${playerCount}`,
-        hand: [],
-      };
+      const { playerId, name, spectator } = conn.metadata;
+      let playerCount;
+      let player: Player;
+
       clients.push(conn);
-      players[playerId] = player;
+
+      if (!spectator) {
+        playerCount = Object.keys(players).length + 1;
+        player = players[playerId] || {
+          conn,
+          name: name || `Player ${playerCount}`,
+          hand: [],
+        };
+        players[playerId] = player;
+      }
 
       conn.on('open', () => {
-        const playAreaId = scenario.players[_.size(players) - 1];
-        let playArea = pieces[playAreaId] as PlayerPiece;
-        playArea.playerId = playerId;
-        playArea.delta++;
-        playArea.name = player.name;
-        pieces[playArea.id] = playArea;
+        let playArea: PlayerPiece;
+        if (!spectator) {
+          const playAreaId = scenario.players[_.size(players) - 1];
+          playArea = pieces[playAreaId] as PlayerPiece;
+          playArea.playerId = playerId;
+          playArea.delta++;
+          playArea.name = player.name;
+          pieces[playArea.id] = playArea;
+          updatePlayerCount();
+        }
 
         const syncConfig = { ...game };
         delete syncConfig.loadAssets;
         delete syncConfig.store;
 
-        updatePlayerCount();
+        try {
+          conn.send({
+            // pieces,
+            chat,
+            event: 'join',
+            game: syncConfig,
+            assets: sendAssets ? assets : Object.keys(assets),
+            hand: spectator ? [] : player.hand,
+            // board: gameState.board,
+            // TODO remove
+            player: {
+              name: spectator ? 'spectator' : player.name,
+            },
+          });
+        } catch (err) {
+          console.error(err);
+        }
 
-        conn.send({
-          // pieces,
-          chat,
-          event: 'join',
-          game: syncConfig,
-          assets: sendAssets ? assets : Object.keys(assets),
-          hand: player.hand,
-          // board: gameState.board,
-          // TODO remove
-          player: {
-            name: player.name,
-          },
-        });
-
-        sendHandCounts();
-        sendToRoom({
-          event: 'update_piece',
-          pieces: {
-            [playArea.id]: playArea,
-          },
-        });
+        if (spectator) {
+          conn.send({
+            pieces,
+            board: gameState.board,
+            event: 'player_join',
+          });
+        } else {
+          sendHandCounts();
+          sendToRoom({
+            event: 'update_piece',
+            pieces: {
+              [playArea!.id]: playArea!,
+            },
+          });
+        }
 
         conn.on('data', (data: ClientEvent) => {
           switch (data.event) {
@@ -757,7 +777,6 @@ export function createNewGame(
                 const stack = pieces[id];
                 const bottom = stack.pieces.slice(0, count - 1);
                 const top = stack.pieces.slice(count - 1);
-                debugger;
 
                 const piecesToRemove: string[] = [];
                 const piecesToAdd: string[] = [];

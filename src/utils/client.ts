@@ -271,7 +271,11 @@ function clientReducer(state: ClientState, data: GameEvent) {
   }
 }
 
-export function useGameClient(gameId: string, hostId: string) {
+export function useGameClient(
+  gameId: string,
+  hostId: string,
+  spectator?: boolean
+) {
   // const [, setRenderCount] = React.useState<number>(1);
   const [failedConnection, setFailedConnection] = React.useState(false);
   const [checkTimeout, setCheckTimeout] = React.useState(false);
@@ -400,6 +404,7 @@ export function useGameClient(gameId: string, hostId: string) {
         metadata: {
           playerId,
           name,
+          spectator,
         },
         reliable: true,
       });

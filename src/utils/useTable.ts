@@ -37,6 +37,7 @@ interface PieceConfig {
 }
 
 interface TableOptions {
+  spectator?: boolean;
   singleSelection?: boolean;
   handleCreateStack: (ids: string[]) => void;
   handleSplitStack: (id: string, count: number) => void;
@@ -293,8 +294,8 @@ export const useTable = (options: TableOptions) => {
             }
           };
 
-          child.id = piece.id; // TODO - redundant??
-          child.interactive = true;
+          // child.id = piece.id; // TODO - redundant??
+          // child.interactive = true;
 
           // if (piece.type === 'stack') {
           //   child.setStack(piece.pieces.length);
@@ -361,6 +362,7 @@ function getRenderItem(
     assets,
     textures,
     config,
+    spectator,
     handleCreateStack,
     handleSplitStack,
     handleSubmitTransaction,
@@ -446,6 +448,8 @@ function getRenderItem(
       if (onDblClickDeck) {
         child.on('dblclick', () => onDblClickDeck!(piece.id));
       }
+
+      child.interactive = !spectator;
       return child;
     }
 
@@ -471,6 +475,7 @@ function getRenderItem(
         child.on('dblclick', () => onDblClickCard!(piece.id));
       }
 
+      child.interactive = !spectator;
       return child;
     }
 
@@ -551,6 +556,7 @@ function getRenderItem(
         child.on('dblclick', () => onDblClickMoney!(piece.id));
       }
 
+      child.interactive = !spectator;
       return child;
     }
 
@@ -586,6 +592,7 @@ function getRenderItem(
         },
       });
       // child.scale.copyFrom(container.scale);
+      child.interactive = !spectator;
       return child;
     }
 
@@ -613,6 +620,7 @@ function getRenderItem(
       // child.scale.set(1);
 
       child.sprite.tint = utils.string2hex(piece.color);
+      child.interactive = !spectator;
       return child;
     }
 
@@ -664,6 +672,7 @@ function getRenderItem(
       });
 
       child.addChild(circle);
+      child.interactive = !spectator;
       return child;
     }
 
@@ -692,6 +701,7 @@ function getRenderItem(
       child.addChild(rect);
       child.addChild(text);
 
+      child.interactive = !spectator;
       return child;
     }
 
@@ -724,6 +734,7 @@ function getRenderItem(
       text.x = 64 - text.width / 2;
       text.y = dieOptions.y;
       child.addChild(text);
+      child.interactive = !spectator;
       return child;
     }
 
@@ -765,7 +776,9 @@ function showStackPrompt(
 
       // TODO brightness?
       stackRender.alpha = 0.5; // TODO use piece opacity
-      el.setStack((stack.pieces || [1]).length + 1);
+      el.setStack(
+        (stack.pieces || [1]).length + (curPiece.pieces || [1]).length
+      );
     } else {
       el.setStack();
     }

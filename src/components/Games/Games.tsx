@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import slug from 'slugid';
 import React from 'react';
 import { Redirect } from 'react-router-dom';
 import styled from 'styled-components';
@@ -146,7 +147,13 @@ export function Games(props: Props) {
   };
 
   const handleCreateGame = (name: string) => {
+    const id = slug.nice();
+    const myGames = (window.localStorage.getItem('my_games') || '')
+      .split(',')
+      .filter((x: string) => x);
+    window.localStorage.setItem('my_games', [...myGames, id].join(','));
     props.dispatch({
+      id,
       name,
       type: 'create_game',
     });

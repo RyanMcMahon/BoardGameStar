@@ -15,7 +15,7 @@ export function editorReducer(
 ): EditorState {
   switch (action.type) {
     case 'create_game': {
-      const { name } = action;
+      const { name, id } = action;
       // const { name } = editorConfig;
       const player1: PlayerOption = {
         id: slug.nice(),
@@ -49,8 +49,8 @@ export function editorReducer(
       };
       return {
         name,
+        id,
         version: 1,
-        id: slug.nice(),
         store: isWebBuild ? 'browser' : 'file',
         tags: [],
         summary: '',

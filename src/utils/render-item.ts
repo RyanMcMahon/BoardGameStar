@@ -366,15 +366,15 @@ export class RenderItem extends Container {
       const circle = new Graphics();
       circle.beginFill(utils.string2hex('#000'));
       circle.lineStyle(0);
-      circle.drawCircle(-5, -5, 15);
+      circle.drawCircle(-6, -6, 16);
       circle.endFill();
       const stackCount = new Text(`${count}`, {
-        fontSize: '16px',
+        fontSize: '18px',
         fill: 'white',
         align: 'center',
       });
-      stackCount.x = -5;
-      stackCount.y = -5;
+      stackCount.x = -6;
+      stackCount.y = -6;
       stackCount.anchor.set(0.5);
 
       stackContainer.addChild(circle);

@@ -81,13 +81,17 @@ const SideMenuButton = styled(FaBars)({
 //   flex: 1,
 // });
 
-const NewGameLink = styled(Link)({
+// const NewGameLink = styled(Link)({
+//   textDecoration: 'none',
+//   [breakpoints.mobile]: {
+//     width: '100%',
+//     boxSizing: 'border-box',
+//     display: 'flex',
+//   },
+// });
+
+const ButtonLink = styled(Link)({
   textDecoration: 'none',
-  [breakpoints.mobile]: {
-    width: '100%',
-    boxSizing: 'border-box',
-    display: 'flex',
-  },
 });
 
 const NewGameButton = styled(Button)({
@@ -112,7 +116,7 @@ const MainContent = styled.div({
   flex: 1,
 });
 
-const SideMenu = styled.div({
+const SideMenu = styled.div<{ shown: boolean }>(({ shown }) => ({
   backgroundColor: '#f0f0f0',
   width: '240px',
   padding: '2rem 1rem',
@@ -120,11 +124,14 @@ const SideMenu = styled.div({
   height: '100vh',
   overflowY: 'scroll',
   zIndex: 900,
+  left: shown ? 0 : '-280px',
+  transition: 'left 0.2s ease-in',
   [breakpoints.desktop]: {
+    left: 0,
     height: 'auto',
     position: 'relative',
   },
-});
+}));
 
 const Footer = styled.div({
   // maxWidth: '960px',
@@ -140,6 +147,9 @@ export function WebPage(props: Props) {
   const history = useHistory();
   const { currentUser, isLoading } = useUser();
   const [tags, setTags] = React.useState<string[]>([]);
+  const [isSideMenuVisible, setIsSideMenuVisible] = React.useState<boolean>(
+    false
+  );
   const hostIdRef = React.createRef<HTMLInputElement>();
   const gameIdRef = React.createRef<HTMLInputElement>();
   const handleSubmitJoin = (e: React.FormEvent<HTMLFormElement>) => {
@@ -156,10 +166,14 @@ export function WebPage(props: Props) {
     }
   };
 
+  React.useEffect(() => setIsSideMenuVisible(false), [history.location]);
+
   return (
     <Page>
       <Menu>
-        <SideMenuButton />
+        <SideMenuButton
+          onClick={() => setIsSideMenuVisible(!isSideMenuVisible)}
+        />
         <MenuHeader to="/">
           <img src="favicon-32x32_white.png" alt="favicon" />
           Board Game Star
@@ -167,23 +181,46 @@ export function WebPage(props: Props) {
       </Menu>
 
       <ContentContainer>
-        <SideMenu>
+        <SideMenu shown={isSideMenuVisible}>
           {!isLoading && (
             <>
               {currentUser ? (
-                <NewGameLink to="/my-account">
-                  {currentUser!.displayName || currentUser!.email}
-                </NewGameLink>
+                <ButtonLink to="/my-account">
+                  <Button design="primary" block={true}>
+                    {currentUser!.displayName || currentUser!.email}
+                  </Button>
+                </ButtonLink>
               ) : (
                 <>
-                  <NewGameLink to="/sign-up">Sign Up</NewGameLink>
-                  <NewGameLink to="/log-in">Log In</NewGameLink>
+                  <ButtonLink to="/sign-up">
+                    <Button design="primary" block={true}>
+                      Sign Up
+                    </Button>
+                  </ButtonLink>
+                  <ButtonLink to="/log-in">
+                    <Button design="primary" block={true}>
+                      Log In
+                    </Button>
+                  </ButtonLink>
                 </>
               )}
             </>
           )}
 
+          <ButtonLink to="/">
+            <Button design="primary" block={true}>
+              All Games
+            </Button>
+          </ButtonLink>
+
+          <ButtonLink to="/games">
+            <Button design="primary" block={true}>
+              My Games
+            </Button>
+          </ButtonLink>
+
           <form onSubmit={handleSubmitJoin}>
+            <label>Join Game</label>
             <input
               className="u-full-width"
               type="text"
@@ -201,14 +238,8 @@ export function WebPage(props: Props) {
             </Button>
           </form>
 
-          <hr />
-
-          <NewGameLink to="/games">My Games</NewGameLink>
-
-          <hr />
-
-          <h3>Search</h3>
-          <TagSelect tags={tags} onUpdate={setTags} />
+          {/* <h3>Search</h3>
+          <TagSelect tags={tags} onUpdate={setTags} /> */}
         </SideMenu>
         <MainContent>{props.children}</MainContent>
       </ContentContainer>

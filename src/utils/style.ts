@@ -18,10 +18,12 @@ export const theShadow = `0px 3px 7px rgba(0, 0, 0, 0.5)`;
 export const maxMobileWidth = 650;
 export const minTabletWidth = maxMobileWidth + 1;
 export const maxTabletWidth = 900;
+export const mediumDesktop = 1150;
 export const breakpoints = {
   mobile: `@media (max-width: ${maxMobileWidth}px)`,
   tablet: `@media (min-width: ${minTabletWidth}px) and (max-width: ${maxTabletWidth}px)`,
   desktop: `@media (min-width: ${maxTabletWidth}px)`,
+  mediumDesktop: `@media (min-width: ${mediumDesktop}px)`,
 };
 
 const buttonStyles: {
@@ -47,6 +49,7 @@ const buttonStyles: {
 export const Button = styled.button((options: ButtonOptions) => ({
   fontSize: '14px',
   textTransform: 'capitalize' as any,
+  // textDecoration: 'none !important',
   lineHeight: '36px',
   margin: 0,
   backgroundColor: buttonStyles[options.design].base,

@@ -183,6 +183,7 @@ export interface PublishableGame extends Omit<PublicGame, 'files'> {
 export interface CreateGameAction {
   type: 'create_game';
   name: string;
+  id: string;
 }
 
 export interface EditGameAction {

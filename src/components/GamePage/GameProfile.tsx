@@ -89,7 +89,7 @@ export function GameProfile() {
       <Summary>{game.summary}</Summary>
       <Designer>
         Designer:{' '}
-        <DesignerLink to={`users/${user.userId}`}>
+        <DesignerLink to={`/users/${user.userId}`}>
           {user.displayName}
         </DesignerLink>
       </Designer>

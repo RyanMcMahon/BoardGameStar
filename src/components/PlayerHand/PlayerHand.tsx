@@ -18,7 +18,14 @@ import {
 } from '../../types';
 import { prependPrefix } from '../../utils/assets';
 import { Link } from 'react-router-dom';
-import { FaSortUp, FaSortDown, FaCheckCircle } from 'react-icons/fa';
+import {
+  FaSortUp,
+  FaSortDown,
+  FaCheckCircle,
+  FaSignOutAlt,
+  FaQuestion,
+  FaQuestionCircle,
+} from 'react-icons/fa';
 
 interface Props {
   config: GameConfig;
@@ -76,6 +83,19 @@ const Controls = styled.div({
   },
 });
 
+const MobileHidden = styled.span({
+  [breakpoints.mobile]: {
+    display: 'none',
+  },
+});
+
+const IconButton = styled(Button)({
+  svg: {
+    position: 'relative',
+    top: '3px',
+  },
+});
+
 const DrawerControls = styled.div({
   [`> ${Button}`]: {
     marginLeft: '.5rem',
@@ -83,14 +103,12 @@ const DrawerControls = styled.div({
 });
 
 const ButtonControls = styled.span({
+  display: 'none',
   [`> ${Button}`]: {
     marginLeft: '.5rem',
   },
-  [breakpoints.mobile]: {
-    display: 'none',
-  },
-  [breakpoints.tablet]: {
-    display: 'none',
+  [breakpoints.mediumDesktop]: {
+    display: 'inline',
   },
 });
 
@@ -107,7 +125,7 @@ const CardDrawerButton = styled.div({
     position: 'relative',
     top: '8px',
   },
-  [breakpoints.desktop]: {
+  [breakpoints.mediumDesktop]: {
     display: 'none',
   },
 });
@@ -141,20 +159,17 @@ const CardDrawerImageSelect = styled(FaCheckCircle)({
 });
 
 const CardWrapper = styled.div({
+  display: 'none',
   bottom: 0,
   height: `${CARD_OFFSET * 1.5}px`,
   paddingTop: `${CARD_OFFSET}px`,
   overflow: 'hidden',
-  display: 'flex',
   flexDirection: 'row',
   flexWrap: 'nowrap',
   backgroundColor: 'rgba(0, 0, 0, 0.3)',
   justifyContent: 'center',
-  [breakpoints.mobile]: {
-    display: 'none',
-  },
-  [breakpoints.tablet]: {
-    display: 'none',
+  [breakpoints.mediumDesktop]: {
+    display: 'flex',
   },
 });
 
@@ -357,19 +372,22 @@ export function PlayerHand(props: Props): JSX.Element {
             )}
         </CardWrapper>
         <Controls>
-          {player && (
-            <PlayerName
-              design="primary"
-              color={player.color}
-              onClick={onRename}
-            >
-              {player.name}
-            </PlayerName>
-          )}
+          <MobileHidden>
+            {player && (
+              <PlayerName
+                design="primary"
+                color={player.color}
+                onClick={onRename}
+              >
+                {player.name}
+              </PlayerName>
+            )}
+          </MobileHidden>
 
-          <Button design="primary" onClick={onPromptPlayers}>
-            Prompt Players
-          </Button>
+          <IconButton design="primary" onClick={onPromptPlayers}>
+            <MobileHidden>Prompt Players&nbsp;</MobileHidden>
+            <FaQuestionCircle />
+          </IconButton>
 
           <ButtonControls>
             <Button
@@ -432,7 +450,10 @@ export function PlayerHand(props: Props): JSX.Element {
           )}
 
           <Link to="/games" className="u-pull-right">
-            <Button design="danger">Leave Game</Button>
+            <IconButton design="danger">
+              <MobileHidden>Leave Game&nbsp;</MobileHidden>
+              <FaSignOutAlt />
+            </IconButton>
           </Link>
         </Controls>
       </HandWrapper>

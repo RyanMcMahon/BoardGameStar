@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import React from 'react';
 
-import { Game } from '../../types';
+import { Game, PublicGame } from '../../types';
 import { deleteGame } from '../../utils/store';
 import { Button } from '../../utils/style';
 import styled from 'styled-components';
@@ -26,6 +26,11 @@ const GameHeader = styled.h3({
   margin: '2rem 0 .5rem',
 });
 
+const GameSummary = styled.div({
+  height: '80px',
+  overflow: 'hidden',
+});
+
 const Select = styled.select({
   margin: '0 1rem 0 0',
   height: '40px',
@@ -41,7 +46,31 @@ export function GameSelector(props: Props) {
   const { config: game, name, onReloadConfigs } = props;
   const [showPublishModal, setShowPublishModal] = React.useState(false);
   const scenarioRef = React.createRef<HTMLSelectElement>();
-  console.log(game);
+  const myGames = ((window.localStorage.getItem('my_games') as any) || '')
+    .split(',')
+    .filter((x: string) => x);
+
+  const dropdownItems = [
+    {
+      label: 'Edit',
+      fn: () => props.onEditGame(game),
+    },
+  ];
+
+  if (myGames.includes(game.id)) {
+    dropdownItems.push({
+      label: 'Publish',
+      fn: () => setShowPublishModal(true),
+    });
+  }
+
+  dropdownItems.push({
+    label: 'Delete',
+    fn: () => {
+      deleteGame(game.id);
+      onReloadConfigs();
+    },
+  });
 
   const handleGameSelect = () => {
     if (scenarioRef && scenarioRef.current) {
@@ -63,7 +92,6 @@ export function GameSelector(props: Props) {
         src={game.thumbnail ? game.thumbnail : 'board_game_star.png'}
       />
       <GameHeader>{name}</GameHeader>
-      {game.summary}
       {_.size(game.config.scenarios) > 1 && (
         <Select defaultValue={game.config.curScenario} ref={scenarioRef}>
           {Object.values(game.config.scenarios).map(scenario => (
@@ -74,30 +102,13 @@ export function GameSelector(props: Props) {
         </Select>
       )}
 
-      <DropdownButton
-        items={[
-          {
-            label: 'Edit',
-            fn: () => props.onEditGame(game),
-          },
-          {
-            label: 'Publish',
-            fn: () => setShowPublishModal(true),
-          },
-          {
-            label: 'Delete',
-            fn: () => {
-              deleteGame(game.id);
-              onReloadConfigs();
-            },
-          },
-        ]}
-        disabled={false}
-      >
+      <DropdownButton items={dropdownItems} disabled={false}>
         <Button design="primary" onClick={handleGameSelect}>
           Play
         </Button>
       </DropdownButton>
+
+      <GameSummary>{game.summary}</GameSummary>
       {/* 
       <Button design="success" onClick={() => setShowPublishModal(true)}>
         Publish
