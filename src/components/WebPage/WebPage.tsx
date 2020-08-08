@@ -244,7 +244,11 @@ export function WebPage(props: Props) {
         <MainContent>{props.children}</MainContent>
       </ContentContainer>
 
-      <Footer>&copy; Copyright {new Date().getFullYear()}</Footer>
+      <Footer>
+        &copy; Copyright {new Date().getFullYear()}
+        <Link to="/terms">Terms of Service</Link>
+        <Link to="/privacy">Privacy Policy</Link>
+      </Footer>
     </Page>
   );
 }

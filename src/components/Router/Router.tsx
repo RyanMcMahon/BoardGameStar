@@ -21,6 +21,8 @@ import { MyAccount } from '../MyAccount';
 import { UserProfile } from '../UserProfile';
 import { GameProfile } from '../GamePage';
 import { WebPage, Content } from '../WebPage';
+import { Terms } from '../Terms';
+import { Privacy } from '../Privacy';
 
 interface Props {
   children: React.ReactNode;
@@ -120,6 +122,14 @@ export function Router() {
                 ) : (
                   <Games dispatch={dispatch} />
                 )}
+              </Route>
+
+              <Route path="/terms">
+                <Terms />
+              </Route>
+
+              <Route path="/privacy">
+                <Privacy />
               </Route>
 
               <Route exact path="/">
