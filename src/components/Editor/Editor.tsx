@@ -229,8 +229,8 @@ export function Editor(props: Props) {
     config: tableConfig,
     onDblClickDeck: (id: string) => setDeckModalId(id),
     handleCreateStack: () => {},
-    handleSplitStack: () => {},
     handleSubmitTransaction: () => {},
+    handleSplitStack: () => {},
     handleUpdatePiece: p =>
       dispatch({
         type: 'update_piece',

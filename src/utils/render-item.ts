@@ -44,13 +44,22 @@ export class RenderItem extends Container {
   dragEnabled: boolean;
   onTransformStart?: () => void;
   onTransformEnd?: () => void;
-  onUpdate?: (rect: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    rotation: number;
-  }) => void;
+  onUpdate?: (
+    props:
+      | {
+          x: number;
+          y: number;
+          width: number;
+          height: number;
+          rotation: number;
+        }
+      | {
+          x: number;
+          y: number;
+          radius: number;
+          rotation: number;
+        }
+  ) => void;
   transforming: boolean;
   sprite: Sprite;
   transformer: Transformer;
@@ -143,7 +152,7 @@ export class RenderItem extends Container {
 
       onTransformEnd: () => {
         this.transforming = false;
-        this.nonSelectClick = false;
+        // this.nonSelectClick = false;
         transformer.setDimensions(this.sprite);
         if (this.onTransformEnd) {
           this.onTransformEnd();
@@ -312,7 +321,6 @@ export class RenderItem extends Container {
                 child.alpha = 0.8;
               }
             });
-            console.log('hover split stack', stackCount - i - 1);
           });
           stackItem.on('mouseout', () => {
             menu.children.forEach((child, index) => {
@@ -320,20 +328,13 @@ export class RenderItem extends Container {
                 child.alpha = 0.4;
               }
             });
-            // stackItem.alpha = 0.4;
-            // console.log('hover split stack', stackCount - i);
           });
           stackItem.on('mouseup', () => {
             this.onSplitStack!(stackCount - i);
-            console.log('split stack', stackCount - i);
           });
         }
         menu.addChild(stackItem);
       }
-      // menu.on('mousemove', () => {
-      //   console.log('split stack');
-      //   this.nonSelectClick = true;
-      // });
 
       this.addChild(menu);
       this.stackMenu = menu;
@@ -432,8 +433,14 @@ export class RenderItem extends Container {
         rotation: this.piece.rotation || 0,
         x: this.piece.x,
         y: this.piece.y,
-        height: this.piece.height,
-        width: this.piece.width,
+        ...(this.piece.type === 'circle'
+          ? {
+              radius: this.piece.radius,
+            }
+          : {
+              height: this.piece.height,
+              width: this.piece.width,
+            }),
       });
     }
   }

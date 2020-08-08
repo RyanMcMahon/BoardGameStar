@@ -15,7 +15,7 @@ interface TransformerOptions {
   onRotate: (angle: number) => void;
 }
 
-const HANDLE_SIZE = 12;
+const HANDLE_SIZE = 20; // 12;
 
 const handleConfigs = [
   // Top Left
@@ -175,8 +175,9 @@ export class Transformer extends Container {
       handleConfigs.forEach(point => {
         // TODO fix uniform scaling for all handles
         if (
-          options.uniformScaling &&
-          (point.constraint.x !== 1 || point.constraint.y !== 1)
+          // options.uniformScaling &&
+          point.constraint.x !== 1 ||
+          point.constraint.y !== 1
         ) {
           return;
         }
@@ -247,7 +248,6 @@ export class Transformer extends Container {
             width: curDimensions.width + diff.x * constraint.x,
             height: curDimensions.height + diff.y * constraint.y,
           };
-          console.log(diff, dimensions);
 
           this.rotateHandle.x = dimensions.width / 2;
           this.resizeHandles.forEach(({ setPosition }) =>

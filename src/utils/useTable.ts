@@ -53,9 +53,9 @@ interface TableOptions {
   config: PieceConfig;
 }
 
-interface Textures {
-  [key: string]: Texture;
-}
+// interface Textures {
+//   [key: string]: Texture;
+// }
 
 const optionsByDie: {
   [key: number]: { y: number; fontSize: number };
@@ -96,7 +96,7 @@ export const useTable = (options: TableOptions) => {
   const { assets, config } = options;
   const [app, setApp] = React.useState<Application>();
   const [, setRenderCount] = React.useState<number>(0);
-  const [textures, setTextures] = React.useState<Textures>({});
+  // const [textures, setTextures] = React.useState<Textures>({});
 
   React.useEffect(() => {
     setApp(
@@ -107,27 +107,29 @@ export const useTable = (options: TableOptions) => {
     );
   }, []);
 
-  React.useEffect(() => {
-    setTextures(loadedTextures => {
-      const unloadedAssets = { ...assets };
-      for (let asset in loadedTextures) {
-        delete unloadedAssets[asset];
-      }
-      const t = Object.entries(unloadedAssets).reduce(
-        (agg, [key, asset]) => ({
-          ...agg,
-          [key]: Texture.from(asset, {
-            // resolution: 300,
-            // width: 100,
-            // height: 100,
-          }),
-        }),
-        {}
-      );
-      // console.log(loadedTextures);
-      return { ...loadedTextures, ...t };
-    });
-  }, [assets]);
+  // React.useEffect(() => {
+  //   setTextures(loadedTextures => {
+  //     console.log('update textures', assets);
+  //     const unloadedAssets = { ...assets };
+  //     for (let asset in loadedTextures) {
+  //       delete unloadedAssets[asset];
+  //     }
+  //     console.log(unloadedAssets);
+  //     const t = Object.entries(unloadedAssets).reduce(
+  //       (agg, [key, asset]) => ({
+  //         ...agg,
+  //         [key]: Texture.from(asset, {
+  //           // resolution: 300,
+  //           // width: 100,
+  //           // height: 100,
+  //         }),
+  //       }),
+  //       {}
+  //     );
+  //     console.log(loadedTextures);
+  //     return { ...loadedTextures, ...t };
+  //   });
+  // }, [assets]);
 
   const piecesRef = React.useRef<RenderPiece[]>([]);
   const setPieces = (p: RenderPiece[]) => {
@@ -284,11 +286,12 @@ export const useTable = (options: TableOptions) => {
           container,
           piecesRef,
           piecesById,
-          textures,
+          // textures,
         });
 
         if (child) {
           const selectPiece = () => {
+            console.log(child.nonSelectClick);
             if (!child.nonSelectClick) {
               onSelectPiece(piece.id);
             }
@@ -326,7 +329,7 @@ export const useTable = (options: TableOptions) => {
     piecesRef,
     options,
     assets,
-    textures,
+    // textures,
     config,
     onSelectPiece,
     selectedPieceIds,
@@ -360,7 +363,7 @@ function getRenderItem(
     container,
     piecesById,
     assets,
-    textures,
+    // textures,
     config,
     spectator,
     handleCreateStack,
@@ -372,7 +375,7 @@ function getRenderItem(
   }: TableOptions & {
     piecesRef: React.MutableRefObject<RenderPiece[]>;
     container: Container;
-    textures: Textures;
+    // textures: Textures;
     piecesById: {
       [id: string]: RenderPiece;
     };
@@ -394,7 +397,7 @@ function getRenderItem(
           el.setDimensions(curPiece as BoardPiece);
         },
       });
-      child.interactive = false;
+      child.interactive = !!config.board.draggable;
       return child;
     }
 
@@ -561,8 +564,10 @@ function getRenderItem(
     }
 
     case 'image': {
-      const faceUpTexture = textures[piece.image];
-      const faceDownTexture = textures[piece.back || piece.image];
+      const faceUpTexture = Texture.from(image);
+      const faceDownTexture = Texture.from(
+        assets[piece.back || ''] || piece.back || image
+      );
 
       const child = new RenderItem({
         ...pieceConfig,
@@ -592,7 +597,7 @@ function getRenderItem(
         },
       });
       // child.scale.copyFrom(container.scale);
-      child.interactive = !spectator;
+      child.interactive = !spectator && piece.id !== 'axis';
       return child;
     }
 

@@ -34,7 +34,7 @@
     "lodash": "^4.17.15",
     "npm": "^6.14.5",
     "peerjs": "^1.2.0",
-    "pixi-viewport": "^4.11.3",
+    "pixi-viewport": "^4.13.2",
     "pixi.js": "^5.2.4",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
@@ -58,7 +58,7 @@
     "husky": "^4.2.5",
     "prettier": "^1.19.1",
     "pretty-quick": "^2.0.1",
-    "react-scripts": "3.3.0"
+    "react-scripts": "^3.4.1"
   },
   "scripts": {
     "start:web": "REACT_APP_WEB_BUILD=1 BROWSER=none react-scripts start",
