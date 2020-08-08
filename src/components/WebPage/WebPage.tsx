@@ -141,6 +141,10 @@ const Footer = styled.div({
   textAlign: 'center',
   color: '#fff',
   // borderTop: '1px solid #ddd',
+  a: {
+    color: '#fff',
+    textDecoration: 'none',
+  },
 });
 
 export function WebPage(props: Props) {
@@ -246,8 +250,12 @@ export function WebPage(props: Props) {
 
       <Footer>
         &copy; Copyright {new Date().getFullYear()}
+        &nbsp;|&nbsp;
         <Link to="/terms">Terms of Service</Link>
+        &nbsp;|&nbsp;
         <Link to="/privacy">Privacy Policy</Link>
+        &nbsp;|&nbsp;
+        <a href="mailto:support@ordinarybytes.com">support@ordinarybytes.com</a>
       </Footer>
     </Page>
   );
