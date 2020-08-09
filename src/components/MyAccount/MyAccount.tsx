@@ -13,7 +13,15 @@ import {
 } from '../../utils/api';
 import { FaCheck, FaCircle } from 'react-icons/fa';
 
-const clientId = `ca_HaWvREmbLHe0LaLUhGcm1ASaCsXuoPYr`;
+const Checklist = styled.ul({
+  listStyle: 'none',
+  svg: {
+    display: 'inline-block',
+    marginRight: '1rem',
+  },
+});
+
+// const clientId = `ca_HaWvREmbLHe0LaLUhGcm1ASaCsXuoPYr`;
 export function MyAccount() {
   const { currentUser, isLoading, permissions, userSettings } = useUser();
   const [formInitialized, setFormInitialized] = React.useState(false);
@@ -45,12 +53,14 @@ export function MyAccount() {
       <Button design="danger" onClick={signOut}>
         Sign Out {currentUser!.displayName || currentUser!.email}
       </Button>
+      <hr />
 
       <Link to={`/users/${currentUser.uid}`}>View Profile</Link>
 
       <form>
         <label>
           Display Name
+          <br />
           <input
             type="text"
             value={form.displayName}
@@ -62,7 +72,8 @@ export function MyAccount() {
         </label>
 
         <label>
-          Public Profile (limited markdown)
+          Public Profile (markdown)
+          <br />
           <textarea
             value={form.profile}
             onChange={e => {
@@ -76,10 +87,11 @@ export function MyAccount() {
           Save
         </Button>
       </form>
+      <hr />
 
       <h1>Become A Creator</h1>
       <h2>Creators can make their games available to the public.</h2>
-      <ul>
+      <Checklist>
         <li>
           {currentUser.emailVerified ? <FaCheck /> : <FaCircle />}
           {currentUser.emailVerified ? (
@@ -111,11 +123,11 @@ export function MyAccount() {
             </Button>
           )}
         </li>
-      </ul>
+      </Checklist>
 
-      <h1>Become A Publisher</h1>
+      {/* <h1>Become A Publisher</h1>
       <h2>Publishers can sell their games.</h2>
-      <ul>
+      <Checklist>
         <li>
           {permissions.creator ? <FaCheck /> : <FaCircle />}
           Become a creator
@@ -151,7 +163,7 @@ export function MyAccount() {
             </Button>
           </a>
         </li>
-      </ul>
+      </Checklist> */}
     </>
   );
 }

@@ -22,8 +22,11 @@ const MarkdownContainer = styled(ReactMarkdown)({
     fontSize: '2rem',
     fontWeight: 'bold',
   },
+  p: {
+    margin: '1rem 0',
+  },
 });
 
 export function Markdown(props: Props) {
-  return <MarkdownContainer source={props.source} />;
+  return <MarkdownContainer linkTarget="_blank" source={props.source} />;
 }

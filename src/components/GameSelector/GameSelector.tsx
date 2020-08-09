@@ -92,6 +92,8 @@ export function GameSelector(props: Props) {
         src={game.thumbnail ? game.thumbnail : 'board_game_star.png'}
       />
       <GameHeader>{name}</GameHeader>
+      Version {game.version}.0
+      <br />
       {_.size(game.config.scenarios) > 1 && (
         <Select defaultValue={game.config.curScenario} ref={scenarioRef}>
           {Object.values(game.config.scenarios).map(scenario => (
@@ -101,13 +103,11 @@ export function GameSelector(props: Props) {
           ))}
         </Select>
       )}
-
       <DropdownButton items={dropdownItems} disabled={false}>
         <Button design="primary" onClick={handleGameSelect}>
           Play
         </Button>
       </DropdownButton>
-
       <GameSummary>{game.summary}</GameSummary>
       {/* 
       <Button design="success" onClick={() => setShowPublishModal(true)}>
@@ -135,7 +135,6 @@ export function GameSelector(props: Props) {
           Delete
         </GameButton>
       )} */}
-
       {showPublishModal && (
         <PublishModal
           onClose={() => setShowPublishModal(false)}

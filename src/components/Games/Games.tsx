@@ -26,21 +26,22 @@ const loadConfigs = async () => {
   const playerId = getPlayerId();
 
   // Included Games
-  const configs: Game[] = [Checkers, Chess, Cards].map(config => ({
-    ...config,
-    store: 'included',
-    // playerId,
-    sendAssets: true,
-    loadAssets: () => {
-      const assets: { [key: string]: string } = {};
-      Object.values(config.config.pieces).forEach((piece: any) => {
-        if (piece.image) {
-          assets[piece.image] = piece.image;
-        }
-      });
-      return assets;
-    },
-  }));
+  const configs: Game[] = [];
+  // [Checkers, Chess, Cards].map(config => ({
+  //   ...config,
+  //   store: 'included',
+  //   // playerId,
+  //   sendAssets: true,
+  //   loadAssets: () => {
+  //     const assets: { [key: string]: string } = {};
+  //     Object.values(config.config.pieces).forEach((piece: any) => {
+  //       if (piece.image) {
+  //         assets[piece.image] = piece.image;
+  //       }
+  //     });
+  //     return assets;
+  //   },
+  // }));
 
   // Load Synced Games
   const syncConfigs = await loadGames();

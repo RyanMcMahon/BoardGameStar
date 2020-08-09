@@ -251,7 +251,7 @@ export function Editor(props: Props) {
       id: state.id,
       tags: state.tags,
       store: state.store,
-      version: state.version,
+      version: state.version + 1,
       name: state.name,
       thumbnail: state.thumbnail,
       summary: state.summary,

@@ -8,6 +8,7 @@ import { Game, PublicGame, PublishableGame } from '../../types';
 import { filePrompt } from '../../utils/assets';
 import { UploadFile } from 'electron';
 import { FaTrash } from 'react-icons/fa';
+import { useHistory } from 'react-router-dom';
 
 interface Props {
   game?: any;
@@ -30,16 +31,21 @@ export function PublishModal(props: Props) {
   // delete cleanConfig.assets;
   delete cleanConfig.loadAssets;
   const [game, setGame] = React.useState<PublishableGame>(cleanConfig);
+  const [isPublishing, setIsPublishing] = React.useState(false);
+  const history = useHistory();
 
   const handleSubmit = async () => {
     try {
       const assets = loadAssets();
+      setIsPublishing(true);
       // const game = {
       //   ...form,
       //   assets: Object.keys(assets),
       // };
       await publishGame(game, assets);
+      history.push(`/games/${cleanConfig.id}`);
     } catch (err) {
+      setIsPublishing(false);
       debugger;
     }
   };
@@ -49,7 +55,7 @@ export function PublishModal(props: Props) {
       <Modal.Content>
         <Modal.Title>Publish {props.config.name}</Modal.Title>
 
-        <label>
+        {/* <label>
           Price
           <input
             type="number"
@@ -60,7 +66,7 @@ export function PublishModal(props: Props) {
               setGame(f => ({ ...f, price }));
             }}
           />
-        </label>
+        </label> */}
 
         <label>
           Banner (1600 x 400)
@@ -71,14 +77,14 @@ export function PublishModal(props: Props) {
             }}
           >
             {game.banner ? (
-              <img src={game.banner} height="200" width="200" />
+              <img alt="banner" src={game.banner} height="200" width="200" />
             ) : (
               <Button design="primary">Upload</Button>
             )}
           </div>
         </label>
 
-        <label>Additional Files</label>
+        {/* <label>Additional Files</label>
         {game.files.map(file => (
           <div>
             <FaTrash
@@ -98,9 +104,12 @@ export function PublishModal(props: Props) {
           }}
         >
           Upload
-        </Button>
+        </Button> 
+        <br />
+*/}
+        <br />
 
-        <Button design="success" onClick={handleSubmit}>
+        <Button design="success" onClick={handleSubmit} disabled={isPublishing}>
           Publish
         </Button>
       </Modal.Content>

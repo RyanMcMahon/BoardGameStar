@@ -1,11 +1,12 @@
 import React from 'react';
 import Select from 'react-select';
 
-import { Button } from '../../utils/style';
+import { Button, breakpoints } from '../../utils/style';
 import { Modal } from '../Modal';
 import { Game } from '../../types';
 import { TagSelect } from '../TagSelect';
 import { filePrompt } from '../../utils/assets';
+import styled from 'styled-components';
 
 interface Props {
   game: Partial<Game>;
@@ -14,6 +15,23 @@ interface Props {
 }
 
 const tags = ['RPG', 'Hidden Role', 'Hidden Movement'];
+const CHAR_LIMIT = 100;
+
+const SummaryText = styled.textarea({
+  height: '70px',
+  width: '550px',
+  [breakpoints.mobile]: {
+    width: '250px',
+  },
+});
+
+const DescriptionText = styled.textarea({
+  height: '400px',
+  width: '550px',
+  [breakpoints.mobile]: {
+    width: '250px',
+  },
+});
 
 export function EditGameModal(props: Props) {
   const { game, onClose, onUpdate } = props;
@@ -46,7 +64,12 @@ export function EditGameModal(props: Props) {
           }}
         >
           {game.thumbnail ? (
-            <img src={game.thumbnail as string} height="200" width="200" />
+            <img
+              alt="thumbnail"
+              src={game.thumbnail as string}
+              height="200"
+              width="200"
+            />
           ) : (
             <Button design="primary">Upload Image</Button>
           )}
@@ -60,17 +83,17 @@ export function EditGameModal(props: Props) {
           />
         </label>
 
-        <label>Summary</label>
-        <textarea
+        <label>Summary ({CHAR_LIMIT} Character Limit)</label>
+        <SummaryText
           value={game.summary}
           onChange={e => {
-            const summary = e.currentTarget.value;
+            const summary = e.currentTarget.value.slice(0, CHAR_LIMIT);
             onUpdate({ summary });
           }}
         />
 
         <label>Description (markdown)</label>
-        <textarea
+        <DescriptionText
           value={game.description}
           onChange={e => {
             const description = e.currentTarget.value;

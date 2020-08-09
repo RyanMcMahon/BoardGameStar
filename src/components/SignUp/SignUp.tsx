@@ -30,6 +30,7 @@ export function SignUp() {
           /> */}
       <label>
         Email
+        <br />
         <input
           type="email"
           value={form.email}
@@ -41,6 +42,7 @@ export function SignUp() {
       </label>
       <label>
         Password
+        <br />
         <input
           type="password"
           value={form.password}

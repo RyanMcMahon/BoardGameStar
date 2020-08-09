@@ -150,6 +150,10 @@ export async function getGame(
       .get()
   ).data() as PublicGame;
 
+  if (!game || !game.userId) {
+    return {} as any;
+  }
+
   const user = (
     await firebase
       .firestore()
@@ -172,6 +176,12 @@ export async function getGameStats(gameId: string) {
   // TODO
 }
 
+export async function getImageUrl(userId: string, gameId: string, src: string) {
+  const storageRef = firebase.storage().ref();
+  const path = `users/${userId}/games/${gameId}/public/${src}`;
+  return storageRef.child(path).getDownloadURL();
+}
+
 export async function publishGame(game: PublishableGame, assets: Assets) {
   const gameId = game.id;
   const userId = getCurrentUser()?.uid;
@@ -179,16 +189,24 @@ export async function publishGame(game: PublishableGame, assets: Assets) {
   const banner = game.banner;
   const files = game.files;
 
+  const gameData = {
+    ...game,
+    userId,
+    thumbnail: thumbnail ? '_thumbnail' : null,
+    banner: banner ? '_banner' : null,
+    files: files.map(file => file.name),
+    config: {
+      ...game.config,
+      prompts: game.config.prompts || null,
+      currency: game.config.currency || null,
+    },
+  };
+
   await firebase
     .firestore()
     .collection('games')
     .doc(gameId)
-    .set({
-      ...game,
-      thumbnail: thumbnail ? '_thumbnail' : undefined,
-      banner: banner ? '_banner' : undefined,
-      files: files.map(file => file.name),
-    });
+    .set(gameData);
 
   const storageRef = firebase.storage().ref();
   const folder = game.price > 0 ? 'private' : 'public';
@@ -318,6 +336,10 @@ export async function downloadGame(
     progress(curPrecentage);
     loadedAssets[key] = image;
   }
+
+  const thumbnailUrl = await getImageUrl(game.userId, game.id, `_thumbnail`);
+  const thumbnail = await getBase64FromImageUrl(thumbnailUrl);
+  game.thumbnail = thumbnail;
 
   await addGame(game, loadedAssets);
 }

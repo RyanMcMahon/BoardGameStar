@@ -45,8 +45,8 @@ const ModalContent = styled.div({
 
 const CloseButton = styled.span({
   position: 'absolute',
-  top: '0px',
-  right: '5px',
+  top: '10px',
+  right: '20px',
   color: '#888',
   ':hover': {
     color: '#444',

@@ -77,18 +77,18 @@ export const games = functions.https.onRequest(app);
 
 export const updateGame = functions.firestore
   .document('games/{gameId}')
-  .onCreate(async (snap, context) => {
+  .onWrite(async (snap, context) => {
     const { gameId } = context.params;
-    const { version } = snap.data();
-    console.log(gameId, version);
+    const { version } = snap.after.data() || {};
+    console.log('write', gameId, version);
     await admin
       .firestore()
       .collection('games')
       .doc(gameId)
       .collection('versions')
       .doc(`${version}`)
-      .set(snap.data());
-    await snap.ref.set(
+      .set(snap.before.data() || {});
+    await snap.after.ref.set(
       { config: admin.firestore.FieldValue.delete() },
       { merge: true }
     );

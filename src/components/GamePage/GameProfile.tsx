@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { Button, primaryColor } from '../../utils/style';
-import { Link, Redirect, useParams } from 'react-router-dom';
+import { Link, Redirect, useParams, useHistory } from 'react-router-dom';
 import {
   useUser,
   logIn,
@@ -17,16 +17,11 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import { PurchaseModal } from '../PurchaseModal';
 import { Markdown } from '../Markdown';
+import { StorageImage } from '../StorageImage';
 
 const STRIPE_PUBLISHABLE_KEY =
   'pk_test_51H0XjdBwpr2MkFDhoeZGAAX1UV37n2AAtiapBL43spha3vI1CCE9I4veUHqBFnfKa9poTloOP7Ghc0KSp32LkLqY00bMKNXdlY';
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
-
-const Banner = styled.img({
-  width: '100%',
-  height: '400px;',
-  objectFit: 'cover',
-});
 
 const Title = styled.h1({
   fontSize: '3rem',
@@ -57,12 +52,13 @@ export function GameProfile() {
   const [user, setUser] = React.useState<any | null>();
   const [downloadProgress, setDownloadProgress] = React.useState<number>(-1);
   const [purchaseGame, setPurchaseGame] = React.useState<Game | null>(null);
+  const history = useHistory();
 
   const handleDownload = async (gameId: string) => {
     setDownloadProgress(0);
     await downloadGame(gameId, setDownloadProgress);
     setDownloadProgress(-1);
-    // TODO redirect to games list
+    history.push(`/games`);
   };
 
   React.useEffect(() => {
@@ -82,7 +78,13 @@ export function GameProfile() {
   return (
     <div>
       {(game.banner || game.thumbnail) && (
-        <Banner src={game.banner || game.thumbnail} alt="Game" />
+        <StorageImage
+          height="400px"
+          width="100%"
+          gameId={game.id}
+          userId={game.userId}
+          src={game.banner || game.thumbnail || ''}
+        />
       )}
       <Title>{game.name}</Title>
       <Tags>{game.tags.map(x => `#${x}`).join(' ')}</Tags>
@@ -103,7 +105,7 @@ export function GameProfile() {
             </Button>
           ) : (
             <Button design="primary" onClick={() => handleDownload(game.id)}>
-              Download
+              Download v{game.version}.0
             </Button>
           )}
         </>

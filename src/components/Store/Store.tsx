@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { getAllGames } from '../../utils/api';
 import { Game, PublicGame } from '../../types';
 import { primaryColor } from '../../utils/style';
+import { StorageImage } from '../StorageImage';
 
 const GamesWrapper = styled.div({
   display: 'grid',
@@ -52,7 +53,7 @@ const GameSummary = styled.div({
   overflow: 'hidden',
 });
 
-const GameImage = styled.img({
+const GameImage = styled(StorageImage)({
   width: '100%',
   height: '200px',
   objectFit: 'cover',
@@ -73,7 +74,11 @@ export function Store() {
     <GamesWrapper>
       {games.map(game => (
         <GameLink key={game.id} to={`/games/${game.id}`}>
-          <GameImage
+          <StorageImage
+            width="100%"
+            height="200px"
+            userId={game.userId}
+            gameId={game.id}
             src={game.thumbnail ? game.thumbnail : 'board_game_star.png'}
           />
           <GameHeader>{game.name}</GameHeader>

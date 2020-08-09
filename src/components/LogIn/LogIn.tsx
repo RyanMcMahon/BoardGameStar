@@ -24,22 +24,32 @@ export function LogIn() {
 
   return (
     <form onSubmit={handleSubmit}>
-      <input
-        type="email"
-        value={form.email}
-        onChange={e => {
-          const email = e.currentTarget.value;
-          setForm(f => ({ ...f, email }));
-        }}
-      />
-      <input
-        type="password"
-        value={form.password}
-        onChange={e => {
-          const password = e.currentTarget.value;
-          setForm(f => ({ ...f, password }));
-        }}
-      />
+      <label>
+        Email
+        <br />
+        <input
+          type="email"
+          value={form.email}
+          onChange={e => {
+            const email = e.currentTarget.value;
+            setForm(f => ({ ...f, email }));
+          }}
+        />
+      </label>
+
+      <label>
+        Password
+        <br />
+        <input
+          type="password"
+          value={form.password}
+          onChange={e => {
+            const password = e.currentTarget.value;
+            setForm(f => ({ ...f, password }));
+          }}
+        />
+      </label>
+
       <Button design="primary" type="button" onClick={handleSubmit}>
         Log In
       </Button>
