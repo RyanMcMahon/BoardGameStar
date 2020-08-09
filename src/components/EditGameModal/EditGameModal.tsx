@@ -101,7 +101,7 @@ export function EditGameModal(props: Props) {
           }}
         />
 
-        <label>Rules PDF</label>
+        {/* <label>Rules PDF</label>
         <Button
           design="primary"
           onClick={async () => {
@@ -114,7 +114,7 @@ export function EditGameModal(props: Props) {
         >
           Upload
         </Button>
-        <br />
+        <br /> */}
         <br />
 
         <Button design="success" onClick={onClose}>

@@ -165,6 +165,7 @@ export function Games(props: Props) {
       config: {
         ...game,
         ...game.config,
+        renderCount: 0,
         assets: game.loadAssets ? game.loadAssets() : {},
       },
       type: 'edit_game',

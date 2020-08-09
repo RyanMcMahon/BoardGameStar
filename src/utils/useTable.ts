@@ -297,6 +297,12 @@ export const useTable = (options: TableOptions) => {
             }
           };
 
+          if (selectedPieceIds?.has(piece.id)) {
+            child.select();
+          } else {
+            child.deselect();
+          }
+
           // child.id = piece.id; // TODO - redundant??
           // child.interactive = true;
 

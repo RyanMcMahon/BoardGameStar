@@ -48,6 +48,7 @@ export function editorReducer(
         players: [player1.id, player2.id],
       };
       return {
+        renderCount: 0,
         name,
         id,
         version: 1,
@@ -192,6 +193,7 @@ export function editorReducer(
       }
       return {
         ...state,
+        renderCount: state.renderCount + 1,
         scenarios: {
           ...state.scenarios,
           [curScenario.id]: {

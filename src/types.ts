@@ -145,6 +145,7 @@ export interface GameProps {
 
 export interface EditorState extends GameConfig, GameProps {
   assets?: Assets;
+  renderCount: number;
 }
 
 // export interface GameConfig extends EditorState {

@@ -445,6 +445,7 @@ export function Editor(props: Props) {
   };
 
   React.useEffect(() => {
+    console.log('set pieces');
     setPieces([
       ...(curScenario.pieces.map(
         id => state.pieces[id]
@@ -462,7 +463,15 @@ export function Editor(props: Props) {
         delta: 0,
       },
     ]);
-  }, [curScenario.pieces, state.pieces, setPieces]);
+    table.setRenderCount(state.renderCount);
+  }, [
+    curScenario.pieces,
+    state.pieces,
+    state.renderCount,
+    setPieces,
+    table,
+    table.setRenderCount,
+  ]);
 
   return (
     <MainContainer>

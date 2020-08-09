@@ -387,13 +387,12 @@ export function useGameClient(
         percent => percent + (100 - percent) / pendingAssets.length
       );
       requestAsset(pendingAssets[0]);
-    } else if (_.size(assets)) {
+    } else if (game) {
       dispatch({
         event: 'load_complete',
       });
-      // setIsLoaded(true);
     }
-  }, [pendingAssets, requestAsset, assets, isLoaded]);
+  }, [pendingAssets, requestAsset, assets, isLoaded, game]);
 
   React.useEffect(() => {
     const { instanceId, playerId, name } = getIdentity();
@@ -420,7 +419,7 @@ export function useGameClient(
     });
 
     setTimeout(() => setCheckTimeout(true), 10 * 1000);
-  }, [gameId, hostId]);
+  }, [gameId, hostId, spectator]);
 
   React.useEffect(() => {
     if (checkTimeout && !isLoaded && !_.size(assets)) {
