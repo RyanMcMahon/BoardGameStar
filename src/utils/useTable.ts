@@ -237,10 +237,13 @@ export const useTable = (options: TableOptions) => {
 
       renderedPieces.add(renderItem.id);
 
-      // TODO select
-      // if (renderItem.piece.delta === curPiece.delta) {
-      //   return;
-      // }
+      // No updates
+      if (
+        renderItem.piece.delta === curPiece.delta &&
+        selectedPieceIds.has(curPiece.id) === renderItem.isSelected
+      ) {
+        return;
+      }
 
       renderItem.locked = curPiece.locked;
 

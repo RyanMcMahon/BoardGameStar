@@ -101,7 +101,7 @@ export function InviteModal(props: Props) {
               ref={inviteLinkRef}
               type="text"
               className="u-full-width"
-              value={`${window.location}`}
+              defaultValue={`${window.location}`}
             />
             <CopyButton
               design="primary"
@@ -122,7 +122,10 @@ export function InviteModal(props: Props) {
               ref={spectateLinkRef}
               type="text"
               className="u-full-width"
-              value={`${window.location}`.replace(/\/play\//, '/spectate/')}
+              defaultValue={`${window.location}`.replace(
+                /\/play\//,
+                '/spectate/'
+              )}
             />
             <CopyButton
               design="primary"

@@ -629,8 +629,8 @@ export function createNewGame(
                   .map((id, index) => ({
                     ...pieces[id],
                     faceDown,
-                    x: deckPiece.x + deckPiece.width + 50 + index * 20,
-                    y: deckPiece.y + index * 20,
+                    x: deckPiece.x + deckPiece.width + 50 + index * 40,
+                    y: deckPiece.y, // + index * 20,
                     width: deckPiece.width,
                     height: deckPiece.height,
                     delta: pieces[id].delta + 1,
@@ -917,8 +917,8 @@ export function createNewGame(
                     return {
                       ...pieces[cardId],
                       faceDown,
-                      x: playArea.x + index * 20,
-                      y: playArea.y + 50 + index * 20,
+                      x: playArea.x + index * 40,
+                      y: playArea.y + 50, // + index * 20,
                       width: deck.width,
                       height: deck.height,
                       delta: card.delta + 1,
