@@ -310,8 +310,9 @@ export async function buyGame(
 }
 
 export async function getIceServers() {
-  const { data } = await axios.get(`${firebaseServer}/servers`);
-  return data.ice_servers;
+  const response = await axios.get(`${firebaseServer}/servers`);
+  const { data } = response;
+  return data.iceServers;
 }
 
 export async function downloadGame(
