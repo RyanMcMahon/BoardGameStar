@@ -221,7 +221,7 @@ export const useTable = (options: TableOptions) => {
     if (!container) {
       return;
     }
-    // console.log('render');
+    console.log('render', selectedPieceIds);
 
     const piecesById = _.keyBy(piecesRef.current, 'id');
     const renderedPieces = new Set();
@@ -294,7 +294,6 @@ export const useTable = (options: TableOptions) => {
 
         if (child) {
           const selectPiece = () => {
-            console.log(child.nonSelectClick);
             if (!child.nonSelectClick) {
               onSelectPiece(piece.id);
             }
@@ -390,9 +389,9 @@ function getRenderItem(
     };
   }
 ) {
-  if (!assets[piece.image]) {
-    console.log('no asset for', piece);
-  }
+  // if (!assets[piece.image]) {
+  //   console.log('no asset for', piece);
+  // }
   const image = assets[piece.image] || piece.image;
   const pieceConfig = config[piece.type];
 
@@ -534,7 +533,7 @@ function getRenderItem(
           el.setDimensions(curPiece as ImageTokenPiece);
 
           text.x = curPiece.width / 2;
-          text.text = curPiece.balance;
+          text.text = formatMoney(curPiece.balance);
           rect.clear();
           rect.beginFill(utils.string2hex('#333'));
           rect.drawRoundedRect(
@@ -574,9 +573,7 @@ function getRenderItem(
 
     case 'image': {
       const faceUpTexture = Texture.from(image);
-      const faceDownTexture = Texture.from(
-        assets[piece.back || ''] || piece.back || image
-      );
+      const faceDownTexture = Texture.from(assets[piece.back || ''] || image);
 
       const child = new RenderItem({
         ...pieceConfig,
@@ -823,4 +820,8 @@ function findBank(
       p.id !== curPiece.id &&
       Math.hypot(p.x - curPiece.x, p.y - curPiece.y) < 20
   );
+}
+
+function formatMoney(num: number) {
+  return num.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
 }

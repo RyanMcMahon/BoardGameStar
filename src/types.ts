@@ -159,7 +159,7 @@ export interface Game extends GameProps {
   // assets: string[];
   disableSync?: boolean;
   sendAssets?: boolean;
-  loadAssets?: () => Assets;
+  loadAssets?: () => Promise<Assets>;
 }
 
 export interface PublicGame extends Game {

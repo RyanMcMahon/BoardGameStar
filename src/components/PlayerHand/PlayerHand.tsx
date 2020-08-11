@@ -391,14 +391,14 @@ export function PlayerHand(props: Props): JSX.Element {
 
           <ButtonControls>
             <Button
-              design="success"
+              design="primary"
               onClick={handlePlayCardsFaceUp}
               disabled={!selectedCards.length}
             >
               Play Face Up
             </Button>
             <Button
-              design="success"
+              design="primary"
               onClick={handlePlayCardsFaceDown}
               disabled={!selectedCards.length}
             >

@@ -108,7 +108,7 @@ export function EditGameModal(props: Props) {
             const [file] = await filePrompt({ multiple: false });
             // const filename = file.name;
             const rules = file.content;
-            debugger;
+            
             onUpdate({ rules });
           }}
         >

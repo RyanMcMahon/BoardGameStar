@@ -44,6 +44,7 @@ interface Props {
   onShuffleDiscarded: (deckId: string) => void;
   onDiscardPlayed: (deckId: string) => void;
   onDiscardSelected: (cardIds: string[]) => void;
+  onPickUpSelected: (cardIds: string[]) => void;
   onPromptTransaction: (bankId: string) => void;
   onClearSelectedPieces: () => void;
   onShowDiceModal: () => void;
@@ -115,6 +116,7 @@ export function ControlsMenu(props: Props) {
     onShuffleDiscarded,
     onDiscardPlayed,
     onDiscardSelected,
+    onPickUpSelected,
     onClearSelectedPieces,
     onPromptTransaction,
     onShowDiceModal,
@@ -161,7 +163,6 @@ export function ControlsMenu(props: Props) {
                   )
                 );
                 onClearSelectedPieces();
-                // setSelectedPieceIds(new Set());
               },
             },
           ]
@@ -238,6 +239,11 @@ export function ControlsMenu(props: Props) {
       case 'card':
         items.push(
           ...[
+            {
+              icon: <FaLevelUpAlt />,
+              label: 'Pick Up Cards',
+              fn: () => onPickUpSelected(selectedPieces.map(piece => piece.id)),
+            },
             {
               icon: <FaSync />,
               label: 'Flip Card',

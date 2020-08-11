@@ -76,7 +76,7 @@ interface GameOptions {
 
 let curGame: GameState;
 
-export function createNewGame(
+export async function createNewGame(
   game: Game,
   options: GameOptions,
   cb: (gameState: GameState) => void
@@ -88,7 +88,7 @@ export function createNewGame(
   const scenario = game.config.scenarios[game.config.curScenario];
   const hostId = getHostId();
   const gameId = getGameId();
-  const peer = createPeer(getInstanceId(gameId, hostId));
+  const peer = await createPeer(getInstanceId(gameId, hostId));
   const { assets, sendAssets } = options;
 
   peer.on('open', () => {
@@ -161,7 +161,6 @@ export function createNewGame(
         });
       }
     });
-    console.log(piecesForPlayerCounts);
 
     const players: Players = {};
     const gameState: GameState = {
@@ -200,7 +199,7 @@ export function createNewGame(
       piece.count = count;
       piece.total = getCardsForDeck(piece.id).length;
       piece.delta++;
-      console.log('update_piece', piece.delta);
+
       sendToRoom({
         event: 'update_piece',
         pieces: {
@@ -225,7 +224,6 @@ export function createNewGame(
     const updatePlayerCount = () => {
       const playerCount = Object.keys(players).length;
 
-      console.log('piecesForPlayerCounts', Object.keys(piecesForPlayerCounts));
       for (let pieceId in pieces) {
         const piece = pieces[pieceId];
         if (
@@ -233,7 +231,6 @@ export function createNewGame(
           piecesForPlayerCounts[piece.parentId]
         ) {
           delete pieces[pieceId];
-          console.log('delete', pieceId);
         }
       }
 
@@ -272,7 +269,6 @@ export function createNewGame(
         .filter(piece => piece.type !== 'card')
         .map(p => p.id);
 
-      console.log('final pieces', pieces);
       sendToRoom({
         pieces,
         board: gameState.board,

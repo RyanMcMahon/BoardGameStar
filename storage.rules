@@ -2,11 +2,11 @@ service firebase.storage {
   match /b/{bucket}/o {
     match /users/{userId}/games/{gameId}/public/{all=**} {
       allow read: if true;
-      allow write: if userId == request.auth.uid;
+      allow write: if userId == request.auth.uid && request.resource.size < 1 * 1024 * 1024;
     }
 
     match /users/{userId}/games/{gameId}/private/{all=**} {
-      allow read, write: if userId == request.auth.uid;
+      allow read, write: if userId == request.auth.uid && request.resource.size < 1 * 1024 * 1024;
     }
   }
 }

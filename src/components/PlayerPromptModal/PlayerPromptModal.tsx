@@ -141,7 +141,7 @@ export function PlayerPromptModal(props: Props) {
     event.players.every(
       id => results.results[id] && typeof results.results[id] !== 'boolean'
     );
-  console.log(results);
+
   const fillable = !resultsAvailable && event.players.includes(playerId);
   // && (!results || !results.results[playerId]);
 
@@ -203,11 +203,11 @@ export function PlayerPromptModal(props: Props) {
                                     }
                                   />
                                 ) : (
-                                  '(none)'
+                                  '-'
                                 )}
                               </>
                             ) : (
-                              playerResults[index]
+                              playerResults[index] || '-'
                             )}
                           </td>
                         );

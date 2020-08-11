@@ -15,7 +15,7 @@ import { isWebBuild } from '../../utils/meta';
 import { loadAsset } from '../../utils/assets';
 import { Button, breakpoints } from '../../utils/style';
 import { CreateGameModal } from '../CreateGameModal';
-import { loadGames } from '../../utils/store';
+import { loadGames, loadAssets } from '../../utils/store';
 import { getPlayerId } from '../../utils/identity';
 
 interface Props {
@@ -52,7 +52,7 @@ const loadConfigs = async () => {
       // playerId,
       store: 'browser' as const,
       sendAssets: false,
-      loadAssets: () => sync.assets,
+      loadAssets: () => loadAssets(sync.gameId),
     }))
   );
 
@@ -135,16 +135,42 @@ const GamesWrapper = styled.div({
   // },
 });
 
+const ErrorMessage = styled.div({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  zIndex: 9999,
+  backgroundColor: '#e74c3c',
+  color: '#fff',
+  textAlign: 'center',
+  fontWeight: 'bold',
+  fontSize: '2rem',
+  padding: '1rem 0',
+});
+
 export function Games(props: Props) {
   const [configs, setConfigs] = React.useState<Game[]>([]);
   const [newGame, setNewGame] = React.useState<GameState>();
   const [showCreateModal, setShowCreateModal] = React.useState<boolean>(false);
-  const handleGameSelect = (game: Game) => {
-    const { loadAssets = () => ({}), sendAssets = true } = game;
-    const assets = loadAssets();
-    createNewGame(game, { assets, sendAssets }, game => {
-      setNewGame(game);
-    });
+  const [loadingGame, setLoadingGame] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState<string>('');
+
+  const handleGameSelect = async (game: Game) => {
+    try {
+      setLoadingGame(true);
+
+      const { loadAssets = () => ({}), sendAssets = true } = game;
+      const assets = await loadAssets();
+      await createNewGame(game, { assets, sendAssets }, game => {
+        setNewGame(game);
+      });
+      setLoadingGame(false);
+    } catch (err) {
+      setErrorMessage('Error Starting Game (Refresh and Retry)');
+      setTimeout(() => setErrorMessage(''), 2400);
+      setLoadingGame(false);
+    }
   };
 
   const handleCreateGame = (name: string) => {
@@ -160,13 +186,13 @@ export function Games(props: Props) {
     });
   };
 
-  const handleEditGame = (game: Game) => {
+  const handleEditGame = async (game: Game) => {
     props.dispatch({
       config: {
         ...game,
         ...game.config,
         renderCount: 0,
-        assets: game.loadAssets ? game.loadAssets() : {},
+        assets: game.loadAssets ? await game.loadAssets() : {},
       },
       type: 'edit_game',
     });
@@ -187,6 +213,7 @@ export function Games(props: Props) {
 
   return (
     <>
+      {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
       <Container>
         <h1>My Games</h1>
         <Button design="primary" onClick={() => setShowCreateModal(true)}>
@@ -201,6 +228,7 @@ export function Games(props: Props) {
             )
             .map((config, index) => (
               <GameSelector
+                disabled={loadingGame}
                 key={config.id || config.name + index}
                 name={config.name}
                 config={config}

@@ -46,7 +46,6 @@ export function PublishModal(props: Props) {
       history.push(`/games/${cleanConfig.id}`);
     } catch (err) {
       setIsPublishing(false);
-      debugger;
     }
   };
 

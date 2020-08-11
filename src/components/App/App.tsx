@@ -51,40 +51,6 @@ const AppContainer = styled.div({
   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%23bdc5ca' fill-opacity='0.50' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
 });
 
-// const PlayerContainer = styled.div({
-//   userSelect: 'none',
-//   position: 'fixed',
-//   top: 0,
-//   right: 0,
-//   bottom: 0,
-//   width: '430px',
-//   display: 'flex',
-//   flexDirection: 'column',
-//   backgroundColor: '#fafafa',
-//   zIndex: 1000,
-//   [breakPoints.mobile]: {
-//     width: '100%',
-//   },
-// });
-
-// const PlayerName = styled.div<{ color: string }>(
-//   (props: { color: string }) => ({
-//     margin: 0,
-//     padding: 10,
-//     background: props.color,
-//     fontSize: '2rem',
-//     color: '#fff',
-//     cursor: 'pointer',
-//   })
-// );
-
-// const PlayerLinksContainer = styled.div({
-//   padding: '1rem',
-//   '> button:nth-child(n+2)': {
-//     marginLeft: '1rem',
-//   },
-// });
-
 const TogglePlayerContainerButton = styled.div({
   userSelect: 'none',
   position: 'absolute',
@@ -244,6 +210,10 @@ export function App(props: { spectator?: boolean }) {
     const updatedPiecesById = _.keyBy(updatedPieces, 'id');
     const [mainPiece] = updatedPieces;
 
+    for (let id in updatedPiecesById) {
+      updatedPiecesById[id].delta = pieces[id].delta + 1;
+    }
+
     if (updatedPieces.length === 1 && selectedPieceIds.has(mainPiece.id)) {
       const otherPieceIds = Array.from(selectedPieceIds).filter(
         id => id !== mainPiece.id
@@ -285,15 +255,17 @@ export function App(props: { spectator?: boolean }) {
     handleUpdatePieces(updatedPieces);
   };
 
-  const handlePickUpCard = (id: string) => {
+  const handlePickUpCards = (ids: string[]) => {
     if (conn) {
       conn.send({
         event: 'pick_up_cards',
-        cardIds: [id],
+        cardIds: ids,
       });
-      const ids = new Set(selectedPieceIds);
-      ids.delete(id);
-      setSelectedPieceIds(ids);
+      const selectedIds = new Set(selectedPieceIds);
+      ids.forEach(id => {
+        selectedIds.delete(id);
+      });
+      setSelectedPieceIds(selectedIds);
     }
   };
 
@@ -408,7 +380,7 @@ export function App(props: { spectator?: boolean }) {
     // handCounts,
     config: tableConfig,
     onDblClickDeck: (id: string) => setDrawModalId(id),
-    onDblClickCard: handlePickUpCard,
+    onDblClickCard: (id: string) => handlePickUpCards([id]),
     onDblClickMoney: handlePromptTransaction,
   });
   const fact = React.useMemo(() => _.sample(facts), []);
@@ -508,6 +480,7 @@ export function App(props: { spectator?: boolean }) {
     if (document.documentElement.clientWidth < maxMobileWidth) {
       setShowPlayerControls(false);
     }
+    setSelectedPieceIds(new Set());
   };
 
   const handlePassCards = (cardIds: string[], playerId: string) => {
@@ -535,6 +508,7 @@ export function App(props: { spectator?: boolean }) {
       event: 'draw_cards_to_table',
     });
     setDrawModalId('');
+    setSelectedPieceIds(new Set());
   };
 
   const handleDrawCards = (count: number) => {
@@ -548,6 +522,7 @@ export function App(props: { spectator?: boolean }) {
     });
     setDrawModalId('');
     setShowPlayerControls(true);
+    setSelectedPieceIds(new Set());
   };
 
   const handleDiscard = (cardIds: string[]) => {
@@ -578,6 +553,7 @@ export function App(props: { spectator?: boolean }) {
         deckId: id,
       });
     }
+    setSelectedPieceIds(new Set());
   };
 
   const handleOnChat = (message: string) => {
@@ -612,9 +588,8 @@ export function App(props: { spectator?: boolean }) {
             if (piece.type === 'player' && piece.playerId) {
               return {
                 ...piece,
-                name: `${piece.name} (${
-                  handCounts[piece.playerId]
-                } cards in hand)`,
+                name: `${piece.name} (${handCounts[piece.playerId] ||
+                  0} cards in hand)`,
               };
             } else if (piece.type === 'stack') {
               return {
@@ -630,7 +605,6 @@ export function App(props: { spectator?: boolean }) {
               return pieces[id];
             }
           } catch (err) {
-            debugger;
             return {} as any;
           }
         })
@@ -709,6 +683,7 @@ export function App(props: { spectator?: boolean }) {
           onShuffleDiscarded={handleShuffleDiscarded}
           onDiscardPlayed={handleDiscardPlayed}
           onDiscardSelected={handleDiscard}
+          onPickUpSelected={handlePickUpCards}
           onPromptTransaction={handlePromptTransaction}
           onClearSelectedPieces={() => setSelectedPieceIds(new Set())}
           onShowDiceModal={() => setShowDiceModal(true)}

@@ -9,6 +9,7 @@ import { PublishModal } from '../PublishModal';
 import { DropdownButton } from '../DropdownButton';
 
 interface Props {
+  disabled: boolean;
   name: string;
   config: Game;
   onGameSelect: (config: Game) => void;
@@ -43,7 +44,7 @@ const GameButton = styled(Button)({
 });
 
 export function GameSelector(props: Props) {
-  const { config: game, name, onReloadConfigs } = props;
+  const { config: game, disabled, name, onReloadConfigs } = props;
   const [showPublishModal, setShowPublishModal] = React.useState(false);
   const scenarioRef = React.createRef<HTMLSelectElement>();
   const myGames = ((window.localStorage.getItem('my_games') as any) || '')
@@ -103,8 +104,8 @@ export function GameSelector(props: Props) {
           ))}
         </Select>
       )}
-      <DropdownButton items={dropdownItems} disabled={false}>
-        <Button design="primary" onClick={handleGameSelect}>
+      <DropdownButton items={dropdownItems} disabled={disabled}>
+        <Button design="primary" onClick={handleGameSelect} disabled={disabled}>
           Play
         </Button>
       </DropdownButton>

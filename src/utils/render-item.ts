@@ -275,9 +275,9 @@ export class RenderItem extends Container {
   }
 
   checkDblClick() {
-    console.log('checkDblClick');
     if (this.dblClicking) {
-      console.log('emit called', this.emit('dblclick'));
+      this.nonSelectClick = true;
+      this.emit('dblclick');
     } else {
       this.dblClicking = true;
       setTimeout(() => (this.dblClicking = false), 500);
@@ -329,7 +329,12 @@ export class RenderItem extends Container {
               }
             });
           });
+          stackItem.on('touchend', () => {
+            this.nonSelectClick = true;
+            this.onSplitStack!(stackCount - i);
+          });
           stackItem.on('mouseup', () => {
+            this.nonSelectClick = true;
             this.onSplitStack!(stackCount - i);
           });
         }

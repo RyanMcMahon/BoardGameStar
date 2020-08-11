@@ -137,9 +137,7 @@ export function PurchaseModal(props: Props) {
       if (paymentMethod) {
         await buyGame(game, paymentMethod, form.tip, tax);
       }
-    } catch (err) {
-      debugger;
-    }
+    } catch (err) {}
   };
 
   React.useEffect(() => {
@@ -149,9 +147,7 @@ export function PurchaseModal(props: Props) {
         if (customerData) {
           setCustomerData(customerData as any);
         }
-      } catch (err) {
-        debugger;
-      }
+      } catch (err) {}
     };
     loadCustomerData();
   }, []);

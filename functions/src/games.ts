@@ -1,7 +1,20 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 
-import { app } from './utils';
+import { app, twilio, cors } from './utils';
+
+async function getSignedUrl(userId: string, gameId: string, name: string) {
+  return (
+    await admin
+      .storage()
+      .bucket(`boardgamestar-21111.appspot.com`)
+      .file(`users/${userId}/games/${gameId}/public/${name}`)
+      .getSignedUrl({
+        action: 'read',
+        expires: Date.now() + 60 * 60 * 1000,
+      })
+  )[0];
+}
 
 app.get('/:gameId', async (req, res) => {
   try {
@@ -37,18 +50,30 @@ app.get('/:gameId', async (req, res) => {
         //   .exists();
         // console.log('exists', fileExists);
 
-        assets[piece.image] = (
-          await admin
-            .storage()
-            .bucket(`boardgamestar-21111.appspot.com`)
-            .file(
-              `users/${gameConfig.userId}/games/${gameConfig.id}/public/${piece.image}`
-            )
-            .getSignedUrl({
-              action: 'read',
-              expires: Date.now() + 60 * 60 * 1000,
-            })
-        )[0];
+        assets[piece.image] = await getSignedUrl(
+          gameConfig.userId,
+          gameConfig.id,
+          piece.image
+        );
+        if (piece.back && piece.type === 'image') {
+          assets[piece.back] = await getSignedUrl(
+            gameConfig.userId,
+            gameConfig.id,
+            piece.back
+          );
+        }
+        // (
+        //   await admin
+        //     .storage()
+        //     .bucket(`boardgamestar-21111.appspot.com`)
+        //     .file(
+        //       `users/${gameConfig.userId}/games/${gameConfig.id}/public/${piece.image}`
+        //     )
+        //     .getSignedUrl({
+        //       action: 'read',
+        //       expires: Date.now() + 60 * 60 * 1000,
+        //     })
+        // )[0];
       }
 
       res.send({
@@ -75,12 +100,24 @@ app.get('/:gameId', async (req, res) => {
 // Expose Express API as a single Cloud Function:
 export const games = functions.https.onRequest(app);
 
+export const servers = functions.https.onRequest((req, res) =>
+  cors(req, res, async () => {
+    try {
+      const token = await twilio.tokens.create();
+      res.send(token);
+    } catch (err) {
+      res.status(500);
+      res.send(err);
+    }
+  })
+);
+
 export const updateGame = functions.firestore
   .document('games/{gameId}')
   .onWrite(async (snap, context) => {
     const { gameId } = context.params;
     const { version } = snap.after.data() || {};
-    console.log('write', gameId, version);
+
     await admin
       .firestore()
       .collection('games')

@@ -15,6 +15,7 @@ exports.cleanupUser = users.cleanupUser;
 // Games
 exports.updateGame = games.updateGame;
 exports.games = games.games;
+exports.servers = games.servers;
 
 // Payments
 exports.createStripePayment = payments.createStripePayment;

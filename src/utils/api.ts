@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import axios from 'axios';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
@@ -17,6 +18,8 @@ const firebaseConfig = {
   messagingSenderId: '78022014928',
   appId: '1:78022014928:web:d729d5cd3ae1fe595babd5',
 };
+
+const firebaseServer = `https://us-central1-boardgamestar-21111.cloudfunctions.net`;
 
 firebase.initializeApp(firebaseConfig);
 
@@ -310,29 +313,39 @@ export async function buyGame(
     });
 }
 
+export async function getIceServers() {
+  const { data } = await axios.get(`${firebaseServer}/servers`);
+  return data.ice_servers;
+}
+
 export async function downloadGame(
   gameId: string,
   progress: (percentage: number) => void
 ) {
-  let curPrecentage = 5;
+  let curPrecentage = 0;
   progress(curPrecentage);
 
-  const { data } = await axios.get(
-    `https://us-central1-boardgamestar-21111.cloudfunctions.net/games/${gameId}`
-  );
+  for (let i = 0; i < 10; i++) {
+    const delay = (i + 1) * _.random(400, 800);
+    setTimeout(() => {
+      curPrecentage += 1;
+      progress(curPrecentage);
+    }, delay);
+  }
+
+  const { data } = await axios.get(`${firebaseServer}/games/${gameId}`);
   const { game, assets } = data;
-
-  curPrecentage += 5;
-  progress(curPrecentage);
-
   const assetList = Object.entries(assets);
-  const percentStep = Math.floor((100 - curPrecentage) / assetList.length);
+  const percentStep = 90 / assetList.length;
   const loadedAssets = {} as any;
 
   while (assetList.length) {
     const [key, url] = assetList.pop() as any;
     const image = await getBase64FromImageUrl(url as string);
     curPrecentage += percentStep;
+    if (curPrecentage > 100) {
+      curPrecentage = 100;
+    }
     progress(curPrecentage);
     loadedAssets[key] = image;
   }

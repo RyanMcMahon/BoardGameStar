@@ -95,7 +95,11 @@ export function PromptSelectModal(props: Props) {
         <Button
           design="success"
           block={true}
-          onClick={() => onSelectPrompt(form.prompt, form.players)}
+          onClick={() => {
+            if (form.players.length) {
+              onSelectPrompt(form.prompt, form.players);
+            }
+          }}
         >
           Prompt Players
         </Button>

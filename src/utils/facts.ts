@@ -1,6 +1,6 @@
 export const facts = [
   `If the Earth was shrunk down to the size of a bowling ball, it'd be too small`,
-  `A pig's orgasm lasts for 30 seconds. Don't believe me? Try it yourself!`,
+  `A pig's orgasm lasts for 30 minutes. Don't believe me? Try it yourself!`,
   `The average honey bee is over 3lbs. Beware the mega-bee!`,
   `Lions can hold their breath for 30 minutes, just not all at once.`,
   `Baseball was invented by Roy Baseball and was originally called soccer.`,

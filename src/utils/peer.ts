@@ -1,11 +1,17 @@
 import Peer from 'peerjs';
+import { getIceServers } from './api';
 
-const peerOptions = {
-  host: 'bgspeer.azurewebsites.net',
-  secure: true,
-  path: 'myapp',
-};
+export async function createPeer(id: string): Promise<Peer> {
+  const iceServers = await getIceServers();
+  console.log(iceServers);
+  const peerOptions: Peer.PeerJSOption = {
+    host: 'bgspeer.azurewebsites.net',
+    secure: true,
+    path: 'myapp',
+    config: {
+      iceServers,
+    },
+  };
 
-export function createPeer(id: string): Peer {
   return new Peer(id, peerOptions);
 }

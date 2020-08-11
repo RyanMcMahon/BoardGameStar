@@ -2,11 +2,12 @@ import * as functions from 'firebase-functions';
 import Stripe from 'stripe';
 import { Logging } from '@google-cloud/logging';
 import express from 'express';
-import cors from 'cors';
+import Cors from 'cors';
 
+export const cors = Cors({ origin: true });
 export const app = express();
 
-app.use(cors({ origin: true }));
+app.use(cors);
 
 const logging = new Logging({
   projectId: process.env.GCLOUD_PROJECT,
@@ -15,6 +16,10 @@ const logging = new Logging({
 export const stripe = new Stripe(functions.config().stripe.secret, {
   apiVersion: '2020-03-02',
 });
+
+const twilioSid = functions.config().twilio.sid;
+const twilioAuth = functions.config().twilio.auth;
+export const twilio = require('twilio')(twilioSid, twilioAuth);
 
 export function reportError(err: any, context = {}) {
   // This is the name of the StackDriver log stream that will receive the log

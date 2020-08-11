@@ -369,7 +369,7 @@ export function Editor(props: Props) {
   const handleAddMoney = createNewImagePiece({
     type: 'money',
     layer: 9,
-    balance: Infinity,
+    balance: 1000000,
   });
   const handleAddImageToken = createNewImagePiece({ type: 'image', layer: 5 });
 
@@ -445,7 +445,6 @@ export function Editor(props: Props) {
   };
 
   React.useEffect(() => {
-    console.log('set pieces');
     setPieces([
       ...(curScenario.pieces.map(
         id => state.pieces[id]
@@ -675,10 +674,7 @@ export function Editor(props: Props) {
                         value={selectedPiece.balance}
                         onChange={(e: React.FormEvent<HTMLInputElement>) => {
                           const value = e.currentTarget.value;
-                          const balance =
-                            value.toLowerCase() === 'Infinity'
-                              ? Infinity
-                              : parseInt(value, 10);
+                          const balance = parseInt(value, 10);
 
                           dispatch({
                             type: 'update_piece',

@@ -395,30 +395,33 @@ export function useGameClient(
   }, [pendingAssets, requestAsset, assets, isLoaded, game]);
 
   React.useEffect(() => {
-    const { instanceId, playerId, name } = getIdentity();
-    const peer = createPeer(instanceId);
+    const initPeer = async () => {
+      const { instanceId, playerId, name } = getIdentity();
+      const peer = await createPeer(instanceId);
 
-    peer.on('open', () => {
-      const conn = peer.connect(getInstanceId(gameId, hostId), {
-        metadata: {
-          playerId,
-          name,
-          spectator,
-        },
-        reliable: true,
+      peer.on('open', () => {
+        const conn = peer.connect(getInstanceId(gameId, hostId), {
+          metadata: {
+            playerId,
+            name,
+            spectator,
+          },
+          reliable: true,
+        });
+        // conn.on('data', processEvent);
+        conn.on('data', dispatch);
+        conn.on('error', err => {
+          console.log(err);
+          setFailedConnection(true);
+        });
+        setConn(conn);
+        setPlayerId(playerId);
+        setPercentLoaded(5);
       });
-      // conn.on('data', processEvent);
-      conn.on('data', dispatch);
-      conn.on('error', err => {
-        console.log(err);
-        setFailedConnection(true);
-      });
-      setConn(conn);
-      setPlayerId(playerId);
-      setPercentLoaded(5);
-    });
 
-    setTimeout(() => setCheckTimeout(true), 10 * 1000);
+      setTimeout(() => setCheckTimeout(true), 10 * 1000);
+    };
+    initPeer();
   }, [gameId, hostId, spectator]);
 
   React.useEffect(() => {
