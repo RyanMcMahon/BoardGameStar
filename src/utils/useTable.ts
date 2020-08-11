@@ -188,7 +188,6 @@ export const useTable = (options: TableOptions) => {
     if (!container) {
       return;
     }
-    console.log('render', selectedPieceIds);
 
     const piecesById = _.keyBy(piecesRef.current, 'id');
     const renderedPieces = new Set();
