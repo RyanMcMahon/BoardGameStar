@@ -15,7 +15,7 @@ interface TransformerOptions {
   onRotate: (angle: number) => void;
 }
 
-const HANDLE_SIZE = 20; // 12;
+const HANDLE_SIZE = 20;
 
 const handleConfigs = [
   // Top Left

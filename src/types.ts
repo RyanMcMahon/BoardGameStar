@@ -148,15 +148,8 @@ export interface EditorState extends GameConfig, GameProps {
   renderCount: number;
 }
 
-// export interface GameConfig extends EditorState {
-//   store: 'included' | 'file' | 'browser';
-//   sendAssets: boolean;
-//   loadAssets: () => Assets;
-// }
-
 export interface Game extends GameProps {
   config: GameConfig;
-  // assets: string[];
   disableSync?: boolean;
   sendAssets?: boolean;
   loadAssets?: () => Promise<Assets>;
@@ -339,22 +332,6 @@ export interface ContextMenuItem {
   fn: () => void;
 }
 
-// export interface PlayerTransactionParticipant {
-//   type: 'player';
-//   id: string;
-//   name: string;
-// }
-
-// export interface PieceTransactionParticipant {
-//   type: 'piece';
-//   id?: string;
-//   name: string;
-// }
-
-// type TransactionParticipant =
-//   | PlayerTransactionParticipant
-//   | PieceTransactionParticipant;
-
 export interface Transaction {
   from: {
     name: string;
@@ -371,8 +348,6 @@ export interface JoinEvent {
   event: 'join';
   game: Game;
   hand: string[];
-  // board: string[];
-  // pieces: Pieces;
   chat: ChatEvent[];
   assets:
     | string[]

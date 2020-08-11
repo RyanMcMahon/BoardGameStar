@@ -14,15 +14,6 @@ const ControlHeader = styled.h3({
   textTransform: 'uppercase',
 });
 
-// const Key = styled.div({
-//   padding: '1rem',
-//   borderTop: '2px solid #ccc',
-//   borderLeft: '4px solid #ccc',
-//   borderRight: '4px solid #ccc',
-//   borderBottom: '8px solid #ccc',
-//   borderRadius: '6px',
-// });
-
 export function ControlsModal(props: Props) {
   return (
     <Modal onClose={props.onClose}>

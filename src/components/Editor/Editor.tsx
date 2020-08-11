@@ -67,9 +67,6 @@ const ControlsContainer = styled.div({
   flexDirection: 'column',
   backgroundColor: '#fafafa',
   padding: '1rem',
-  // button: {
-  //   marginTop: '.5rem',
-  // },
   'label:nth-child(n+2)': {
     marginTop: '2rem',
   },
@@ -300,13 +297,6 @@ export function Editor(props: Props) {
     });
   };
 
-  // const handleUpdateGameName = (e: React.FormEvent<HTMLInputElement>) => {
-  //   dispatch({
-  //     type: 'update_game_name',
-  //     name: e.currentTarget.value || state.name,
-  //   });
-  // };
-
   const handleAddPlayer = () => {
     const id = slug.nice();
     const piece = {
@@ -505,12 +495,6 @@ export function Editor(props: Props) {
             <Button design="primary" onClick={() => setShowEditGameModal(true)}>
               Properties
             </Button>
-            {/* <label>Edit Game</label>
-            <input
-              type="text"
-              value={state.name}
-              onChange={handleUpdateGameName}
-            /> */}
 
             <label>Scenarios</label>
             {Object.values(state.scenarios).length > 1 && (
@@ -700,13 +684,6 @@ export function Editor(props: Props) {
                             },
                             type: 'update_game',
                           });
-                          // dispatch({
-                          //   type: 'update_piece',
-                          //   piece: {
-                          //     id: selectedPieceId,
-                          //     balance: balance,
-                          //   } as AnyPieceOption,
-                          // });
                         }}
                       />
                     </InlineInputContainer>

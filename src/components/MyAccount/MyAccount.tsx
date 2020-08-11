@@ -21,7 +21,6 @@ const Checklist = styled.ul({
   },
 });
 
-// const clientId = `ca_HaWvREmbLHe0LaLUhGcm1ASaCsXuoPYr`;
 export function MyAccount() {
   const { currentUser, isLoading, permissions, userSettings } = useUser();
   const [formInitialized, setFormInitialized] = React.useState(false);

@@ -94,7 +94,6 @@ export async function createNewGame(
   peer.on('open', () => {
     const chat: ChatEvent[] = [];
     let hiddenPieces: Pieces = {};
-    // let pieces : Pieces = {};
     let pieces: Pieces = Object.values(game.config.pieces).reduce(
       (byId, piece) => {
         if (piece.type !== 'card') {
@@ -147,7 +146,6 @@ export async function createNewGame(
           }
           return [parseInt(tuple[0], 10), parseInt(tuple[1], 10)];
         });
-        // console.log(countExp);
         countExp.forEach(([min, count], index) => {
           const max =
             index + 1 < countExp.length
@@ -169,9 +167,6 @@ export async function createNewGame(
       gameId,
       pieces,
       board: [],
-      // scenario.pieces.filter(
-      //   pieceId => pieces[pieceId] && pieces[pieceId].type !== 'card'
-      // ),
     };
     const clients: GamePeerDataConnection[] = [];
     const prompts: {
@@ -315,13 +310,11 @@ export async function createNewGame(
 
         try {
           conn.send({
-            // pieces,
             chat,
             event: 'join',
             game: syncConfig,
             assets: sendAssets ? assets : Object.keys(assets),
             hand: spectator ? [] : player.hand,
-            // board: gameState.board,
             // TODO remove
             player: {
               name: spectator ? 'spectator' : player.name,
@@ -396,7 +389,6 @@ export async function createNewGame(
                       ...moneyTemplate,
                       id: slug.nice(),
                       x: moneyTemplate.x + moneyTemplate.width + 40,
-                      // y: moneyTemplate.y + moneyTemplate.height,
                       balance: 0,
                       delta: 0,
                     };
@@ -626,7 +618,7 @@ export async function createNewGame(
                     ...pieces[id],
                     faceDown,
                     x: deckPiece.x + deckPiece.width + 50 + index * 40,
-                    y: deckPiece.y, // + index * 20,
+                    y: deckPiece.y,
                     width: deckPiece.width,
                     height: deckPiece.height,
                     delta: pieces[id].delta + 1,
@@ -792,7 +784,6 @@ export async function createNewGame(
                   bottomPiece.y = stack.y;
                   bottomPiece.delta++;
                   updatedPieces[bottomId] = bottomPiece;
-                  // TODO delete stack
                 } else {
                   stack.pieces = bottom;
                   stack.delta++;
@@ -914,7 +905,7 @@ export async function createNewGame(
                       ...pieces[cardId],
                       faceDown,
                       x: playArea.x + index * 40,
-                      y: playArea.y + 50, // + index * 20,
+                      y: playArea.y + 50,
                       width: deck.width,
                       height: deck.height,
                       delta: card.delta + 1,
@@ -954,10 +945,6 @@ export async function createNewGame(
                     gameState.board = gameState.board.filter(
                       pieceId => pieceId !== id
                     );
-                    // TODO - discard directly from the deck?
-                    // decks[card.deckId].cards = decks[card.deckId].cards.filter(
-                    //   cardId => cardId !== id
-                    // );
                     decks[card.deckId].discarded.push(id);
                   }
                 });

@@ -38,8 +38,6 @@ export function getInstanceId(gameId: string, hostId: string) {
   return `${hostId}_${gameId}`.toLowerCase();
 }
 
-// export const getPlayerId = () => getInstanceId(getGameId(), getHostId());
-
 export function getPlayerId() {
   const playerId = localStorage.getItem('playerId');
 

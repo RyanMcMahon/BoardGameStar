@@ -36,7 +36,7 @@ export const oauth = functions.https.onRequest(async (req, res) => {
       .auth()
       .setCustomUserClaims(userId, { publisher: true, creator: true });
 
-    res.redirect('http://localhost:3000/my-account');
+    res.redirect('https://boardgamestar.com/my-account');
   } catch (err) {
     res.send(err.message);
   }

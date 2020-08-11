@@ -194,10 +194,8 @@ const CardImage = styled.img({
 const HoverCard = styled.img({
   position: 'fixed',
   left: '50%',
-  // top: '50%',
   bottom: `${CARD_OFFSET * 2 + 100}px`,
-  transform: 'translate(-50%)', //, -50%)',
-  // outline: '30px solid rgba(0, 0, 0, .3)',
+  transform: 'translate(-50%)',
   boxShadow: '0px 0px 26px 22px rgba(0,0,0,0.3)',
 });
 
@@ -354,8 +352,7 @@ export function PlayerHand(props: Props): JSX.Element {
                     onClick={handleSelectCard(card.id)}
                     onContextMenu={e => {
                       e.preventDefault();
-                      e.stopPropagation(); // not necessary in my case, could leave in case stopImmediateProp isn't available?
-                      // e.stopImmediatePropagation();
+                      e.stopPropagation();
                       return false;
                     }}
                     onTouchStart={() => {

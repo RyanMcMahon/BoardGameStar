@@ -9,7 +9,6 @@ interface DBGame {
   gameId: string;
   name: string;
   config: Game;
-  // assets: Assets;
 }
 
 interface DBAssets {
@@ -68,7 +67,6 @@ export async function addGame(game: Game | PublicGame, assets: Assets) {
   await deleteGame(game.id);
   const db = await getDB;
   await db.games.add({
-    // assets,
     config: game,
     gameId: game.id,
     name: game.name,

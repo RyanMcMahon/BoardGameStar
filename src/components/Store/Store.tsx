@@ -11,7 +11,6 @@ const GamesWrapper = styled.div({
   display: 'grid',
   gridTemplateColumns: 'repeat(6, 1fr)',
   gridGap: '1rem',
-  // gridAutoRows: 'minmax(100px, 300px)',
 
   ...[0, 300, 600, 900, 1200, 1500, 1800].reduce(
     (agg, breakpoint, index, arr) => ({
@@ -40,7 +39,6 @@ const GameHeader = styled.h3({
   fontSize: '3rem',
   fontWeight: 'bold',
   margin: 0,
-  // margin: '1rem 0 0',
 });
 
 const Tags = styled.div({

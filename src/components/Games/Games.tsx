@@ -6,10 +6,6 @@ import styled from 'styled-components';
 
 import { createNewGame, GameState } from '../../utils/game';
 import { EditorConfig, EditorAction, Game } from '../../types';
-// import { Aviary } from '../../games/aviary';
-import { Cards } from '../../games/cards';
-import { Chess } from '../../games/chess';
-import { Checkers } from '../../games/checkers';
 import { GameSelector } from '../GameSelector';
 import { isWebBuild } from '../../utils/meta';
 import { loadAsset } from '../../utils/assets';
@@ -25,23 +21,7 @@ interface Props {
 const loadConfigs = async () => {
   const playerId = getPlayerId();
 
-  // Included Games
   const configs: Game[] = [];
-  // [Checkers, Chess, Cards].map(config => ({
-  //   ...config,
-  //   store: 'included',
-  //   // playerId,
-  //   sendAssets: true,
-  //   loadAssets: () => {
-  //     const assets: { [key: string]: string } = {};
-  //     Object.values(config.config.pieces).forEach((piece: any) => {
-  //       if (piece.image) {
-  //         assets[piece.image] = piece.image;
-  //       }
-  //     });
-  //     return assets;
-  //   },
-  // }));
 
   // Load Synced Games
   const syncConfigs = await loadGames();

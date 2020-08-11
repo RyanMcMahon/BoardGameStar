@@ -579,7 +579,6 @@ export function App(props: { spectator?: boolean }) {
   }, [conn, sendUpdatedPieces]);
 
   React.useEffect(() => {
-    // console.log(renderCount);
     setTablePieces(
       board
         .map(id => {

@@ -11,7 +11,6 @@ interface Props {
 }
 
 const GameTips = styled.ul({
-  // margin: 0,
   li: {
     margin: 0,
   },

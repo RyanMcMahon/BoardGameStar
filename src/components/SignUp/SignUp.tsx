@@ -8,7 +8,6 @@ import { signUp, SignUpForm, getCurrentUser, useUser } from '../../utils/api';
 export function SignUp() {
   const { currentUser } = useUser();
   const [form, setForm] = React.useState<SignUpForm>({
-    // displayName: '',
     email: '',
     password: '',
   });
@@ -20,14 +19,6 @@ export function SignUp() {
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* <input
-            type="text"
-            value={form.displayName}
-            onChange={e => {
-              const displayName = e.currentTarget.value;
-              setForm(f => ({ ...f, displayName }));
-            }}
-          /> */}
       <label>
         Email
         <br />

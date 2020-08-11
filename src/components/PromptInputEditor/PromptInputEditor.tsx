@@ -25,11 +25,6 @@ const Wrapper = styled.div({
   },
 });
 
-// const Img = styled.img({
-//   width: 200,
-//   height: 200,
-// });
-
 export function PromptInputEditor(props: Props) {
   const { input, onDelete, onUpdate } = props;
 

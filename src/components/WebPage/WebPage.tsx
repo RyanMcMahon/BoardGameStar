@@ -21,8 +21,6 @@ interface Props {
 
 const Page = styled.div({
   minHeight: '100%',
-  // backgroundColor: '#f5f5f5',
-  // paddingBottom: '2rem',
   boxSizing: 'border-box',
   display: 'flex',
   flexDirection: 'column',
@@ -41,9 +39,6 @@ const Menu = styled.div({
   fontWeight: 'bold',
   boxShadow: theShadow,
   zIndex: 1000,
-  // [breakpoints.mobile]: {
-  //   flexDirection: 'column',
-  // },
 });
 
 const MenuHeader = styled(Link)({
@@ -51,13 +46,11 @@ const MenuHeader = styled(Link)({
   fontSize: '28px',
   textDecoration: 'none',
   margin: '0 1rem',
-  // paddingLeft: '32px',
   position: 'relative',
   top: '-3px',
   '> img': {
     position: 'relative',
     top: '6px',
-    // left: '.5rem',
   },
   ':hover': {
     color: '#fff',
@@ -77,19 +70,6 @@ const SideMenuButton = styled(FaBars)({
   },
 });
 
-// const MenuSpacer = styled.div({
-//   flex: 1,
-// });
-
-// const NewGameLink = styled(Link)({
-//   textDecoration: 'none',
-//   [breakpoints.mobile]: {
-//     width: '100%',
-//     boxSizing: 'border-box',
-//     display: 'flex',
-//   },
-// });
-
 const ButtonLink = styled(Link)({
   textDecoration: 'none',
 });
@@ -100,9 +80,7 @@ const NewGameButton = styled(Button)({
 });
 
 export const Content = styled.div({
-  // maxWidth: '960px',
-  // margin: '0 auto',
-  // padding: '0 2rem',
+  // TODO
 });
 
 const ContentContainer = styled.div({
@@ -134,13 +112,10 @@ const SideMenu = styled.div<{ shown: boolean }>(({ shown }) => ({
 }));
 
 const Footer = styled.div({
-  // maxWidth: '960px',
-  // margin: '2rem auto',
   backgroundColor: '#333',
   padding: '2rem',
   textAlign: 'center',
   color: '#fff',
-  // borderTop: '1px solid #ddd',
   a: {
     color: '#fff',
     textDecoration: 'none',

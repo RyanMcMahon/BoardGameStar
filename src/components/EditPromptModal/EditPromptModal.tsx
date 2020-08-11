@@ -7,12 +7,6 @@ import { Game, GamePrompt } from '../../types';
 import { PromptInputEditor } from '../PromptInputEditor';
 import styled from 'styled-components';
 
-// const Prompts = styled.div({
-//   display: 'grid',
-//   gridTemplateColumns: 'repeat(3, 1fr)',
-//   gridGap: '.5rem',
-// });
-
 interface Props {
   prompt: GamePrompt;
   onClose: () => void;

@@ -53,10 +53,6 @@ interface TableOptions {
   config: PieceConfig;
 }
 
-// interface Textures {
-//   [key: string]: Texture;
-// }
-
 const optionsByDie: {
   [key: number]: { y: number; fontSize: number };
 } = {
@@ -96,48 +92,21 @@ export const useTable = (options: TableOptions) => {
   const { assets, config } = options;
   const [app, setApp] = React.useState<Application>();
   const [, setRenderCount] = React.useState<number>(0);
-  // const [textures, setTextures] = React.useState<Textures>({});
 
   React.useEffect(() => {
     setApp(
       new Application({
-        antialias: true, // default: false
+        // antialias: true, // default: false
         transparent: true, // default: false
       })
     );
   }, []);
 
-  // React.useEffect(() => {
-  //   setTextures(loadedTextures => {
-  //     console.log('update textures', assets);
-  //     const unloadedAssets = { ...assets };
-  //     for (let asset in loadedTextures) {
-  //       delete unloadedAssets[asset];
-  //     }
-  //     console.log(unloadedAssets);
-  //     const t = Object.entries(unloadedAssets).reduce(
-  //       (agg, [key, asset]) => ({
-  //         ...agg,
-  //         [key]: Texture.from(asset, {
-  //           // resolution: 300,
-  //           // width: 100,
-  //           // height: 100,
-  //         }),
-  //       }),
-  //       {}
-  //     );
-  //     console.log(loadedTextures);
-  //     return { ...loadedTextures, ...t };
-  //   });
-  // }, [assets]);
-
   const piecesRef = React.useRef<RenderPiece[]>([]);
   const setPieces = (p: RenderPiece[]) => {
     piecesRef.current = p;
   };
-  // const [pieces, setPieces] = React.useState<RenderPiece[]>([]);
   const onUpdatePiece = options.handleUpdatePiece;
-  // const assets = options.assets;
   const [selectedPieceIds, setSelectedPieceIds] = React.useState<Set<string>>(
     new Set()
   );
@@ -248,7 +217,7 @@ export const useTable = (options: TableOptions) => {
       renderItem.locked = curPiece.locked;
 
       if (!renderItem.transforming && !renderItem.dragging) {
-        const renderItemPiece = { ...curPiece }; // TODO what is this?
+        const renderItemPiece = { ...curPiece };
 
         if (curPiece.type === 'circle') {
           renderItemPiece.width = curPiece.radius * 2;
@@ -262,8 +231,6 @@ export const useTable = (options: TableOptions) => {
           ) as Text;
           renderItemPiece.width = text.width + 28;
           renderItemPiece.height = text.height + 14;
-          // } else if (curPiece.type === 'stack') {
-          //   renderItemPiece.pieces = curPiece.pieces;
         }
 
         renderItem.setPiece(renderItemPiece as RenderItemPiece);
@@ -289,7 +256,6 @@ export const useTable = (options: TableOptions) => {
           container,
           piecesRef,
           piecesById,
-          // textures,
         });
 
         if (child) {
@@ -304,13 +270,6 @@ export const useTable = (options: TableOptions) => {
           } else {
             child.deselect();
           }
-
-          // child.id = piece.id; // TODO - redundant??
-          // child.interactive = true;
-
-          // if (piece.type === 'stack') {
-          //   child.setStack(piece.pieces.length);
-          // }
 
           if (config[piece.type].selectable) {
             child.on('tap', selectPiece);
@@ -337,7 +296,6 @@ export const useTable = (options: TableOptions) => {
     piecesRef,
     options,
     assets,
-    // textures,
     config,
     onSelectPiece,
     selectedPieceIds,
@@ -371,7 +329,6 @@ function getRenderItem(
     container,
     piecesById,
     assets,
-    // textures,
     config,
     spectator,
     handleCreateStack,
@@ -383,7 +340,6 @@ function getRenderItem(
   }: TableOptions & {
     piecesRef: React.MutableRefObject<RenderPiece[]>;
     container: Container;
-    // textures: Textures;
     piecesById: {
       [id: string]: RenderPiece;
     };
@@ -505,7 +461,7 @@ function getRenderItem(
       const child = new RenderItem({
         ...pieceConfig,
         piece,
-        texture: Texture.from(image), //textures[piece.image], //Texture.from(image),
+        texture: Texture.from(image),
         onDragEnd: () => {
           const curPiece = piecesRef.current.find(p => p.id === piece.id);
           if (!curPiece) {
@@ -578,7 +534,7 @@ function getRenderItem(
       const child = new RenderItem({
         ...pieceConfig,
         piece,
-        texture: faceUpTexture, //Texture.from(image),
+        texture: faceUpTexture,
         onSplitStack: (count: number) => handleSplitStack(piece.id, count),
         onDragEnd: () => {
           const curPiece = piecesRef.current.find(p => p.id === piece.id);
@@ -602,7 +558,6 @@ function getRenderItem(
           showStackPrompt(piecesRef, container, el, curPiece);
         },
       });
-      // child.scale.copyFrom(container.scale);
       child.interactive = !spectator && piece.id !== 'axis';
       return child;
     }
@@ -628,7 +583,6 @@ function getRenderItem(
           showStackPrompt(piecesRef, container, el, curPiece);
         },
       });
-      // child.scale.set(1);
 
       child.sprite.tint = utils.string2hex(piece.color);
       child.interactive = !spectator;
@@ -645,17 +599,8 @@ function getRenderItem(
             return;
           }
           const bottom = findStackBottom(piecesRef, curPiece);
-          // piecesRef.current.find(
-          //   p =>
-          //     p.stack === curPiece.stack &&
-          //     p.id !== curPiece.id &&
-          //     Math.hypot(p.x - curPiece.x, p.y - curPiece.y) < 20
-          // );
           if (bottom) {
             handleCreateStack([bottom.id, curPiece.id]);
-            //   ...(bottom.pieces || [bottom.id]),
-            //   ...(curPiece.pieces || [curPiece.id]),
-            // ]);
           }
         },
         onSplitStack: (count: number) => handleSplitStack(piece.id, count),
@@ -768,14 +713,11 @@ function showStackPrompt(
     const stackRenderItems = (container.children as RenderItem[]).filter(x =>
       stackIds.includes(x.id)
     );
-    // const stack = stackPieces.find(
-    //   p => Math.hypot(p.x - curPiece.x, p.y - curPiece.y) < 20
-    // );
     const stack = findStackBottom(piecesRef, curPiece);
     const nonStackables = stackRenderItems.filter(
       x => !stack || x.id !== stack.id
     ) as RenderItem[];
-    nonStackables.forEach(x => (x.alpha = 1)); // TOOD stackPieces.find(p => p.id === x.id).opacity));
+    nonStackables.forEach(x => (x.alpha = 1));
 
     if (stack) {
       const stackRender = container.children.find(

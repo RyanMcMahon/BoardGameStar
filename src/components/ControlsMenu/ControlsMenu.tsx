@@ -30,7 +30,6 @@ export interface ControlsMenuItem {
 
 interface Props {
   selectedPieces: RenderPiece[];
-  // items: ControlsMenuItem[];
   pieces: Pieces;
   chat: ChatEvent[];
   lastReadChat: number;
@@ -94,13 +93,7 @@ const ExpandIcon = styled.span({
 });
 
 const UnreadIcon = styled(FaCommentDots)({
-  // display: 'inline-block',
-  // textAlign: 'center',
   color: '#e74c3c',
-  // color: '#fff',
-  // height: '20px',
-  // width: '20px',
-  // borderRadius: '20px',
 });
 
 export function ControlsMenu(props: Props) {

@@ -49,7 +49,6 @@ const buttonStyles: {
 export const Button = styled.button((options: ButtonOptions) => ({
   fontSize: '14px',
   textTransform: 'none' as any,
-  // textDecoration: 'none !important',
   lineHeight: '36px',
   margin: 0,
   backgroundColor: buttonStyles[options.design].base,

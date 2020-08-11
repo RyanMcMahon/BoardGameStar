@@ -16,7 +16,6 @@ export function editorReducer(
   switch (action.type) {
     case 'create_game': {
       const { name, id } = action;
-      // const { name } = editorConfig;
       const player1: PlayerOption = {
         id: slug.nice(),
         type: 'player' as const,

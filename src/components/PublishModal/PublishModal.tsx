@@ -28,7 +28,6 @@ export function PublishModal(props: Props) {
     price: 0,
   };
   const loadAssets = props.config.loadAssets || (() => ({}));
-  // delete cleanConfig.assets;
   delete cleanConfig.loadAssets;
   const [game, setGame] = React.useState<PublishableGame>(cleanConfig);
   const [isPublishing, setIsPublishing] = React.useState(false);
@@ -38,10 +37,6 @@ export function PublishModal(props: Props) {
     try {
       const assets = loadAssets();
       setIsPublishing(true);
-      // const game = {
-      //   ...form,
-      //   assets: Object.keys(assets),
-      // };
       await publishGame(game, assets);
       history.push(`/games/${cleanConfig.id}`);
     } catch (err) {

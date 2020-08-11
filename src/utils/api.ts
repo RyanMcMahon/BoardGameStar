@@ -41,7 +41,6 @@ export interface Permissions {
 }
 
 export interface SignUpForm {
-  // displayName: string;
   email: string;
   password: string;
 }
@@ -50,7 +49,6 @@ export async function signUp(form: SignUpForm) {
   const x = await firebase
     .auth()
     .createUserWithEmailAndPassword(form.email, form.password);
-  // TODO set display name
 }
 
 export async function logIn(email: string, password: string) {
@@ -61,13 +59,11 @@ export async function signOut() {
   return firebase.auth().signOut();
 }
 
-export async function resetPassword(email: string) {
-  // TODO
-}
+export async function resetPassword(email: string) {}
 
 export async function sendVerificationEmail() {
   firebase.auth().currentUser?.sendEmailVerification({
-    url: 'http://localhost:3000/my-account',
+    url: 'https://boardgamestar.com/my-account',
   });
 }
 

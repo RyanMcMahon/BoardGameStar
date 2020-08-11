@@ -37,19 +37,6 @@ app.get('/:gameId', async (req, res) => {
       while (pieces.length) {
         const piece = pieces.pop() as any;
 
-        // console.log(
-        //   '==== file',
-        //   `boardgamestar-21111.appspot.com/users/${gameConfig.userId}/games/${gameConfig.id}/public/${piece.image}`
-        // );
-        // const fileExists = await admin
-        //   .storage()
-        //   .bucket(`boardgamestar-21111.appspot.com`)
-        //   .file(
-        //     `users/${gameConfig.userId}/games/${gameConfig.id}/public/${piece.image}`
-        //   )
-        //   .exists();
-        // console.log('exists', fileExists);
-
         assets[piece.image] = await getSignedUrl(
           gameConfig.userId,
           gameConfig.id,
@@ -62,18 +49,6 @@ app.get('/:gameId', async (req, res) => {
             piece.back
           );
         }
-        // (
-        //   await admin
-        //     .storage()
-        //     .bucket(`boardgamestar-21111.appspot.com`)
-        //     .file(
-        //       `users/${gameConfig.userId}/games/${gameConfig.id}/public/${piece.image}`
-        //     )
-        //     .getSignedUrl({
-        //       action: 'read',
-        //       expires: Date.now() + 60 * 60 * 1000,
-        //     })
-        // )[0];
       }
 
       res.send({
@@ -94,10 +69,8 @@ app.get('/:gameId', async (req, res) => {
     res.status(500);
     res.send(err);
   }
-  // res.send(Widgets.getById(req.params.id))
 });
 
-// Expose Express API as a single Cloud Function:
 export const games = functions.https.onRequest(app);
 
 export const servers = functions.https.onRequest((req, res) =>

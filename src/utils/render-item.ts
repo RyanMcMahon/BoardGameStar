@@ -152,7 +152,6 @@ export class RenderItem extends Container {
 
       onTransformEnd: () => {
         this.transforming = false;
-        // this.nonSelectClick = false;
         transformer.setDimensions(this.sprite);
         if (this.onTransformEnd) {
           this.onTransformEnd();

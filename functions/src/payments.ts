@@ -7,23 +7,11 @@ export const createStripePayment = functions.firestore
   .document('users/{userId}/payments/{pushId}')
   .onCreate(async (snap, context) => {
     try {
-      const {
-        amount,
-        tip,
-        // tipSplit,
-        currency,
-        gameId,
-        payment_method,
-      } = snap.data();
+      const { amount, tip, currency, gameId, payment_method } = snap.data();
       const fullAmount = amount + tip;
       const netAmount = amount - Math.ceil(amount * 0.029 + 30);
       const netTip = tip - Math.ceil(tip * 0.029);
       const transferAmount = netTip + Math.round(netAmount * 0.75);
-      // if (tipSplit < 0 || tipSplit > 1) {
-      //   return;
-      // }
-
-      // const bgsFee = Math.round(amount * 0.25 + tip * (1 - tipSplit));
       const document = snap.ref.parent.parent;
       if (!document) {
         return;

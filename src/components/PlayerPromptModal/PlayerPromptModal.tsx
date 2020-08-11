@@ -23,7 +23,6 @@ import {
 } from 'react-icons/fa';
 import { Assets } from '../../utils/game';
 import styled from 'styled-components';
-// import { PromptInputEditor } from '../PromptInputEditor';
 
 interface Props {
   playerId: string;
@@ -135,7 +134,6 @@ export function PlayerPromptModal(props: Props) {
     null
   );
 
-  // TODO
   const resultsAvailable =
     results &&
     event.players.every(
@@ -143,7 +141,6 @@ export function PlayerPromptModal(props: Props) {
     );
 
   const fillable = !resultsAvailable && event.players.includes(playerId);
-  // && (!results || !results.results[playerId]);
 
   const resetAnswers = () => {
     if (isLocked) {
@@ -151,14 +148,6 @@ export function PlayerPromptModal(props: Props) {
       setIsLocked(false);
     }
   };
-
-  // React.useEffect(() => {
-  //   // Clear Answers
-  //   if (isLocked) {
-  //     onSubmitAnswers();
-  //     setIsLocked(false);
-  //   }
-  // }, [isLocked, answers, onSubmitAnswers]);
 
   return (
     <>
@@ -257,7 +246,6 @@ export function PlayerPromptModal(props: Props) {
                         <input
                           className="u-full-width"
                           type={input.type}
-                          // value={answers[index] || ''}
                           defaultValue={input.type === 'text' ? '' : 0}
                           onChange={e => {
                             const value = e.currentTarget.value;

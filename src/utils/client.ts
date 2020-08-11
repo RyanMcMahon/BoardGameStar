@@ -113,27 +113,6 @@ function clientReducer(state: ClientState, data: GameEvent) {
 
       if (Array.isArray(a)) {
         newState.pendingAssets = a;
-        // setPendingAssets(a);
-        // } else {
-        //   // Fake loader to give time to read "Facts"
-        //   setTimeout(
-        //     () => setPercentLoaded(_.random(20, 30)),
-        //     _.random(200, 600)
-        //   );
-        //   setTimeout(
-        //     () => setPercentLoaded(_.random(50, 70)),
-        //     _.random(800, 1200)
-        //   );
-        //   setTimeout(
-        //     () => setPercentLoaded(_.random(80, 99)),
-        //     _.random(1200, 2000)
-        //   );
-        //   setTimeout(() => {
-        //     setAssets(a);
-        //     setIsLoaded(true);
-        //   }, _.random(3100, 3500));
-        //   setAssets(a);
-        //   setIsLoaded(true);
       }
 
       return newState;
@@ -276,36 +255,11 @@ export function useGameClient(
   hostId: string,
   spectator?: boolean
 ) {
-  // const [, setRenderCount] = React.useState<number>(1);
   const [failedConnection, setFailedConnection] = React.useState(false);
   const [checkTimeout, setCheckTimeout] = React.useState(false);
   const [playerId, setPlayerId] = React.useState<string>('');
   const [percentLoaded, setPercentLoaded] = React.useState<number>(5);
   const [conn, setConn] = React.useState<ClientPeerDataConnection>();
-  // const [assets, setAssets] = React.useState<{ [key: string]: string }>({});
-  // const [pieces, setPieces] = React.useState<{ [key: string]: RenderPiece }>(
-  //   {}
-  // );
-  // const [isLoaded, setIsLoaded] = React.useState<boolean>(false);
-  // const [pendingAssets, setPendingAssets] = React.useState<string[]>([]);
-  // const [game, setGame] = React.useState<Game>();
-  // const [chat, setChat] = React.useState<ChatEvent[]>([]);
-  // const [board, setBoard] = React.useState<string[]>([]);
-  // const [myHand, setMyHand] = React.useState<string[]>([]);
-  // const [handCounts, setHandCounts] = React.useState<{ [key: string]: number }>(
-  //   {}
-  // );
-  // const [myDice, setMyDice] = React.useState<string[]>([]);
-  // const [diceCounts, setDiceCounts] = React.useState<{ [key: string]: number }>(
-  //   {}
-  // );
-  // const [peekingPlayers, setPeekingPlayers] = React.useState<{
-  //   [key: string]: string;
-  // }>({});
-  // const [peekingCards, setPeekingCards] = React.useState<string[]>([]);
-  // const [peekingDiscardedCards, setPeekingDiscardedCards] = React.useState<
-  //   string[]
-  // >([]);
 
   const [state, dispatch] = React.useReducer<
     React.Reducer<ClientState, GameEvent>,
@@ -408,7 +362,6 @@ export function useGameClient(
           },
           reliable: true,
         });
-        // conn.on('data', processEvent);
         conn.on('data', dispatch);
         conn.on('error', err => {
           console.log(err);
