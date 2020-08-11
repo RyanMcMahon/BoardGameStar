@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Button } from '../../utils/style';
 import { Modal } from '../Modal';
-import { EditorState, Assets, Game } from '../../types';
+import { Assets, Game } from '../../types';
 import { getGameById, addGame } from '../../utils/store';
 
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function SettingsModal(props: Props) {
-  const { playerId, config: game, assets, onClose } = props;
+  const { config: game, assets, onClose } = props;
   const [isLoadingSyncState, setIsLoadingSyncState] = React.useState(true);
   const [isSynced, setIsSynced] = React.useState(false);
   const handleSaveGame = async () => {

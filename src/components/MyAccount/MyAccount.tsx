@@ -5,7 +5,6 @@ import { Button } from '../../utils/style';
 import { Link, Redirect } from 'react-router-dom';
 import {
   useUser,
-  logIn,
   signOut,
   sendVerificationEmail,
   updateUserSettings,
@@ -22,7 +21,7 @@ const Checklist = styled.ul({
 });
 
 export function MyAccount() {
-  const { currentUser, isLoading, permissions, userSettings } = useUser();
+  const { currentUser, isLoading, userSettings } = useUser();
   const [formInitialized, setFormInitialized] = React.useState(false);
   const [form, setForm] = React.useState<
     Pick<UserSettings, 'displayName' | 'profile'>

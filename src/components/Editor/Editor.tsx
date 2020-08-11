@@ -25,7 +25,6 @@ import { addGame } from '../../utils/store';
 import { FaExpand } from 'react-icons/fa';
 import { EditGameModal } from '../EditGameModal';
 import { EditPromptModal } from '../EditPromptModal';
-import { Prompt } from 'react-router-dom';
 
 interface Props {
   state: EditorState;

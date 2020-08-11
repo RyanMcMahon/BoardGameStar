@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import { Link } from 'react-router-dom';
 import { getAllGames } from '../../utils/api';
-import { Game, PublicGame } from '../../types';
+import { PublicGame } from '../../types';
 import { primaryColor } from '../../utils/style';
 import { StorageImage } from '../StorageImage';
 
@@ -49,12 +49,6 @@ const Tags = styled.div({
 const GameSummary = styled.div({
   height: '80px',
   overflow: 'hidden',
-});
-
-const GameImage = styled(StorageImage)({
-  width: '100%',
-  height: '200px',
-  objectFit: 'cover',
 });
 
 export function Store() {

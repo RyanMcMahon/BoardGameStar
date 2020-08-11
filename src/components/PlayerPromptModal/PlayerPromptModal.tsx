@@ -1,19 +1,15 @@
 import _ from 'lodash';
 import React from 'react';
-import Select from 'react-select';
 
 import { Button, successColor } from '../../utils/style';
 import { Modal } from '../Modal';
 import {
-  Game,
-  GamePrompt,
   PromptPlayersEvent,
   PlayerPiece,
   GamePromptAnswer,
   PromptResultsEvent,
   Pieces,
   Card,
-  GamePromptSubmission,
 } from '../../types';
 import {
   FaCheckCircle,
@@ -285,6 +281,8 @@ export function PlayerPromptModal(props: Props) {
                         )}
                       </ImageAnswer>
                     );
+                  default:
+                    return null;
                 }
               })}
 

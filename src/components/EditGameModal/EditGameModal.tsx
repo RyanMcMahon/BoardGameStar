@@ -1,5 +1,4 @@
 import React from 'react';
-import Select from 'react-select';
 
 import { Button, breakpoints } from '../../utils/style';
 import { Modal } from '../Modal';
@@ -14,7 +13,7 @@ interface Props {
   onUpdate: (game: Partial<Game>) => void;
 }
 
-const tags = ['RPG', 'Hidden Role', 'Hidden Movement'];
+// const tags = ['RPG', 'Hidden Role', 'Hidden Movement'];
 const CHAR_LIMIT = 100;
 
 const SummaryText = styled.textarea({

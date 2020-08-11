@@ -5,11 +5,11 @@ import { Redirect } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { createNewGame, GameState } from '../../utils/game';
-import { EditorConfig, EditorAction, Game } from '../../types';
+import { EditorAction, Game } from '../../types';
 import { GameSelector } from '../GameSelector';
 import { isWebBuild } from '../../utils/meta';
 import { loadAsset } from '../../utils/assets';
-import { Button, breakpoints } from '../../utils/style';
+import { Button } from '../../utils/style';
 import { CreateGameModal } from '../CreateGameModal';
 import { loadGames, loadAssets } from '../../utils/store';
 import { getPlayerId } from '../../utils/identity';

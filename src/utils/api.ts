@@ -46,7 +46,7 @@ export interface SignUpForm {
 }
 
 export async function signUp(form: SignUpForm) {
-  const x = await firebase
+  return firebase
     .auth()
     .createUserWithEmailAndPassword(form.email, form.password);
 }
@@ -324,6 +324,7 @@ export async function downloadGame(
 
   for (let i = 0; i < 10; i++) {
     const delay = (i + 1) * _.random(400, 800);
+    // eslint-disable-next-line no-loop-func
     setTimeout(() => {
       curPrecentage += 1;
       progress(curPrecentage);

@@ -8,7 +8,7 @@ import {
   FaTrashAlt,
   FaLock,
   FaLockOpen,
-  FaEye,
+  // FaEye,
   FaTimes,
   FaLevelUpAlt,
   FaPlus,

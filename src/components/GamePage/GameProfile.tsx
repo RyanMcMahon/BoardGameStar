@@ -2,11 +2,11 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { Button, primaryColor } from '../../utils/style';
-import { Link, Redirect, useParams, useHistory } from 'react-router-dom';
+import { Link, useParams, useHistory } from 'react-router-dom';
 import {
-  useUser,
-  logIn,
-  signOut,
+  // useUser,
+  // logIn,
+  // signOut,
   getGame,
   downloadGame,
 } from '../../utils/api';

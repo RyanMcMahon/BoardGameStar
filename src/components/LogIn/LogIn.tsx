@@ -1,8 +1,7 @@
 import React from 'react';
-import styled from 'styled-components';
 
 import { Button } from '../../utils/style';
-import { Link, Redirect } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import { useUser, logIn } from '../../utils/api';
 
 interface SignUpForm {

@@ -2,8 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { Button } from '../../utils/style';
-import { CardPiece, Assets, GamePromptInput } from '../../types';
-import { useAsset } from '../../utils/useAsset';
+import { GamePromptInput } from '../../types';
 import { FaTrash } from 'react-icons/fa';
 
 interface Props {

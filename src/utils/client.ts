@@ -5,11 +5,9 @@ import Peer from 'peerjs';
 import { getInstanceId, getIdentity } from './identity';
 
 import {
-  RenderPiece,
   GameEvent,
   ClientEvent,
   ChatEvent,
-  EditorState,
   Game,
   Assets,
   Pieces,
@@ -17,7 +15,6 @@ import {
   PromptResultsEvent,
 } from '../types';
 import { createPeer } from './peer';
-import { update } from 'lodash';
 
 interface ClientPeerDataConnection extends Peer.DataConnection {
   send: (event: ClientEvent) => void;

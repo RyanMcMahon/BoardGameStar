@@ -11,16 +11,15 @@ import { App } from '../App';
 import { UpdateModal } from '../UpdateModal';
 import { isWebBuild } from '../../utils/meta';
 import { Games } from '../Games';
-import { Home } from '../Home';
 import { Editor, editorReducer } from '../Editor';
-import { EditorAction, EditorState, Game } from '../../types';
+import { EditorAction, EditorState } from '../../types';
 import { LogIn } from '../LogIn';
 import { SignUp } from '../SignUp';
 import { Store } from '../Store';
 import { MyAccount } from '../MyAccount';
 import { UserProfile } from '../UserProfile';
 import { GameProfile } from '../GamePage';
-import { WebPage, Content } from '../WebPage';
+import { WebPage } from '../WebPage';
 import { Terms } from '../Terms';
 import { Privacy } from '../Privacy';
 

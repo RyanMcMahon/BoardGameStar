@@ -2,7 +2,6 @@ import React from 'react';
 
 import { Button } from '../../utils/style';
 import { Modal } from '../Modal';
-import { EditorConfig } from '../../types';
 import styled from 'styled-components';
 
 interface Props {

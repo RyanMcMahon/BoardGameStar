@@ -1,9 +1,4 @@
 import React from 'react';
-import styled from 'styled-components';
-
-import { Button } from '../../utils/style';
-import { Link, Redirect } from 'react-router-dom';
-import { signUp, SignUpForm, getCurrentUser, useUser } from '../../utils/api';
 
 export function Privacy() {
   return (

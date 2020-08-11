@@ -5,7 +5,6 @@ import {
   PlayerOption,
   EditorState,
   AnyPieceOption,
-  Game,
 } from '../../types';
 import { isWebBuild } from '../../utils/meta';
 

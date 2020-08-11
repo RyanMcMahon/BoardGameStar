@@ -13,21 +13,14 @@ import {
   CardPiece,
   DeckPiece,
   ChatEvent,
-  Piece,
   StackPiece,
-  StackablePieceOption,
-  CircleTokenPiece,
-  ImageTokenPiece,
-  RectTokenPiece,
   MoneyTokenPiece,
-  MoneyTokenOption,
   GamePromptAnswer,
   GamePrompt,
 } from '../types';
 
 import { getHostId, getGameId, getInstanceId } from './identity';
 import { createPeer } from './peer';
-import { count } from 'console';
 
 interface GamePeerDataConnection extends Peer.DataConnection {
   send: (event: GameEvent) => void;

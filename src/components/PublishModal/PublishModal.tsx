@@ -1,13 +1,10 @@
 import React from 'react';
-import Select from 'react-select';
 
 import { Button } from '../../utils/style';
 import { publishGame, getCurrentUser } from '../../utils/api';
 import { Modal } from '../Modal';
-import { Game, PublicGame, PublishableGame } from '../../types';
+import { Game, PublishableGame } from '../../types';
 import { filePrompt } from '../../utils/assets';
-import { UploadFile } from 'electron';
-import { FaTrash } from 'react-icons/fa';
 import { useHistory } from 'react-router-dom';
 
 interface Props {
@@ -16,7 +13,7 @@ interface Props {
   onClose: () => void;
 }
 
-const tags = ['RPG', 'Hidden Role', 'Hidden Movement'];
+// const tags = ['RPG', 'Hidden Role', 'Hidden Movement'];
 
 export function PublishModal(props: Props) {
   const cleanConfig: PublishableGame = {

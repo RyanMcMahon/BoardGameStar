@@ -2,9 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { Modal } from '../Modal';
-import { isWebBuild } from '../../utils/meta';
 import { PlayerPiece } from '../../types';
-import { FaCheckCircle, FaRegCopy, FaClipboard } from 'react-icons/fa';
+import { FaCheckCircle, FaClipboard } from 'react-icons/fa';
 import { successColor, Button } from '../../utils/style';
 
 interface Props {

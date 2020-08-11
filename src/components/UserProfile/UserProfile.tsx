@@ -1,15 +1,7 @@
 import React from 'react';
-import styled from 'styled-components';
 
-import { Button } from '../../utils/style';
-import { Link, Redirect, useParams } from 'react-router-dom';
-import {
-  useUser,
-  logIn,
-  signOut,
-  getUserProfile,
-  UserSettings,
-} from '../../utils/api';
+import { useParams } from 'react-router-dom';
+import { getUserProfile, UserSettings } from '../../utils/api';
 import { Game } from '../../types';
 
 export function UserProfile() {

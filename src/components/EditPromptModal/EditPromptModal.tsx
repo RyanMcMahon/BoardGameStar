@@ -1,11 +1,9 @@
 import React from 'react';
-import Select from 'react-select';
 
 import { Button } from '../../utils/style';
 import { Modal } from '../Modal';
-import { Game, GamePrompt } from '../../types';
+import { GamePrompt } from '../../types';
 import { PromptInputEditor } from '../PromptInputEditor';
-import styled from 'styled-components';
 
 interface Props {
   prompt: GamePrompt;

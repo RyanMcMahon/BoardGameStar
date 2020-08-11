@@ -1,17 +1,16 @@
 import React from 'react';
 import styled from 'styled-components';
 import * as _ from 'lodash';
-import FPSStats from 'react-fps-stats';
+// import FPSStats from 'react-fps-stats';
 import { Viewport } from 'pixi-viewport';
 import { useParams, Link, Redirect } from 'react-router-dom';
 
 import { useGameClient } from '../../utils/client';
-import { Button, breakpoints, maxMobileWidth } from '../../utils/style';
+// import { breakpoints, maxMobileWidth } from '../../utils/style';
 import { Table, useTable } from '../../utils/useTable';
 import { ControlsModal } from '../ControlsModal';
 import { InviteModal } from '../InviteModal';
 
-import { Hand } from '../Hand';
 import { PlayerHand } from '../PlayerHand';
 import { DeckModal } from '../DeckModal';
 import { TransactionModal } from '../TransactionModal';
@@ -33,7 +32,7 @@ import { Chat } from '../Chat';
 import { SettingsModal } from '../SettingsModal';
 import { AppContext, initialState, appReducer } from './AppContext';
 import { PromptSelectModal } from '../PromptSelectModal';
-import { config } from 'process';
+// import { config } from 'process';
 import { PlayerPromptModal } from '../PlayerPromptModal/PlayerPromptModal';
 
 const MainContainer = styled.div({
@@ -51,32 +50,32 @@ const AppContainer = styled.div({
   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%23bdc5ca' fill-opacity='0.50' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
 });
 
-const TogglePlayerContainerButton = styled.div({
-  userSelect: 'none',
-  position: 'absolute',
-  top: '.5rem',
-  right: 0,
-  padding: '.25rem 1rem .5rem 1.5rem',
-  borderRadius: '8px 0 0 8px',
-  fontSize: '50px',
-  lineHeight: '24px',
-  height: '34px',
-  backgroundColor: 'rgba(0, 0, 0, .2)',
-  color: '#fff',
-  zIndex: 2000,
-  cursor: 'pointer',
-  [breakpoints.mobile]: {
-    fontSize: '70px',
-    lineHeight: '24px',
-    height: '40px',
-  },
-});
+// const TogglePlayerContainerButton = styled.div({
+//   userSelect: 'none',
+//   position: 'absolute',
+//   top: '.5rem',
+//   right: 0,
+//   padding: '.25rem 1rem .5rem 1.5rem',
+//   borderRadius: '8px 0 0 8px',
+//   fontSize: '50px',
+//   lineHeight: '24px',
+//   height: '34px',
+//   backgroundColor: 'rgba(0, 0, 0, .2)',
+//   color: '#fff',
+//   zIndex: 2000,
+//   cursor: 'pointer',
+//   [breakpoints.mobile]: {
+//     fontSize: '70px',
+//     lineHeight: '24px',
+//     height: '40px',
+//   },
+// });
 
-const HandContainer = styled.div({
-  flex: 1,
-  display: 'flex',
-  position: 'relative',
-});
+// const HandContainer = styled.div({
+//   flex: 1,
+//   display: 'flex',
+//   position: 'relative',
+// });
 
 const LoadingPage = styled.div({
   position: 'fixed',
@@ -391,9 +390,9 @@ export function App(props: { spectator?: boolean }) {
     container,
     setPieces: setTablePieces,
   } = table;
-  const [showPlayerControls, setShowPlayerControls] = React.useState<boolean>(
-    true
-  );
+  // const [showPlayerControls, setShowPlayerControls] = React.useState<boolean>(
+  //   true
+  // );
   const [drawModalId, setDrawModalId] = React.useState<string>('');
   const [transactionModalOptions, setTransactionModalOptions] = React.useState<
     Transaction[] | null
@@ -414,11 +413,11 @@ export function App(props: { spectator?: boolean }) {
     .filter(p => p.type !== 'deleted');
   const allUnlocked = selectedPieces.every(piece => !piece.locked);
 
-  React.useLayoutEffect(() => {
-    if (document.documentElement.clientWidth < maxMobileWidth) {
-      setShowPlayerControls(false);
-    }
-  }, []);
+  // React.useLayoutEffect(() => {
+  //   if (document.documentElement.clientWidth < maxMobileWidth) {
+  //     setShowPlayerControls(false);
+  //   }
+  // }, []);
 
   React.useEffect(() => {
     if (showChat) {
@@ -477,9 +476,9 @@ export function App(props: { spectator?: boolean }) {
       faceDown,
       event: 'play_cards',
     });
-    if (document.documentElement.clientWidth < maxMobileWidth) {
-      setShowPlayerControls(false);
-    }
+    // if (document.documentElement.clientWidth < maxMobileWidth) {
+    //   setShowPlayerControls(false);
+    // }
     setSelectedPieceIds(new Set());
   };
 
@@ -492,9 +491,9 @@ export function App(props: { spectator?: boolean }) {
       playerId,
       event: 'pass_cards',
     });
-    if (document.documentElement.clientWidth < maxMobileWidth) {
-      setShowPlayerControls(false);
-    }
+    // if (document.documentElement.clientWidth < maxMobileWidth) {
+    //   setShowPlayerControls(false);
+    // }
   };
 
   const handleDrawCardsToTable = (faceDown: boolean) => (count: number) => {
@@ -521,7 +520,7 @@ export function App(props: { spectator?: boolean }) {
       count,
     });
     setDrawModalId('');
-    setShowPlayerControls(true);
+    // setShowPlayerControls(true);
     setSelectedPieceIds(new Set());
   };
 

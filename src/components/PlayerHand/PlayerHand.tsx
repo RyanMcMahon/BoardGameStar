@@ -3,12 +3,7 @@ import styled from 'styled-components';
 
 import { DropdownButton } from '../DropdownButton';
 import { PlayerSelectModal } from '../PlayerSelectModal';
-import {
-  Button,
-  theShadow,
-  breakpoints,
-  primaryColor,
-} from '../../utils/style';
+import { Button, breakpoints, primaryColor } from '../../utils/style';
 import {
   Card,
   Pieces,
@@ -16,14 +11,12 @@ import {
   GameConfig,
   Transaction,
 } from '../../types';
-import { prependPrefix } from '../../utils/assets';
 import { Link } from 'react-router-dom';
 import {
   FaSortUp,
   FaSortDown,
   FaCheckCircle,
   FaSignOutAlt,
-  FaQuestion,
   FaQuestionCircle,
 } from 'react-icons/fa';
 

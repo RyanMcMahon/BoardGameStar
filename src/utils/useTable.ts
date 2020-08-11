@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { Children } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 import { Viewport } from 'pixi-viewport';
@@ -10,7 +10,6 @@ import {
   Container,
   Text,
   Application,
-  TextureUvs,
 } from 'pixi.js';
 
 import {
@@ -22,7 +21,6 @@ import {
   ImageTokenPiece,
   RectTokenPiece,
   Transaction,
-  ImageTokenOption,
 } from '../types';
 import { RenderItem, RenderItemPiece } from './render-item';
 import { primaryColor } from './style';

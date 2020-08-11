@@ -1,16 +1,8 @@
 import React, { FormEvent } from 'react';
 
-import * as firebase from 'firebase';
-import { Button, ButtonGroup } from '../../utils/style';
-import {
-  publishGame,
-  getCurrentUser,
-  useUser,
-  getCustomerData,
-  buyGame,
-} from '../../utils/api';
+import { Button } from '../../utils/style';
+import { getCustomerData, buyGame } from '../../utils/api';
 import { Modal } from '../Modal';
-import { Game } from '../../types';
 
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import styled from 'styled-components';
@@ -133,6 +125,9 @@ export function PurchaseModal(props: Props) {
       });
 
       // TODO error or not paymentMethod
+      if (error) {
+        throw error;
+      }
 
       if (paymentMethod) {
         await buyGame(game, paymentMethod, form.tip, tax);

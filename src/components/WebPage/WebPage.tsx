@@ -4,15 +4,12 @@ import { Link, useHistory } from 'react-router-dom';
 
 import {
   primaryColor,
-  primaryHighlightColor,
   breakpoints,
   Button,
   theShadow,
 } from '../../utils/style';
-import { isWebBuild } from '../../utils/meta';
-import { imagePrefix } from '../../utils/assets';
-import { getCurrentUser, signOut, useUser } from '../../utils/api';
-import { TagSelect } from '../TagSelect/TagSelect';
+import { useUser } from '../../utils/api';
+// import { TagSelect } from '../TagSelect/TagSelect';
 import { FaBars } from 'react-icons/fa';
 
 interface Props {
@@ -74,11 +71,6 @@ const ButtonLink = styled(Link)({
   textDecoration: 'none',
 });
 
-const NewGameButton = styled(Button)({
-  margin: '0 1rem',
-  flex: 1,
-});
-
 export const Content = styled.div({
   // TODO
 });
@@ -125,7 +117,7 @@ const Footer = styled.div({
 export function WebPage(props: Props) {
   const history = useHistory();
   const { currentUser, isLoading } = useUser();
-  const [tags, setTags] = React.useState<string[]>([]);
+  // const [tags, setTags] = React.useState<string[]>([]);
   const [isSideMenuVisible, setIsSideMenuVisible] = React.useState<boolean>(
     false
   );
