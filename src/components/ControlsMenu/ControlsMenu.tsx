@@ -17,6 +17,7 @@ import {
   FaRandom,
   FaSync,
   FaMoneyBillAlt,
+  FaEye,
 } from 'react-icons/fa';
 
 import { maxMobileWidth, theShadow } from '../../utils/style';
@@ -29,6 +30,7 @@ export interface ControlsMenuItem {
 }
 
 interface Props {
+  playerId: string;
   selectedPieces: RenderPiece[];
   pieces: Pieces;
   chat: ChatEvent[];
@@ -44,6 +46,7 @@ interface Props {
   onDiscardPlayed: (deckId: string) => void;
   onDiscardSelected: (cardIds: string[]) => void;
   onPickUpSelected: (cardIds: string[]) => void;
+  onPeekAtCards: (cardIds: string[]) => void;
   onPromptTransaction: (bankId: string) => void;
   onClearSelectedPieces: () => void;
   onShowDiceModal: () => void;
@@ -98,6 +101,7 @@ const UnreadIcon = styled(FaCommentDots)({
 
 export function ControlsMenu(props: Props) {
   const {
+    playerId,
     pieces,
     selectedPieces,
     chat,
@@ -110,6 +114,7 @@ export function ControlsMenu(props: Props) {
     onDiscardPlayed,
     onDiscardSelected,
     onPickUpSelected,
+    onPeekAtCards,
     onClearSelectedPieces,
     onPromptTransaction,
     onShowDiceModal,
@@ -248,6 +253,15 @@ export function ControlsMenu(props: Props) {
                   }))
                 ),
             },
+            ...(selectedPieces.every(p => p.faceDown)
+              ? [
+                  {
+                    icon: <FaEye />,
+                    label: 'Peek',
+                    fn: () => onPeekAtCards(selectedPieces.map(p => p.id)),
+                  },
+                ]
+              : []),
             {
               icon: <FaBan />,
               label: 'Discard',

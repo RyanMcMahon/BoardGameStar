@@ -16,21 +16,29 @@ interface DBAssets {
   assets: Assets;
 }
 
+interface DBGameAsset {
+  id: string;
+  asset: string;
+}
+
 class BGSDB extends Dexie {
   favorites: Dexie.Table<DBFavorite, string>;
   games: Dexie.Table<DBGame, string>;
   assets: Dexie.Table<DBAssets, string>;
+  gameAsset: Dexie.Table<DBGameAsset, string>;
 
   constructor() {
     super('BGS');
-    this.version(1).stores({
+    this.version(3).stores({
       favorites: '&gameId',
       games: '&gameId,name,config',
       assets: '&gameId,assets',
+      gameAsset: '&id,asset',
     });
     this.favorites = this.table('favorites');
     this.games = this.table('games');
     this.assets = this.table('assets');
+    this.gameAsset = this.table('gameAsset');
   }
 }
 
@@ -75,6 +83,28 @@ export async function addGame(game: Game | PublicGame, assets: Assets) {
     gameId: game.id,
     assets,
   });
+}
+
+export async function getCachedAsset(
+  gameId: string,
+  version: string,
+  name: string
+) {
+  const assetPath = `${gameId}:${version}:${name}`;
+  const db = await getDB;
+  return db.gameAsset.get(assetPath);
+}
+
+export async function cacheAsset(
+  gameId: string,
+  version: string,
+  name: string,
+  asset: string
+) {
+  const assetPath = `${gameId}:${version}:${name}`;
+  const db = await getDB;
+  await db.gameAsset.delete(assetPath);
+  return db.gameAsset.add({ id: assetPath, asset });
 }
 
 export async function getGameById(gameId: string) {

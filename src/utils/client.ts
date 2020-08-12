@@ -15,6 +15,7 @@ import {
   PromptResultsEvent,
 } from '../types';
 import { createPeer } from './peer';
+import { getCachedAsset, cacheAsset } from './store';
 
 interface ClientPeerDataConnection extends Peer.DataConnection {
   send: (event: ClientEvent) => void;
@@ -26,6 +27,8 @@ interface ClientState {
   board: string[];
   assets: Assets;
   pendingAssets: string[];
+  cachedAssets: string[];
+  requestAsset: string;
   pieces: Pieces;
   chat: ChatEvent[];
   myHand: string[];
@@ -70,20 +73,32 @@ function clientReducer(state: ClientState, data: GameEvent) {
       };
     }
 
+    case 'set_request_asset': {
+      return {
+        ...state,
+        requestAsset: data.asset,
+      };
+    }
+
     case 'asset_loaded': {
-      const { asset } = data;
+      const { asset, loadedFromCache } = data;
       const assets = { ...state.assets };
+      let cachedAssets = [...state.cachedAssets];
       let pendingAssets = [...state.pendingAssets];
 
       Object.entries(asset).forEach(([key, value]) => {
         assets[key] = value;
         pendingAssets = pendingAssets.filter(a => a !== key);
+        if (loadedFromCache) {
+          cachedAssets.push(key);
+        }
       });
 
       return {
         ...state,
         assets,
         pendingAssets,
+        cachedAssets,
       };
     }
 
@@ -164,17 +179,17 @@ function clientReducer(state: ClientState, data: GameEvent) {
       };
     }
 
-    case 'deck_peek': {
-      const { deckId, playerId, peeking } = data;
-      return {
-        ...state,
-        peekingPlayers: {
-          ...state.peekingPlayers,
-          [playerId]: peeking ? deckId : '',
-        },
-        renderCount: state.renderCount + 1,
-      };
-    }
+    // case 'deck_peek': {
+    //   const { deckId, playerId, peeking } = data;
+    //   return {
+    //     ...state,
+    //     peekingPlayers: {
+    //       ...state.peekingPlayers,
+    //       [playerId]: peeking ? deckId : '',
+    //     },
+    //     renderCount: state.renderCount + 1,
+    //   };
+    // }
 
     case 'deck_peek_results': {
       const { cardIds, discardedCardIds } = data;
@@ -264,6 +279,7 @@ export function useGameClient(
   >(
     clientReducer,
     {
+      requestAsset: '',
       board: [],
       pieces: {},
       assets: {},
@@ -271,6 +287,7 @@ export function useGameClient(
       isLoaded: false,
       game: null,
       pendingAssets: [],
+      cachedAssets: [],
       myHand: [],
       handCounts: {},
       myDice: [],
@@ -292,6 +309,7 @@ export function useGameClient(
     isLoaded,
     game,
     pendingAssets,
+    cachedAssets,
     myHand,
     handCounts,
     myDice,
@@ -311,7 +329,7 @@ export function useGameClient(
 
   const requestAsset = React.useCallback(
     (asset: string) => {
-      if (!conn) {
+      if (!conn || !game) {
         throw new Error(
           'Time Paradox: requesting assets before connection established'
         );
@@ -320,30 +338,67 @@ export function useGameClient(
         return;
       }
 
-      conn.send({
-        asset,
-        event: 'request_asset',
-      });
+      const loadAsset = async () => {
+        const a = await getCachedAsset(game.id, game.version.toString(), asset);
+
+        if (a) {
+          dispatch({
+            event: 'asset_loaded',
+            loadedFromCache: true,
+            asset: { [asset]: a.asset },
+          });
+          return;
+        }
+
+        conn.send({
+          asset,
+          event: 'request_asset',
+        });
+      };
+      loadAsset();
     },
-    [conn, assets]
+    [conn, assets, game]
   );
+
+  React.useEffect(() => {
+    if (state.requestAsset) {
+      requestAsset(state.requestAsset);
+    }
+  }, [state.requestAsset]);
 
   React.useEffect(() => {
     if (isLoaded) {
       return;
     }
 
-    if (pendingAssets.length) {
-      setPercentLoaded(
-        percent => percent + (100 - percent) / pendingAssets.length
-      );
-      requestAsset(pendingAssets[0]);
-    } else if (game) {
-      dispatch({
-        event: 'load_complete',
-      });
-    }
-  }, [pendingAssets, requestAsset, assets, isLoaded, game]);
+    const checkForAssets = async () => {
+      if (pendingAssets.length) {
+        setPercentLoaded(
+          percent => percent + (100 - percent) / pendingAssets.length
+        );
+        dispatch({
+          event: 'set_request_asset',
+          asset: pendingAssets[0],
+        });
+      } else if (game) {
+        for (let name in assets) {
+          if (!cachedAssets.includes(name)) {
+            await cacheAsset(
+              game.id,
+              game.version.toString(),
+              name,
+              assets[name]
+            );
+          }
+        }
+
+        dispatch({
+          event: 'load_complete',
+        });
+      }
+    };
+    checkForAssets();
+  }, [pendingAssets, cachedAssets, requestAsset, assets, isLoaded, game]);
 
   React.useEffect(() => {
     const initPeer = async () => {

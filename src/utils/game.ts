@@ -17,6 +17,7 @@ import {
   MoneyTokenPiece,
   GamePromptAnswer,
   GamePrompt,
+  Piece,
 } from '../types';
 
 import { getHostId, getGameId, getInstanceId } from './identity';
@@ -498,6 +499,30 @@ export async function createNewGame(
             //   }
             //   break;
 
+            case 'peek_at_card':
+              try {
+                const { cardIds, peeking } = data;
+                const cards = cardIds.map(cardId => {
+                  const card = pieces[cardId];
+                  card.peeking = peeking
+                    ? [...(card.peeking || []), playerId]
+                    : (card.peeking || []).filter(
+                        (id: string) => id !== playerId
+                      );
+                  card.delta++;
+                  return card;
+                });
+
+                console.log('peek at', cards);
+                sendToRoom({
+                  event: 'update_piece',
+                  pieces: _.keyBy(cards, 'id') as any,
+                });
+              } catch (err) {
+                console.log(err);
+              }
+              break;
+
             case 'peek_at_deck':
               try {
                 const { deckId, peeking } = data;
@@ -514,12 +539,12 @@ export async function createNewGame(
                     discardedCardIds: [],
                   });
                 }
-                sendToRoom({
-                  deckId,
-                  playerId,
-                  peeking,
-                  event: 'deck_peek',
-                });
+                // sendToRoom({
+                //   deckId,
+                //   playerId,
+                //   peeking,
+                //   event: 'deck_peek',
+                // });
               } catch (err) {
                 console.log(err);
               }

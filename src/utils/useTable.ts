@@ -432,6 +432,14 @@ function getRenderItem(
           } else {
             el.sprite.texture = faceUpTexture;
           }
+
+          el.setPeeking(
+            (curPiece.peeking || []).map(
+              (playerId: string) =>
+                piecesRef.current.find(piece => piece.playerId === playerId)
+                  ?.name
+            )
+          );
         },
       });
 
@@ -644,7 +652,7 @@ function getRenderItem(
         piece,
         texture: Texture.EMPTY,
         onSync: (el, curPiece) => {
-          text.text = curPiece.name;
+          text.text = curPiece.label || curPiece.name;
           rect.clear();
           rect.beginFill(utils.string2hex(curPiece.color));
           rect.drawRoundedRect(0, 0, text.width + 28, text.height + 14, 8);

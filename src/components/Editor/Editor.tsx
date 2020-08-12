@@ -435,9 +435,17 @@ export function Editor(props: Props) {
 
   React.useEffect(() => {
     setPieces([
-      ...(curScenario.pieces.map(
-        id => state.pieces[id]
-      ) as RenderPiece[]).filter(piece => piece.type !== 'card'),
+      ...(curScenario.pieces.map(id => {
+        const piece = state.pieces[id] as RenderPiece;
+        if (piece.type === 'deck') {
+          const cardCount = Object.values(state.pieces).filter(
+            c => c.type === 'card' && c.deckId === piece.id
+          ).length;
+          piece.total = cardCount;
+          piece.count = cardCount;
+        }
+        return piece;
+      }) as RenderPiece[]).filter(piece => piece.type !== 'card'),
       {
         id: 'axis',
         type: 'image',

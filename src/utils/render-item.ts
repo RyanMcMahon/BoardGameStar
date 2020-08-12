@@ -67,6 +67,7 @@ export class RenderItem extends Container {
   outline: Graphics;
   stackMenu?: Container;
   stackContainer?: Container;
+  peekContainer?: Container;
   locked?: boolean;
   isSelected?: boolean;
   hasFocus?: boolean;
@@ -394,6 +395,36 @@ export class RenderItem extends Container {
       this.removeChild(this.stackContainer);
       delete this.stackContainer;
     }
+  }
+
+  setPeeking(names: string[]) {
+    console.log('set peeking', names);
+    if (!names.length) {
+      if (this.peekContainer) {
+        this.removeChild(this.peekContainer);
+      }
+      return;
+    }
+
+    if (!this.peekContainer) {
+      this.peekContainer = new Container();
+      this.addChild(this.peekContainer);
+    }
+
+    this.peekContainer.removeChildren();
+    names.forEach((name, index) => {
+      const text = new Text(`👁 ${name}`, {
+        fontFamily: 'Arial',
+        fontSize: 20,
+        fill: 0xffffff,
+        lineJoin: 'bevel',
+        miterLimit: 0,
+        strokeThickness: 4,
+      });
+      text.x = 10;
+      text.y = this.piece.height - 30 * (index + 1);
+      this.peekContainer!.addChild(text);
+    });
   }
 
   setPosition(point: { x: number; y: number }) {

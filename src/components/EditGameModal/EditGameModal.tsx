@@ -74,13 +74,13 @@ export function EditGameModal(props: Props) {
           )}
         </div>
 
-        <label>
+        {/* <label>
           Tags
           <TagSelect
             tags={game.tags || []}
             onUpdate={tags => onUpdate({ tags })}
           />
-        </label>
+        </label> */}
 
         <label>Summary ({CHAR_LIMIT} Character Limit)</label>
         <SummaryText

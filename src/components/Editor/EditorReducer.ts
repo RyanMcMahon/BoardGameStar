@@ -245,6 +245,7 @@ export function editorReducer(
       return {
         ...state,
         pieces,
+        renderCount: state.renderCount + 1,
         scenarios: {
           ...state.scenarios,
           [curScenario.id]: updatedScenario,

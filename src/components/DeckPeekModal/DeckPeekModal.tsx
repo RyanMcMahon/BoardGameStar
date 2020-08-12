@@ -15,14 +15,15 @@ interface Props {
   onClose: () => void;
 }
 
-const CardWrapper = styled.div({
-  padding: '.5rem',
-  overflowY: 'scroll',
-  flex: 1,
-});
+// const CardWrapper = styled.div({
+//   padding: '.5rem',
+//   overflowY: 'scroll',
+//   flex: 1,
+// });
 
 const CardImage = styled.img({
-  margin: '.5rem',
+  // margin: '.5rem',
+  maxWidth: '200px',
 });
 
 export function DeckPeekModal(props: Props) {
@@ -30,31 +31,29 @@ export function DeckPeekModal(props: Props) {
   return (
     <Modal onClose={props.onClose}>
       <Modal.Content>
-        <Button design="success" onClick={() => {}}>
+        {/* <Button design="success" onClick={() => {}}>
           Remove From Game
-        </Button>
-        <Button design="success" onClick={() => {}}>
-          Take
-        </Button>
-        <Modal.Title>In Deck</Modal.Title>
-        <CardWrapper>
-          {cards
-            .map(cardId => pieces[cardId] as CardPiece)
-            .map(card => (
-              <CardImage
-                key={card.id}
-                src={prependPrefix(assets[card.image])}
-                alt=""
-                width="150"
-                // onClick={handleSelectCard(card.id)}
-                // style={{
-                //   opacity: selectedCards.includes(card.id) ? 0.6 : 1,
-                // }}
-              />
-            ))}
-        </CardWrapper>
-        [TODO]
-        <Modal.Title>Discarded</Modal.Title>
+        </Button> */}
+        {/* <Button design="success" onClick={() => {}}>
+          Draw
+        </Button> */}
+        <Modal.Title>Peeking</Modal.Title>
+        {cards
+          .map(cardId => pieces[cardId] as CardPiece)
+          .map(card => (
+            <CardImage
+              key={card.id}
+              src={prependPrefix(assets[card.image])}
+              alt=""
+              // width="150"
+              // onClick={handleSelectCard(card.id)}
+              // style={{
+              //   opacity: selectedCards.includes(card.id) ? 0.6 : 1,
+              // }}
+            />
+          ))}
+        {/* [TODO]
+        <Modal.Title>Discarded</Modal.Title> */}
       </Modal.Content>
     </Modal>
   );

@@ -25,6 +25,9 @@ const MarkdownContainer = styled(ReactMarkdown)({
   p: {
     margin: '1rem 0',
   },
+  img: {
+    maxWidth: '100%',
+  },
 });
 
 export function Markdown(props: Props) {

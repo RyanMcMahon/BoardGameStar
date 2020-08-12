@@ -264,7 +264,6 @@ export interface Piece {
   [key: string]: any;
 }
 export type BoardPiece = BoardOption & Piece;
-export type CardPiece = CardOption & Piece;
 export type CircleTokenPiece = CircleTokenOption & Piece;
 export type ImageTokenPiece = ImageTokenOption & Piece;
 export type MoneyTokenPiece = MoneyTokenOption & Piece;
@@ -289,9 +288,14 @@ export interface DicePiece extends Piece {
   layer: number;
 }
 
+export interface CardPiece extends CardOption, Piece {
+  peeking?: string[];
+}
+
 export interface DeckPiece extends DeckOption, Piece {
   count: number;
   total: number;
+  peeking?: string[];
 }
 
 export interface DeletedPiece extends PieceOption, Piece {
@@ -477,6 +481,12 @@ export interface PassCardsEvent {
   playerId: string;
 }
 
+export interface PeekAtCardEvent {
+  event: 'peek_at_card';
+  cardIds: string[];
+  peeking: boolean;
+}
+
 export interface PeekAtDeckEvent {
   event: 'peek_at_deck';
   deckId: string;
@@ -502,16 +512,10 @@ export interface RequestAssetEvent {
 
 export interface AssetLoadedEvent {
   event: 'asset_loaded';
+  loadedFromCache?: boolean;
   asset: {
     [key: string]: string;
   };
-}
-
-export interface DeckPeekEvent {
-  event: 'deck_peek';
-  deckId: string;
-  playerId: string;
-  peeking: boolean;
 }
 
 export interface DeckPeekResultsEvent {
@@ -565,6 +569,11 @@ export interface ClearPromptResult {
   event: 'clear_prompt_result';
 }
 
+export interface SetRequestAsset {
+  event: 'set_request_asset';
+  asset: string;
+}
+
 export type ClientEvent =
   | TransactionEvent
   | PromptPlayersEvent
@@ -575,6 +584,7 @@ export type ClientEvent =
   | DrawCardsToTableEvent
   | PickUpCardsEvent
   | PassCardsEvent
+  | PeekAtCardEvent
   | PeekAtDeckEvent
   | TakeCardsEvent
   | RemoveCardsEvent
@@ -591,6 +601,7 @@ export type ClientEvent =
   | UpdatePieceEvent;
 
 export type GameEvent =
+  | SetRequestAsset
   | ClearPromptResult
   | PromptPlayersEvent
   | PromptResultsEvent
@@ -601,7 +612,6 @@ export type GameEvent =
   | DiceCountEvent
   | SetDiceEvent
   | HandCountEvent
-  | DeckPeekEvent
   | DeckPeekResultsEvent
   | JoinEvent
   | PlayerJoinEvent

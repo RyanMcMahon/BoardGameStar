@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useHistory, useLocation } from 'react-router-dom';
 
 import {
   primaryColor,
@@ -115,6 +115,7 @@ const Footer = styled.div({
 });
 
 export function WebPage(props: Props) {
+  const location = useLocation();
   const history = useHistory();
   const { currentUser, isLoading } = useUser();
   // const [tags, setTags] = React.useState<string[]>([]);
@@ -137,7 +138,7 @@ export function WebPage(props: Props) {
     }
   };
 
-  React.useEffect(() => setIsSideMenuVisible(false), [history.location]);
+  React.useEffect(() => setIsSideMenuVisible(false), [location]);
 
   return (
     <Page>

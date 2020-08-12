@@ -34,6 +34,7 @@ import { AppContext, initialState, appReducer } from './AppContext';
 import { PromptSelectModal } from '../PromptSelectModal';
 // import { config } from 'process';
 import { PlayerPromptModal } from '../PlayerPromptModal/PlayerPromptModal';
+import { DeckPeekModal } from '../DeckPeekModal';
 
 const MainContainer = styled.div({
   height: '100%',
@@ -49,33 +50,6 @@ const AppContainer = styled.div({
   backgroundColor: '#dbdfe5',
   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%23bdc5ca' fill-opacity='0.50' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
 });
-
-// const TogglePlayerContainerButton = styled.div({
-//   userSelect: 'none',
-//   position: 'absolute',
-//   top: '.5rem',
-//   right: 0,
-//   padding: '.25rem 1rem .5rem 1.5rem',
-//   borderRadius: '8px 0 0 8px',
-//   fontSize: '50px',
-//   lineHeight: '24px',
-//   height: '34px',
-//   backgroundColor: 'rgba(0, 0, 0, .2)',
-//   color: '#fff',
-//   zIndex: 2000,
-//   cursor: 'pointer',
-//   [breakpoints.mobile]: {
-//     fontSize: '70px',
-//     lineHeight: '24px',
-//     height: '40px',
-//   },
-// });
-
-// const HandContainer = styled.div({
-//   flex: 1,
-//   display: 'flex',
-//   position: 'relative',
-// });
 
 const LoadingPage = styled.div({
   position: 'fixed',
@@ -305,6 +279,16 @@ export function App(props: { spectator?: boolean }) {
     }
   };
 
+  const handlePeekAtCard = (cardIds: string[], peeking: boolean) => {
+    if (conn) {
+      conn.send({
+        peeking,
+        cardIds,
+        event: 'peek_at_card',
+      });
+    }
+  };
+
   const handleSelectPrompt = (prompt: GamePrompt, players: string[]) => {
     if (conn) {
       conn.send({
@@ -412,6 +396,11 @@ export function App(props: { spectator?: boolean }) {
     .map(id => pieces[id])
     .filter(p => p.type !== 'deleted');
   const allUnlocked = selectedPieces.every(piece => !piece.locked);
+  const peekingCards = Object.values(pieces)
+    .filter(
+      piece => piece.type === 'card' && (piece.peeking || []).includes(playerId)
+    )
+    .map(c => c.id);
 
   // React.useLayoutEffect(() => {
   //   if (document.documentElement.clientWidth < maxMobileWidth) {
@@ -586,7 +575,7 @@ export function App(props: { spectator?: boolean }) {
             if (piece.type === 'player' && piece.playerId) {
               return {
                 ...piece,
-                name: `${piece.name} (${handCounts[piece.playerId] ||
+                label: `${piece.name} (${handCounts[piece.playerId] ||
                   0} cards in hand)`,
               };
             } else if (piece.type === 'stack') {
@@ -670,6 +659,7 @@ export function App(props: { spectator?: boolean }) {
 
       {!props.spectator && (
         <ControlsMenu
+          playerId={playerId}
           pieces={pieces}
           selectedPieces={selectedPieces}
           chat={chat}
@@ -688,6 +678,7 @@ export function App(props: { spectator?: boolean }) {
           onZoomIn={() => container && (container as Viewport).zoom(-200)}
           onZoomOut={() => container && (container as Viewport).zoom(200)}
           onShowSettingsModal={() => setShowSettingsModal(true)}
+          onPeekAtCards={(cardIds: string[]) => handlePeekAtCard(cardIds, true)}
         />
       )}
 
@@ -777,6 +768,17 @@ export function App(props: { spectator?: boolean }) {
           results={promptResults[activePrompts[0].prompt.id || '']}
           players={players}
           playerId={playerId}
+        />
+      )}
+
+      {!!peekingCards.length && (
+        <DeckPeekModal
+          pieces={pieces}
+          assets={assets}
+          cards={peekingCards}
+          discarded={[]}
+          onTakeCards={() => handlePickUpCards(peekingCards)}
+          onClose={() => handlePeekAtCard(peekingCards, false)}
         />
       )}
 
