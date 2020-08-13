@@ -45,7 +45,7 @@ export function Router() {
     editorReducer,
     {
       renderCount: 0,
-      version: 1,
+      version: 0,
       id: '',
       store: isWebBuild ? 'browser' : 'file',
       name: '',

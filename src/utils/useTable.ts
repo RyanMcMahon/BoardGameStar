@@ -36,6 +36,7 @@ interface PieceConfig {
 
 interface TableOptions {
   spectator?: boolean;
+  checkDelta?: boolean;
   singleSelection?: boolean;
   handleCreateStack: (ids: string[]) => void;
   handleSplitStack: (id: string, count: number) => void;
@@ -94,7 +95,7 @@ export const useTable = (options: TableOptions) => {
   React.useEffect(() => {
     setApp(
       new Application({
-        // antialias: true, // default: false
+        antialias: true, // default: false
         transparent: true, // default: false
       })
     );
@@ -205,6 +206,7 @@ export const useTable = (options: TableOptions) => {
 
       // No updates
       if (
+        options.checkDelta !== false &&
         renderItem.piece.delta === curPiece.delta &&
         selectedPieceIds.has(curPiece.id) === renderItem.isSelected
       ) {
@@ -213,7 +215,7 @@ export const useTable = (options: TableOptions) => {
 
       renderItem.locked = curPiece.locked;
 
-      if (!renderItem.transforming && !renderItem.dragging) {
+      if (!renderItem.transforming && !renderItem.mouseDownData) {
         const renderItemPiece = { ...curPiece };
 
         if (curPiece.type === 'circle') {
@@ -256,12 +258,6 @@ export const useTable = (options: TableOptions) => {
         });
 
         if (child) {
-          const selectPiece = () => {
-            if (!child.nonSelectClick) {
-              onSelectPiece(piece.id);
-            }
-          };
-
           if (selectedPieceIds?.has(piece.id)) {
             child.select();
           } else {
@@ -269,8 +265,7 @@ export const useTable = (options: TableOptions) => {
           }
 
           if (config[piece.type].selectable) {
-            child.on('tap', selectPiece);
-            child.on('click', selectPiece);
+            child.on('selectclick', () => onSelectPiece(piece.id));
           }
 
           child.onUpdate = p => {
@@ -770,5 +765,18 @@ function findBank(
 }
 
 function formatMoney(num: number) {
-  return num.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
+  return num
+    .toString()
+    .split('')
+    .reverse()
+    .reduce(
+      (agg: string[], num: string, index, arr) => [
+        ...agg,
+        index && index % 3 === 0 ? ',' : '',
+        num,
+      ],
+      []
+    )
+    .reverse()
+    .join('');
 }

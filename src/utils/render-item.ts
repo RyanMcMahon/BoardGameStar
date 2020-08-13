@@ -35,7 +35,7 @@ interface RenderItemOptions {
 export class RenderItem extends Container {
   id: string;
   piece!: RenderItemPiece;
-  data: any;
+  mouseDownData: any;
   resizeData: any;
   nonSelectClick: boolean;
   clickInPlace: boolean;
@@ -144,7 +144,6 @@ export class RenderItem extends Container {
       },
 
       onTransformStart: () => {
-        this.nonSelectClick = true;
         this.transforming = true;
         if (this.onTransformStart) {
           this.onTransformStart();
@@ -165,15 +164,15 @@ export class RenderItem extends Container {
 
     if (draggable) {
       this
-        // events for drag start
+        // down
         .on('mousedown', this.handleMouseDown)
         .on('touchstart', this.handleMouseDown)
-        // events for drag end
+        // up
         .on('mouseup', this.handleMouseUp)
         .on('mouseupoutside', this.handleMouseUp)
         .on('touchend', this.handleMouseUp)
         .on('touchendoutside', this.handleMouseUp)
-        // events for drag move
+        // move
         .on('mousemove', this.handleMouseMove)
         .on('touchmove', this.handleMouseMove);
     }
@@ -192,95 +191,92 @@ export class RenderItem extends Container {
   }
 
   handleMouseDown(event: any) {
+    if (this.transforming) {
+      return;
+    }
+
     const pointer = event.data.getLocalPosition(this.parent);
     const pointerOffset = {
       x: pointer.x + this.piece.width / 2 - this.x,
       y: pointer.y + this.piece.height / 2 - this.y,
     };
-    this.data = {
+    this.mouseDownData = {
       ...event.data,
       pointer,
       pointerOffset,
     };
 
-    this.nonSelectClick = false;
-    this.clickInPlace = true;
-
     if (!this.dragEnabled || this.transforming || this.locked) {
       return;
     }
 
-    this.dragging = true;
-    this.cursor = 'grabbing';
-    this.zIndex = 9999;
-
-    // if (event.data?.originalEvent?.touches?.length) {
-    // this.arrow.x = this.piece.width / 2;
-    // this.addChild(this.arrow);
-    // }
-
+    // prevent viewport movement
     if (this.onTransformStart) {
       this.onTransformStart();
     }
   }
 
-  handleMouseUp() {
-    if (this.dragging && this.onDragEnd) {
-      this.onDragEnd();
-    }
-
-    this.dragging = false;
-    this.data = null;
-    this.cursor = 'grab';
-    this.zIndex = this.piece.layer;
-    // this.removeChild(this.arrow);
-
-    if (this.clickInPlace) {
-      this.checkDblClick();
-    }
-
-    if (this.onTransformEnd) {
-      this.onTransformEnd();
-    }
-  }
-
   handleMouseMove(event: any) {
+    if (!this.mouseDownData) {
+      return;
+    }
+
     const { touches = [] } = event.data?.originalEvent || {};
     const pointer = event.data.getLocalPosition(this.parent);
 
     if (
-      !this.data ||
-      pointer.x !== this.data.pointer.x ||
-      pointer.y !== this.data.pointer.y
+      (this.parent as any).isPinching ||
+      touches.length > 1 ||
+      this.transforming
     ) {
-      this.nonSelectClick = true;
-    } else {
-      this.clickInPlace = false;
-    }
-
-    if (touches.length > 1) {
-      this.dragging = false;
-    }
-
-    if (!this.dragging || (this.parent as any).isPinching) {
       return;
     }
 
-    const newPos = {
-      x: pointer.x - this.data.pointerOffset.x,
-      y: pointer.y - this.data.pointerOffset.y,
-    };
+    // Total mouse move distance < click threashold do nothing, otherwise start dragging
+    if (
+      this.dragging ||
+      Math.abs(pointer.x - this.mouseDownData.pointer.x) > 2 ||
+      Math.abs(pointer.y - this.mouseDownData.pointer.y) > 2
+    ) {
+      this.dblClicking = false;
+      this.dragging = true;
+      this.cursor = 'grabbing';
+      this.zIndex = 9999;
 
-    this.updatePiece({ ...this.piece, ...newPos });
+      const newPos = {
+        x: pointer.x - this.mouseDownData.pointerOffset.x,
+        y: pointer.y - this.mouseDownData.pointerOffset.y,
+      };
+
+      this.updatePiece({ ...this.piece, ...newPos });
+    }
   }
 
-  checkDblClick() {
-    if (this.dblClicking) {
-      this.nonSelectClick = true;
+  handleMouseUp() {
+    if (!this.mouseDownData) {
+      return;
+    }
+
+    if (this.dragging) {
+      if (this.onDragEnd) {
+        this.onDragEnd();
+      }
+    } else if (this.dblClicking) {
       this.emit('dblclick');
     } else {
+      this.emit('selectclick');
       this.dblClicking = true;
       setTimeout(() => (this.dblClicking = false), 500);
+    }
+
+    this.dragging = false;
+    this.mouseDownData = null;
+    this.cursor = 'grab';
+    this.zIndex = this.piece.layer;
+
+    // Re-enable viewport movement
+    if (this.onTransformEnd) {
+      this.onTransformEnd();
     }
   }
 
@@ -322,6 +318,7 @@ export class RenderItem extends Container {
               }
             });
           });
+
           stackItem.on('mouseout', () => {
             menu.children.forEach((child, index) => {
               if (index <= i) {
@@ -329,14 +326,15 @@ export class RenderItem extends Container {
               }
             });
           });
-          stackItem.on('touchend', () => {
-            this.nonSelectClick = true;
-            this.onSplitStack!(stackCount - i);
-          });
-          stackItem.on('mouseup', () => {
-            this.nonSelectClick = true;
-            this.onSplitStack!(stackCount - i);
-          });
+
+          const splitStack = () => {
+            if (!this.dragging) {
+              this.onSplitStack!(stackCount - i);
+            }
+          };
+
+          stackItem.on('touchend', splitStack);
+          stackItem.on('mouseup', splitStack);
         }
         menu.addChild(stackItem);
       }
@@ -398,7 +396,6 @@ export class RenderItem extends Container {
   }
 
   setPeeking(names: string[]) {
-    console.log('set peeking', names);
     if (!names.length) {
       if (this.peekContainer) {
         this.removeChild(this.peekContainer);

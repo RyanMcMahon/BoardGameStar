@@ -211,6 +211,7 @@ export function editorReducer(
       const { piece } = action;
       return {
         ...state,
+        renderCount: state.renderCount + 1,
         pieces: {
           ...state.pieces,
           [piece.id]: {

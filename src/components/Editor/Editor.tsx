@@ -89,10 +89,17 @@ const EditorNav = styled.div({
 });
 
 const InlineInputContainer = styled.div({
+  marginBottom: '.5rem',
+  lineHeight: '38px',
   input: {
+    float: 'right',
     marginLeft: '1rem',
-    width: '75px',
+    width: '90px',
   },
+});
+
+const ColorWrapper = styled.div({
+  marginBottom: '.5rem',
 });
 
 const PromptsWrapper = styled.div({
@@ -221,6 +228,7 @@ export function Editor(props: Props) {
 
   const table = useTable({
     assets,
+    checkDelta: false,
     singleSelection: true,
     config: tableConfig,
     onDblClickDeck: (id: string) => setDeckModalId(id),
@@ -260,6 +268,16 @@ export function Editor(props: Props) {
         pieces: state.pieces,
       },
     };
+
+    for (let asset in assets) {
+      if (
+        !Object.values(game.config.pieces).find(
+          (piece: any) => piece.image === asset || piece.back === asset
+        )
+      ) {
+        delete assets[asset];
+      }
+    }
 
     if (game.store === 'browser') {
       await addGame(game, assets);
@@ -681,7 +699,7 @@ export function Editor(props: Props) {
                       Currency
                       <input
                         type="text"
-                        value={state.currency}
+                        value={state.currency || ''}
                         onChange={(e: React.FormEvent<HTMLInputElement>) => {
                           const currency = e.currentTarget.value;
 
@@ -740,7 +758,6 @@ export function Editor(props: Props) {
                         }}
                       />
                     </InlineInputContainer>
-                    {/* Counts: {selectedPiece.counts || '1:1'} */}
                   </>
                 )}
                 {['rect', 'circle', 'image'].includes(selectedPiece.type) && (
@@ -748,7 +765,9 @@ export function Editor(props: Props) {
                     Stacking Class
                     <input
                       type="text"
-                      value={(selectedPiece as StackablePieceOption).stack}
+                      value={
+                        (selectedPiece as StackablePieceOption).stack || ''
+                      }
                       onChange={(e: React.FormEvent<HTMLInputElement>) => {
                         const stack = e.currentTarget.value;
                         dispatch({
@@ -780,7 +799,7 @@ export function Editor(props: Props) {
                       }}
                     />
                     {selectedPiece.type !== 'player' && (
-                      <div>
+                      <ColorWrapper>
                         {curScenario.players.map((playerId, index) => (
                           <ColorSwatch
                             key={playerId}
@@ -804,16 +823,22 @@ export function Editor(props: Props) {
                             Player {index + 1}
                           </ColorSwatch>
                         ))}
-                      </div>
+                      </ColorWrapper>
                     )}
                   </>
                 )}
-                <Button design="primary" onClick={handleDuplicatePiece}>
-                  Duplicate
-                </Button>
-                <Button design="danger" onClick={handleDeletePiece}>
-                  Delete
-                </Button>
+                <div>
+                  <Button design="primary" onClick={handleDuplicatePiece}>
+                    Duplicate
+                  </Button>
+                  <Button
+                    className="u-pull-right"
+                    design="danger"
+                    onClick={handleDeletePiece}
+                  >
+                    Delete
+                  </Button>
+                </div>
               </>
             )}
           </Controls>
