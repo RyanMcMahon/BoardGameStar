@@ -41,6 +41,7 @@ const ModalWrapper = styled.div<ModalProps>((props: ModalProps) => ({
 
 const ModalContent = styled.div({
   overflowY: 'auto',
+  width: '100%',
 });
 
 const CloseButton = styled.span({

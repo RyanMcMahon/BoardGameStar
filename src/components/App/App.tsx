@@ -111,7 +111,6 @@ const tableConfig = {
   circle: {
     selectable: true,
     draggable: true,
-    rotatable: true,
   },
   die: {
     selectable: true,
