@@ -7,7 +7,7 @@ import 'firebase/storage';
 import React from 'react';
 import { Game, Assets, PublicGame, PublishableGame } from '../types';
 import { PaymentMethod } from '@stripe/stripe-js';
-import { addGame } from './store';
+import { addGame, cacheAsset } from './store';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAeH5C7Uaem7FN2OpIQAUE2uIDQEGbvSoY',
@@ -340,6 +340,7 @@ export async function downloadGame(
   while (assetList.length) {
     const [key, url] = assetList.pop() as any;
     const image = await getBase64FromImageUrl(url as string);
+    await cacheAsset(gameId, game.version, key, image);
     curPrecentage += percentStep;
     if (curPrecentage > 100) {
       curPrecentage = 100;
@@ -355,7 +356,7 @@ export async function downloadGame(
   await addGame(game, loadedAssets);
 }
 
-function getBase64FromImageUrl(url: string) {
+function getBase64FromImageUrl(url: string): Promise<string> {
   return new Promise(resolve => {
     const img = new Image();
 
