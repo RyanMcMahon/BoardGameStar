@@ -341,15 +341,22 @@ function getRenderItem(
   // if (!assets[piece.image]) {
   //   console.log('no asset for', piece);
   // }
-  // const image = assets[piece.image] || piece.image;
+
   const pieceConfig = config[piece.type];
+  let texture = Texture.EMPTY;
+
+  if (piece.image) {
+    texture = Loader.shared.resources[piece.image]
+      ? Loader.shared.resources[piece.image].texture
+      : Texture.from(assets[piece.image] || piece.image || '');
+  }
 
   switch (piece.type) {
     case 'board': {
       const child = new RenderItem({
         ...pieceConfig,
         piece,
-        texture: Loader.shared.resources[piece.image].texture, //Texture.from(image),
+        texture, //Texture.from(image),
         onSync: (el, curPiece) => {
           el.setDimensions(curPiece as BoardPiece);
         },
@@ -363,7 +370,7 @@ function getRenderItem(
       const child = new RenderItem({
         ...pieceConfig,
         piece,
-        texture: Loader.shared.resources[piece.image].texture, //Texture.from(image),
+        texture, //Texture.from(image),
         onSync: (el, curPiece) => {
           el.setDimensions(curPiece as DeckPiece);
           counts.removeChildren(0);
@@ -414,9 +421,11 @@ function getRenderItem(
     }
 
     case 'card': {
-      const faceUpTexture = Loader.shared.resources[piece.image].texture; //Texture.from(image);
+      const faceUpTexture = texture;
       const deck = piecesById[piece.deckId];
-      const faceDownTexture = Loader.shared.resources[deck.image].texture; //Texture.from(assets[deck.image] || deck.image);
+      const faceDownTexture = Loader.shared.resources[deck.image]
+        ? Loader.shared.resources[deck.image].texture
+        : Texture.from(assets[deck.image] || deck.image);
       const child = new RenderItem({
         ...pieceConfig,
         piece,
@@ -462,7 +471,7 @@ function getRenderItem(
       const child = new RenderItem({
         ...pieceConfig,
         piece,
-        texture: Loader.shared.resources[piece.image].texture, //Texture.from(image),
+        texture,
         onDragEnd: () => {
           const curPiece = piecesRef.current.find(p => p.id === piece.id);
           if (!curPiece) {
@@ -529,11 +538,10 @@ function getRenderItem(
     }
 
     case 'image': {
-      const faceUpTexture = Loader.shared.resources[piece.image].texture; //Texture.from(image);
-      const faceDownTexture = (
-        Loader.shared.resources[piece.back || ''] ||
-        Loader.shared.resources[piece.image]
-      ).texture; //Texture.from(assets[piece.back || ''] || image);
+      const faceUpTexture = texture;
+      const faceDownTexture = Loader.shared.resources[piece.back || '']
+        ? Loader.shared.resources[piece.back || ''].texture
+        : texture;
 
       const child = new RenderItem({
         ...pieceConfig,
