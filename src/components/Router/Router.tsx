@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useReducer } from 'react';
 import {
   BrowserRouter,
   HashRouter,
@@ -22,6 +22,8 @@ import { GameProfile } from '../GamePage';
 import { WebPage } from '../WebPage';
 import { Terms } from '../Terms';
 import { Privacy } from '../Privacy';
+import { AppContext } from '../App/AppContext';
+import { webReducer, useWebReducer, WebContext } from '../../utils/WebContext';
 
 interface Props {
   children: React.ReactNode;
@@ -36,9 +38,10 @@ function AppRouter(props: Props) {
 }
 
 export function Router() {
+  const webReducer = useWebReducer();
   const [showUpdateModal, setShowUpdateModal] = React.useState(false);
   const [release, setRelease] = React.useState();
-  const [state, dispatch] = React.useReducer<
+  const [editorState, editorDispatch] = React.useReducer<
     React.Reducer<EditorState, EditorAction>,
     EditorState
   >(
@@ -56,7 +59,7 @@ export function Router() {
       scenarios: {},
       pieces: {},
     },
-    (state: EditorState) => state
+    (editorState: EditorState) => editorState
   );
 
   React.useEffect(() => {
@@ -81,71 +84,73 @@ export function Router() {
 
   return (
     <AppRouter>
-      <Switch>
-        <Route path="/play/:hostId/:gameId">
-          <App />
-        </Route>
-        <Route path="/spectate/:hostId/:gameId">
-          <App spectator={true} />
-        </Route>
+      <WebContext.Provider value={webReducer}>
+        <Switch>
+          <Route path="/play/:hostId/:gameId">
+            <App />
+          </Route>
+          <Route path="/spectate/:hostId/:gameId">
+            <App spectator={true} />
+          </Route>
 
-        <Route path="/editor">
-          {state.curScenario ? (
-            <Editor dispatch={dispatch} state={state} />
-          ) : (
-            <Redirect to="/games" />
-          )}
-        </Route>
+          <Route path="/editor">
+            {editorState.curScenario ? (
+              <Editor dispatch={editorDispatch} state={editorState} />
+            ) : (
+              <Redirect to="/games" />
+            )}
+          </Route>
 
-        <Route path="/">
-          <WebPage>
-            <Switch>
-              <Route path="/sign-up">
-                <SignUp />
-              </Route>
-              <Route path="/log-in">
-                <LogIn />
-              </Route>
-              <Route path="/my-account">
-                <MyAccount />
-              </Route>
-              <Route path="/users/:userId">
-                <UserProfile />
-              </Route>
-              <Route path="/games/:gameId">
-                <GameProfile />
-              </Route>
+          <Route path="/">
+            <WebPage>
+              <Switch>
+                <Route path="/sign-up">
+                  <SignUp />
+                </Route>
+                <Route path="/log-in">
+                  <LogIn />
+                </Route>
+                <Route path="/my-account">
+                  <MyAccount />
+                </Route>
+                <Route path="/users/:userId">
+                  <UserProfile />
+                </Route>
+                <Route path="/games/:gameId">
+                  <GameProfile />
+                </Route>
 
-              <Route exact path="/games">
-                {state.curScenario ? (
-                  <Redirect to="/editor" />
-                ) : (
-                  <Games dispatch={dispatch} />
-                )}
-              </Route>
+                <Route exact path="/games">
+                  {editorState.curScenario ? (
+                    <Redirect to="/editor" />
+                  ) : (
+                    <Games dispatch={editorDispatch} />
+                  )}
+                </Route>
 
-              <Route path="/terms">
-                <Terms />
-              </Route>
+                <Route path="/terms">
+                  <Terms />
+                </Route>
 
-              <Route path="/privacy">
-                <Privacy />
-              </Route>
+                <Route path="/privacy">
+                  <Privacy />
+                </Route>
 
-              <Route exact path="/">
-                <Store />
-              </Route>
-            </Switch>
-          </WebPage>
-        </Route>
-      </Switch>
+                <Route exact path="/">
+                  <Store />
+                </Route>
+              </Switch>
+            </WebPage>
+          </Route>
+        </Switch>
 
-      {showUpdateModal && (
-        <UpdateModal
-          onClose={() => setShowUpdateModal(false)}
-          release={release}
-        />
-      )}
+        {showUpdateModal && (
+          <UpdateModal
+            onClose={() => setShowUpdateModal(false)}
+            release={release}
+          />
+        )}
+      </WebContext.Provider>
     </AppRouter>
   );
 }

@@ -88,9 +88,12 @@ export function useUser() {
             .doc(user.uid)
             .get()
         ).data();
-        const { claims: permissions } = (await user.getIdTokenResult()) as any;
+        const { claims } = (await user.getIdTokenResult(true)) as any;
         setUserSettings((userSettings as unknown) as UserSettings);
-        setPermissions(permissions);
+        setPermissions({
+          creator: claims.creator,
+          publisher: claims.publisher,
+        });
       } else {
         setUserSettings(null);
       }
@@ -193,13 +196,28 @@ export async function publishGame(game: PublishableGame, assets: Assets) {
     userId,
     thumbnail: thumbnail ? '_thumbnail' : null,
     banner: banner ? '_banner' : null,
-    files: files.map(file => file.name),
+    files: [], // TODO files.map(file => file.name),
     config: {
       ...game.config,
       prompts: game.config.prompts || null,
       currency: game.config.currency || null,
     },
   };
+
+  if (new TextEncoder().encode(banner).length / 1024 / 1024 > 1) {
+    throw new Error(`Banner is too large. Max 1mb.`);
+  }
+
+  if (new TextEncoder().encode(thumbnail).length / 1024 / 1024 > 1) {
+    throw new Error(`Thumbnail is too large. Max 1mb.`);
+  }
+
+  // check file sizes
+  for (let name in assets) {
+    if (new TextEncoder().encode(assets[name]).length / 1024 / 1024 > 1) {
+      throw new Error(`${name} is too large. Max 1mb.`);
+    }
+  }
 
   await firebase
     .firestore()

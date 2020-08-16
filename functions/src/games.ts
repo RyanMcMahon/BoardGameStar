@@ -91,6 +91,10 @@ export const updateGame = functions.firestore
     const { gameId } = context.params;
     const { version } = snap.after.data() || {};
 
+    if (!version) {
+      return;
+    }
+
     await admin
       .firestore()
       .collection('games')

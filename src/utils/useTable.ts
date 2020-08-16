@@ -6,6 +6,7 @@ import { Viewport } from 'pixi-viewport';
 import {
   utils,
   Graphics,
+  Loader,
   Texture,
   Container,
   Text,
@@ -348,7 +349,7 @@ function getRenderItem(
       const child = new RenderItem({
         ...pieceConfig,
         piece,
-        texture: Texture.from(image),
+        texture: Loader.shared.resources[piece.image].texture, //Texture.from(image),
         onSync: (el, curPiece) => {
           el.setDimensions(curPiece as BoardPiece);
         },
@@ -362,7 +363,7 @@ function getRenderItem(
       const child = new RenderItem({
         ...pieceConfig,
         piece,
-        texture: Texture.from(image),
+        texture: Loader.shared.resources[piece.image].texture, //Texture.from(image),
         onSync: (el, curPiece) => {
           el.setDimensions(curPiece as DeckPiece);
           counts.removeChildren(0);
@@ -413,9 +414,9 @@ function getRenderItem(
     }
 
     case 'card': {
-      const faceUpTexture = Texture.from(image);
+      const faceUpTexture = Loader.shared.resources[piece.image].texture; //Texture.from(image);
       const deck = piecesById[piece.deckId];
-      const faceDownTexture = Texture.from(assets[deck.image] || deck.image);
+      const faceDownTexture = Loader.shared.resources[deck.image].texture; //Texture.from(assets[deck.image] || deck.image);
       const child = new RenderItem({
         ...pieceConfig,
         piece,
@@ -461,7 +462,7 @@ function getRenderItem(
       const child = new RenderItem({
         ...pieceConfig,
         piece,
-        texture: Texture.from(image),
+        texture: Loader.shared.resources[piece.image].texture, //Texture.from(image),
         onDragEnd: () => {
           const curPiece = piecesRef.current.find(p => p.id === piece.id);
           if (!curPiece) {
@@ -528,8 +529,11 @@ function getRenderItem(
     }
 
     case 'image': {
-      const faceUpTexture = Texture.from(image);
-      const faceDownTexture = Texture.from(assets[piece.back || ''] || image);
+      const faceUpTexture = Loader.shared.resources[piece.image].texture; //Texture.from(image);
+      const faceDownTexture = (
+        Loader.shared.resources[piece.back || ''] ||
+        Loader.shared.resources[piece.image]
+      ).texture; //Texture.from(assets[piece.back || ''] || image);
 
       const child = new RenderItem({
         ...pieceConfig,

@@ -6,6 +6,7 @@ import { Modal } from '../Modal';
 import { Game, PublishableGame } from '../../types';
 import { filePrompt } from '../../utils/assets';
 import { useHistory } from 'react-router-dom';
+import { useWebContext } from '../../utils/WebContext';
 
 interface Props {
   game?: any;
@@ -16,6 +17,7 @@ interface Props {
 // const tags = ['RPG', 'Hidden Role', 'Hidden Movement'];
 
 export function PublishModal(props: Props) {
+  const { alertError } = useWebContext();
   const cleanConfig: PublishableGame = {
     ...props.config,
     store: 'browser',
@@ -32,11 +34,12 @@ export function PublishModal(props: Props) {
 
   const handleSubmit = async () => {
     try {
-      const assets = loadAssets();
+      const assets = await loadAssets();
       setIsPublishing(true);
       await publishGame(game, assets);
       history.push(`/games/${cleanConfig.id}`);
     } catch (err) {
+      alertError(`Error publishing game. ${err}`);
       setIsPublishing(false);
     }
   };

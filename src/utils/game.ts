@@ -513,7 +513,6 @@ export async function createNewGame(
                   return card;
                 });
 
-                console.log('peek at', cards);
                 sendToRoom({
                   event: 'update_piece',
                   pieces: _.keyBy(cards, 'id') as any,

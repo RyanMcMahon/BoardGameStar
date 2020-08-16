@@ -108,7 +108,15 @@ export class RenderItem extends Container {
       trailing: true,
     });
 
-    const sprite = new Sprite(texture);
+    if (!texture.valid && piece.image) {
+      console.log(piece.image, texture.valid);
+    }
+    const sprite = new Sprite(
+      // texture
+      texture.valid || texture === Texture.EMPTY
+        ? texture
+        : Texture.from('/texture_error.jpeg')
+    );
     sprite.x = 0;
     sprite.y = 0;
     sprite.height = piece.height;

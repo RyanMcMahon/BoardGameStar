@@ -3,8 +3,9 @@ import slug from 'slugid';
 import React from 'react';
 import { Redirect } from 'react-router-dom';
 import styled from 'styled-components';
+import { Loader } from 'pixi.js';
 
-import { createNewGame, GameState } from '../../utils/game';
+import { createNewGame, GameState, Assets } from '../../utils/game';
 import { EditorAction, Game } from '../../types';
 import { GameSelector } from '../GameSelector';
 import { isWebBuild } from '../../utils/meta';
@@ -13,6 +14,7 @@ import { Button } from '../../utils/style';
 import { CreateGameModal } from '../CreateGameModal';
 import { loadGames, loadAssets } from '../../utils/store';
 import { getPlayerId } from '../../utils/identity';
+import { useWebContext } from '../../utils/WebContext';
 
 interface Props {
   dispatch: React.Dispatch<EditorAction>;
@@ -106,35 +108,14 @@ const GamesWrapper = styled.div({
     }),
     {}
   ),
-  // gridTemplateColumns: 'repeat(6, 1fr)',
-  // [breakPoints.tablet]: {
-  //   gridTemplateColumns: 'repeat(3, 1fr)',
-  // },
-  // [breakPoints.mobile]: {
-  //   gridTemplateColumns: 'repeat(2, 1fr)',
-  // },
-});
-
-const ErrorMessage = styled.div({
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  zIndex: 9999,
-  backgroundColor: '#e74c3c',
-  color: '#fff',
-  textAlign: 'center',
-  fontWeight: 'bold',
-  fontSize: '2rem',
-  padding: '1rem 0',
 });
 
 export function Games(props: Props) {
+  const { alertError } = useWebContext();
   const [configs, setConfigs] = React.useState<Game[]>([]);
   const [newGame, setNewGame] = React.useState<GameState>();
   const [showCreateModal, setShowCreateModal] = React.useState<boolean>(false);
   const [loadingGame, setLoadingGame] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState<string>('');
 
   const handleGameSelect = async (game: Game) => {
     try {
@@ -147,8 +128,7 @@ export function Games(props: Props) {
       });
       setLoadingGame(false);
     } catch (err) {
-      setErrorMessage('Error Starting Game (Refresh and Retry)');
-      setTimeout(() => setErrorMessage(''), 2400);
+      alertError('Error Starting Game (Refresh and Retry)');
       setLoadingGame(false);
     }
   };
@@ -167,14 +147,25 @@ export function Games(props: Props) {
   };
 
   const handleEditGame = async (game: Game) => {
-    props.dispatch({
-      config: {
-        ...game,
-        ...game.config,
-        renderCount: 0,
-        assets: game.loadAssets ? await game.loadAssets() : {},
-      },
-      type: 'edit_game',
+    setLoadingGame(true);
+
+    const loadedAssets = game.loadAssets ? await game.loadAssets() : {};
+    Loader.shared.add('axis.png');
+    for (let name in loadedAssets) {
+      Loader.shared.add(name, loadedAssets[name]);
+    }
+
+    Loader.shared.load(() => {
+      props.dispatch({
+        config: {
+          ...game,
+          ...game.config,
+          renderCount: 0,
+          assets: loadedAssets,
+        },
+        type: 'edit_game',
+      });
+      setLoadingGame(false);
     });
   };
 
@@ -193,7 +184,6 @@ export function Games(props: Props) {
 
   return (
     <>
-      {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
       <Container>
         <h1>My Games</h1>
         <Button design="primary" onClick={() => setShowCreateModal(true)}>

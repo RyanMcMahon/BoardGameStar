@@ -1,12 +1,14 @@
 import _ from 'lodash';
 import React from 'react';
 
-import { Game } from '../../types';
+import { Game, PublicGame } from '../../types';
 import { deleteGame } from '../../utils/store';
 import { Button } from '../../utils/style';
 import styled from 'styled-components';
 import { PublishModal } from '../PublishModal';
 import { DropdownButton } from '../DropdownButton';
+import { useUser } from '../../utils/api';
+import { useHistory } from 'react-router-dom';
 
 interface Props {
   disabled: boolean;
@@ -40,6 +42,8 @@ const Select = styled.select({
 });
 
 export function GameSelector(props: Props) {
+  const history = useHistory();
+  const { currentUser, permissions } = useUser();
   const { config: game, disabled, name, onReloadConfigs } = props;
   const [showPublishModal, setShowPublishModal] = React.useState(false);
   const scenarioRef = React.createRef<HTMLSelectElement>();
@@ -54,11 +58,26 @@ export function GameSelector(props: Props) {
     },
   ];
 
-  if (myGames.includes(game.id)) {
-    dropdownItems.push({
-      label: 'Publish',
-      fn: () => setShowPublishModal(true),
-    });
+  if (
+    myGames.includes(game.id)
+    // TODO || (game as PublicGame)?.userId === currentUser?.uid
+  ) {
+    if (currentUser && permissions.creator) {
+      dropdownItems.push({
+        label: 'Publish',
+        fn: () => setShowPublishModal(true),
+      });
+    } else if (currentUser) {
+      dropdownItems.push({
+        label: 'Enable publishing',
+        fn: () => history.push('/my-account'),
+      });
+    } else {
+      dropdownItems.push({
+        label: 'Login to Publish',
+        fn: () => history.push('/log-in'),
+      });
+    }
   }
 
   dropdownItems.push({

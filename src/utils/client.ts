@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 import React from 'react';
 import Peer from 'peerjs';
+import { Loader } from 'pixi.js';
 
 import { getInstanceId, getIdentity } from './identity';
 
@@ -364,7 +365,7 @@ export function useGameClient(
     if (state.requestAsset) {
       requestAsset(state.requestAsset);
     }
-  }, [state.requestAsset]);
+  }, [state.requestAsset, requestAsset]);
 
   React.useEffect(() => {
     if (isLoaded) {
@@ -382,6 +383,7 @@ export function useGameClient(
         });
       } else if (game) {
         for (let name in assets) {
+          Loader.shared.add(name, assets[name]);
           if (!cachedAssets.includes(name)) {
             await cacheAsset(
               game.id,
@@ -392,8 +394,10 @@ export function useGameClient(
           }
         }
 
-        dispatch({
-          event: 'load_complete',
+        Loader.shared.load(() => {
+          dispatch({
+            event: 'load_complete',
+          });
         });
       }
     };

@@ -35,6 +35,7 @@ import { PromptSelectModal } from '../PromptSelectModal';
 // import { config } from 'process';
 import { PlayerPromptModal } from '../PlayerPromptModal/PlayerPromptModal';
 import { DeckPeekModal } from '../DeckPeekModal';
+import { supportedBrowser } from '../../utils/meta';
 
 const MainContainer = styled.div({
   height: '100%',
@@ -59,6 +60,11 @@ const LoadingPage = styled.div({
   left: 0,
   backgroundColor: '#fff',
   zIndex: 90000,
+});
+
+const BrowserSupportBanner = styled.div({
+  color: '#e74c3c',
+  fontWeight: 'bold',
 });
 
 const LoadingContainer = styled.div({
@@ -795,6 +801,11 @@ export function App(props: { spectator?: boolean }) {
       {!isLoaded && (
         <LoadingPage>
           <LoadingContainer>
+            {!supportedBrowser && (
+              <BrowserSupportBanner>
+                This browser may not be supported.
+              </BrowserSupportBanner>
+            )}
             {failedConnection ? (
               <FailedConnection>Connection Failed</FailedConnection>
             ) : (

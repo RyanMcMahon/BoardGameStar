@@ -11,6 +11,8 @@ import {
 import { useUser } from '../../utils/api';
 // import { TagSelect } from '../TagSelect/TagSelect';
 import { FaBars } from 'react-icons/fa';
+import { useWebContext } from '../../utils/WebContext';
+import { supportedBrowser } from '../../utils/meta';
 
 interface Props {
   children: React.ReactNode;
@@ -28,7 +30,6 @@ const Menu = styled.div({
   top: 0,
   right: 0,
   left: 0,
-  display: 'flex',
   flexDirection: 'row',
   margin: 0,
   padding: '1rem 0',
@@ -36,6 +37,13 @@ const Menu = styled.div({
   fontWeight: 'bold',
   boxShadow: theShadow,
   zIndex: 1000,
+});
+
+const BrowserSupportBanner = styled.div({
+  backgroundColor: '#f1c40f',
+  textAlign: 'center',
+  position: 'relative',
+  top: '-1rem',
 });
 
 const MenuHeader = styled(Link)({
@@ -86,6 +94,20 @@ const MainContent = styled.div({
   flex: 1,
 });
 
+const ErrorMessage = styled.div({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  zIndex: 9999,
+  backgroundColor: '#e74c3c',
+  color: '#fff',
+  textAlign: 'center',
+  fontWeight: 'bold',
+  fontSize: '2rem',
+  padding: '1rem 0',
+});
+
 const SideMenu = styled.div<{ shown: boolean }>(({ shown }) => ({
   backgroundColor: '#f0f0f0',
   width: '240px',
@@ -115,6 +137,8 @@ const Footer = styled.div({
 });
 
 export function WebPage(props: Props) {
+  const context = useWebContext();
+  const { state } = context;
   const location = useLocation();
   const history = useHistory();
   const { currentUser, isLoading } = useUser();
@@ -142,7 +166,13 @@ export function WebPage(props: Props) {
 
   return (
     <Page>
+      {state.errorMessage && <ErrorMessage>{state.errorMessage}</ErrorMessage>}
       <Menu>
+        {!supportedBrowser && (
+          <BrowserSupportBanner>
+            This browser may not be supported
+          </BrowserSupportBanner>
+        )}
         <SideMenuButton
           onClick={() => setIsSideMenuVisible(!isSideMenuVisible)}
         />
