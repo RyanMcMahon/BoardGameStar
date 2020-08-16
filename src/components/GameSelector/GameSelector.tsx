@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import React from 'react';
 
-import { Game, PublicGame } from '../../types';
+import { Game } from '../../types';
 import { deleteGame } from '../../utils/store';
 import { Button } from '../../utils/style';
 import styled from 'styled-components';

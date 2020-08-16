@@ -27,7 +27,7 @@ const CardImage = styled.img({
 });
 
 export function DeckPeekModal(props: Props) {
-  const { assets, pieces, cards, discarded, onTakeCards, onClose } = props;
+  const { assets, pieces, cards } = props;
   return (
     <Modal onClose={props.onClose}>
       <Modal.Content>
