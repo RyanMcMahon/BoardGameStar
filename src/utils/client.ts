@@ -382,6 +382,8 @@ export function useGameClient(
           asset: pendingAssets[0],
         });
       } else if (game) {
+        Loader.shared.reset();
+
         for (let name in assets) {
           Loader.shared.add(name, assets[name]);
           if (!cachedAssets.includes(name)) {

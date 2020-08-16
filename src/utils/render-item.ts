@@ -231,6 +231,7 @@ export class RenderItem extends Container {
 
     const { touches = [] } = event.data?.originalEvent || {};
     const pointer = event.data.getLocalPosition(this.parent);
+    const clickVariance = touches.length ? 5 : 2;
 
     if (
       (this.parent as any).isPinching ||
@@ -243,8 +244,8 @@ export class RenderItem extends Container {
     // Total mouse move distance < click threashold do nothing, otherwise start dragging
     if (
       this.dragging ||
-      Math.abs(pointer.x - this.mouseDownData.pointer.x) > 2 ||
-      Math.abs(pointer.y - this.mouseDownData.pointer.y) > 2
+      Math.abs(pointer.x - this.mouseDownData.pointer.x) > clickVariance ||
+      Math.abs(pointer.y - this.mouseDownData.pointer.y) > clickVariance
     ) {
       this.dblClicking = false;
       this.dragging = true;

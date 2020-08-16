@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { getImageUrl } from '../../utils/api';
+import { getDownloadUrl } from '../../utils/api';
 
 interface Props {
   userId: string;
@@ -29,7 +29,7 @@ export function StorageImage(props: Props) {
 
   React.useEffect(() => {
     const getUrl = async () => {
-      const u = await getImageUrl(userId, gameId, src);
+      const u = await getDownloadUrl(userId, gameId, src);
       setUrl(u);
     };
 

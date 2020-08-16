@@ -178,7 +178,11 @@ export async function getGameStats(gameId: string) {
   // TODO
 }
 
-export async function getImageUrl(userId: string, gameId: string, src: string) {
+export async function getDownloadUrl(
+  userId: string,
+  gameId: string,
+  src: string
+) {
   const storageRef = firebase.storage().ref();
   const path = `users/${userId}/games/${gameId}/public/${src}`;
   return storageRef.child(path).getDownloadURL();
@@ -190,12 +194,14 @@ export async function publishGame(game: PublishableGame, assets: Assets) {
   const thumbnail = game.thumbnail;
   const banner = game.banner;
   const files = game.files;
+  const rules = game.rules;
 
   const gameData = {
     ...game,
     userId,
     thumbnail: thumbnail ? '_thumbnail' : null,
     banner: banner ? '_banner' : null,
+    rules: rules ? '_rules' : null,
     files: [], // TODO files.map(file => file.name),
     config: {
       ...game.config,
@@ -204,17 +210,21 @@ export async function publishGame(game: PublishableGame, assets: Assets) {
     },
   };
 
-  if (new TextEncoder().encode(banner).length / 1024 / 1024 > 1) {
+  if (rules && getFileSizeMB(rules) > 5) {
+    throw new Error(`Rules PDF is too large. Max 5mb.`);
+  }
+
+  if (banner && getFileSizeMB(banner) > 1) {
     throw new Error(`Banner is too large. Max 1mb.`);
   }
 
-  if (new TextEncoder().encode(thumbnail).length / 1024 / 1024 > 1) {
+  if (thumbnail && getFileSizeMB(thumbnail) > 1) {
     throw new Error(`Thumbnail is too large. Max 1mb.`);
   }
 
   // check file sizes
   for (let name in assets) {
-    if (new TextEncoder().encode(assets[name]).length / 1024 / 1024 > 1) {
+    if (getFileSizeMB(assets[name]) > 1) {
       throw new Error(`${name} is too large. Max 1mb.`);
     }
   }
@@ -228,6 +238,10 @@ export async function publishGame(game: PublishableGame, assets: Assets) {
   const storageRef = firebase.storage().ref();
   const folder = game.price > 0 ? 'private' : 'public';
   const basePath = `users/${userId}/games/${gameId}/${folder}`;
+
+  if (rules) {
+    await storageRef.child(`${basePath}/_rules`).putString(rules, 'data_url');
+  }
 
   if (banner) {
     await storageRef.child(`${basePath}/_banner`).putString(banner, 'data_url');
@@ -367,9 +381,15 @@ export async function downloadGame(
     loadedAssets[key] = image;
   }
 
-  const thumbnailUrl = await getImageUrl(game.userId, game.id, `_thumbnail`);
-  const thumbnail = await getBase64FromImageUrl(thumbnailUrl);
-  game.thumbnail = thumbnail;
+  if (game.thumbnail) {
+    const thumbnailUrl = await getDownloadUrl(
+      game.userId,
+      game.id,
+      `_thumbnail`
+    );
+    const thumbnail = await getBase64FromImageUrl(thumbnailUrl);
+    game.thumbnail = thumbnail;
+  }
 
   await addGame(game, loadedAssets);
 }
@@ -395,6 +415,10 @@ function getBase64FromImageUrl(url: string): Promise<string> {
 
     img.src = url;
   });
+}
+
+function getFileSizeMB(file: string) {
+  return new TextEncoder().encode(file).length / 1024 / 1024;
 }
 
 // export async function requestOAuth() {

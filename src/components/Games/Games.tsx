@@ -150,6 +150,7 @@ export function Games(props: Props) {
     setLoadingGame(true);
 
     const loadedAssets = game.loadAssets ? await game.loadAssets() : {};
+    Loader.shared.reset();
     Loader.shared.add('axis.png');
     for (let name in loadedAssets) {
       Loader.shared.add(name, loadedAssets[name]);

@@ -1,12 +1,18 @@
 service firebase.storage {
   match /b/{bucket}/o {
+    function checkFileSize() {
+      return
+        request.resource.size < 1 * 1024 * 1024 ||
+        request.resource.contentType.matches('application/pdf') && request.resource.size < 5 * 1024 * 1024 ;
+    }
+
     match /users/{userId}/games/{gameId}/public/{all=**} {
       allow read: if true;
-      allow write: if userId == request.auth.uid && request.resource.size < 1 * 1024 * 1024;
+      allow write: if userId == request.auth.uid && checkFileSize();
     }
 
     match /users/{userId}/games/{gameId}/private/{all=**} {
-      allow read, write: if userId == request.auth.uid && request.resource.size < 1 * 1024 * 1024;
+      allow read, write: if userId == request.auth.uid && checkFileSize();
     }
   }
 }

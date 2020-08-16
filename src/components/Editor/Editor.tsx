@@ -259,6 +259,7 @@ export function Editor(props: Props) {
       name: state.name,
       thumbnail: state.thumbnail,
       summary: state.summary,
+      rules: state.rules,
       description: state.description,
       config: {
         prompts: state.prompts,

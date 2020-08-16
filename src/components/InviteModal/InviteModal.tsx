@@ -2,14 +2,15 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { Modal } from '../Modal';
-import { PlayerPiece } from '../../types';
+import { PlayerPiece, Game, PublicGame } from '../../types';
 import { FaCheckCircle, FaClipboard } from 'react-icons/fa';
 import { successColor, Button } from '../../utils/style';
+import { getDownloadUrl } from '../../utils/api';
 
 interface Props {
   playerId: string;
   players: PlayerPiece[];
-  gameId: string;
+  game: Game | null;
   hostId: string;
   onRename: (name: string) => void;
   onClose: () => void;
@@ -53,10 +54,30 @@ const LockedPlayerIcon = styled(FaCheckCircle)({
 });
 
 export function InviteModal(props: Props) {
-  const { playerId, players, gameId, hostId, onClose, onRename } = props;
+  const { playerId, players, game, hostId, onClose, onRename } = props;
+  const [rulesLink, setRulesLink] = React.useState<string>('');
   const curPlayer = players.find(p => p.playerId === playerId);
   const inviteLinkRef = React.createRef<HTMLInputElement>();
   const spectateLinkRef = React.createRef<HTMLInputElement>();
+
+  React.useEffect(() => {
+    if (!game) {
+      return;
+    }
+
+    if (game.rules === '_rules') {
+      (async () => {
+        const u = await getDownloadUrl(
+          (game as PublicGame).userId,
+          game.id,
+          '_rules'
+        );
+        setRulesLink(u);
+      })();
+    } else if (game.rules) {
+      setRulesLink(game.rules);
+    }
+  }, [game]);
 
   if (!curPlayer) {
     return null;
@@ -92,7 +113,7 @@ export function InviteModal(props: Props) {
           <InviteHeader>Host ID:</InviteHeader>
           {hostId}
           <InviteHeader>Game ID:</InviteHeader>
-          {gameId}
+          {game?.id}
 
           <InviteHeader>Invite Link:</InviteHeader>
           <InviteLinkWrapper>
@@ -138,6 +159,22 @@ export function InviteModal(props: Props) {
               <FaClipboard />
             </CopyButton>
           </InviteLinkWrapper>
+
+          {!!rulesLink && (
+            <div>
+              <InviteHeader>Game Rules:</InviteHeader>
+              <a
+                href={rulesLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                download={`${game?.name} Rules.pdf`}
+              >
+                Download
+              </a>
+              <br />
+              <br />
+            </div>
+          )}
 
           <Button block={true} design="success" onClick={onClose}>
             Play!

@@ -100,20 +100,31 @@ export function EditGameModal(props: Props) {
           }}
         />
 
-        {/* <label>Rules PDF</label>
+        <label>Rules PDF</label>
+        {!!game.rules && (
+          <div>
+            <a
+              href={game.rules}
+              target="_blank"
+              rel="noopener noreferrer"
+              download={`${game.name} Rules.pdf`}
+            >
+              Rules
+            </a>
+          </div>
+        )}
         <Button
           design="primary"
           onClick={async () => {
             const [file] = await filePrompt({ multiple: false });
-            // const filename = file.name;
             const rules = file.content;
-            
+
             onUpdate({ rules });
           }}
         >
           Upload
         </Button>
-        <br /> */}
+        <br />
         <br />
 
         <Button design="success" onClick={onClose}>
