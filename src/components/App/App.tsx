@@ -712,6 +712,7 @@ export function App(props: { spectator?: boolean }) {
           playerId={playerId}
           players={players}
           hostId={hostId}
+          gameId={gameId}
           game={game}
           onRename={handleRename}
           onClose={() => setShowInviteModal(false)}

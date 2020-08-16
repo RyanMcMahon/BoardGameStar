@@ -12,6 +12,7 @@ interface Props {
   players: PlayerPiece[];
   game: Game | null;
   hostId: string;
+  gameId: string;
   onRename: (name: string) => void;
   onClose: () => void;
 }
@@ -54,7 +55,7 @@ const LockedPlayerIcon = styled(FaCheckCircle)({
 });
 
 export function InviteModal(props: Props) {
-  const { playerId, players, game, hostId, onClose, onRename } = props;
+  const { playerId, players, game, hostId, gameId, onClose, onRename } = props;
   const [rulesLink, setRulesLink] = React.useState<string>('');
   const curPlayer = players.find(p => p.playerId === playerId);
   const inviteLinkRef = React.createRef<HTMLInputElement>();
@@ -113,7 +114,7 @@ export function InviteModal(props: Props) {
           <InviteHeader>Host ID:</InviteHeader>
           {hostId}
           <InviteHeader>Game ID:</InviteHeader>
-          {game?.id}
+          {gameId}
 
           <InviteHeader>Invite Link:</InviteHeader>
           <InviteLinkWrapper>
