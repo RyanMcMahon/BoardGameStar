@@ -1,4 +1,5 @@
 import React from 'react';
+import { Loader } from 'pixi.js';
 
 import { Button } from '../../utils/style';
 import { Modal } from '../Modal';
@@ -17,13 +18,19 @@ const GameTips = styled.ul({
 
 export function CreateGameModal(props: Props) {
   const nameRef = React.createRef<HTMLInputElement>();
-  const handleSubmit = () => {
+  const handleSubmit = (e: any) => {
     if (!nameRef.current) {
       return;
     }
-
     const name = nameRef.current.value.trim();
-    props.onCreate(name);
+
+    Loader.shared.reset();
+    Loader.shared.add('axis.png');
+    Loader.shared.load(() => {
+      props.onCreate(name);
+    });
+    e.preventDefault();
+    return false;
   };
 
   return (

@@ -108,12 +108,8 @@ export class RenderItem extends Container {
       trailing: true,
     });
 
-    if (!texture.valid && piece.image) {
-      console.log(piece.image, texture.valid);
-    }
     const sprite = new Sprite(
-      // texture
-      texture.valid || texture === Texture.EMPTY
+      texture?.valid || texture === Texture.EMPTY
         ? texture
         : Texture.from('/texture_error.jpeg')
     );
