@@ -3,7 +3,7 @@ import React from 'react';
 import { Button, breakpoints } from '../../utils/style';
 import { Modal } from '../Modal';
 import { Game } from '../../types';
-import { TagSelect } from '../TagSelect';
+// import { TagSelect } from '../TagSelect';
 import { filePrompt } from '../../utils/assets';
 import styled from 'styled-components';
 

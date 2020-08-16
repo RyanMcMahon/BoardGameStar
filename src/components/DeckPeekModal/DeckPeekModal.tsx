@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Button } from '../../utils/style';
+// import { Button } from '../../utils/style';
 import { Modal } from '../Modal';
 import { Pieces, CardPiece, Assets } from '../../types';
 import { prependPrefix } from '../../utils/assets';

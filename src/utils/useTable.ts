@@ -341,7 +341,7 @@ function getRenderItem(
   // if (!assets[piece.image]) {
   //   console.log('no asset for', piece);
   // }
-  const image = assets[piece.image] || piece.image;
+  // const image = assets[piece.image] || piece.image;
   const pieceConfig = config[piece.type];
 
   switch (piece.type) {

@@ -5,7 +5,7 @@ import { Redirect } from 'react-router-dom';
 import styled from 'styled-components';
 import { Loader } from 'pixi.js';
 
-import { createNewGame, GameState, Assets } from '../../utils/game';
+import { createNewGame, GameState } from '../../utils/game';
 import { EditorAction, Game } from '../../types';
 import { GameSelector } from '../GameSelector';
 import { isWebBuild } from '../../utils/meta';

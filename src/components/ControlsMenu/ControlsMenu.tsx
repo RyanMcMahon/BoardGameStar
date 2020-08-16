@@ -101,7 +101,7 @@ const UnreadIcon = styled(FaCommentDots)({
 
 export function ControlsMenu(props: Props) {
   const {
-    playerId,
+    // playerId,
     pieces,
     selectedPieces,
     chat,

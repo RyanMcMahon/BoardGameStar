@@ -17,7 +17,6 @@ import {
   MoneyTokenPiece,
   GamePromptAnswer,
   GamePrompt,
-  Piece,
 } from '../types';
 
 import { getHostId, getGameId, getInstanceId } from './identity';

@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import React from 'react';
 import {
   BrowserRouter,
   HashRouter,
@@ -22,8 +22,7 @@ import { GameProfile } from '../GamePage';
 import { WebPage } from '../WebPage';
 import { Terms } from '../Terms';
 import { Privacy } from '../Privacy';
-import { AppContext } from '../App/AppContext';
-import { webReducer, useWebReducer, WebContext } from '../../utils/WebContext';
+import { useWebReducer, WebContext } from '../../utils/WebContext';
 
 interface Props {
   children: React.ReactNode;
