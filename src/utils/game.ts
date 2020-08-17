@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { detailedDiff } from 'deep-object-diff';
 import slug from 'slugid';
 import Peer from 'peerjs';
 import {
@@ -51,6 +52,41 @@ interface Decks {
 }
 
 export interface GameState {
+  game: Game;
+  clients: { [playerId: string]: GamePeerDataConnection };
+  hostId: string;
+  gameId: string;
+  players: string[];
+  chat: ChatEvent[];
+  hands: { [playerId: string]: string[] };
+  decks: string[];
+  shuffled: { [deckId: string]: string[] };
+  discarded: { [deckId: string]: string[] };
+  board: string[];
+  pieces: Pieces;
+  prompts: {
+    [promptId: string]: {
+      players: string[];
+      prompt: GamePrompt;
+      answers: {
+        [playerId: string]: GamePromptAnswer[];
+      };
+    };
+  };
+}
+
+interface GameStateChange {
+  players: { [index: string]: string };
+  chat: { [index: string]: ChatEvent };
+  hands: { [playerId: string]: { [index: string]: string } };
+  decks: { [index: string]: string };
+  shuffled: { [deckId: string]: { [index: string]: string } };
+  discarded: { [index: string]: string };
+  board: { [index: string]: string };
+  pieces: Pieces;
+}
+
+export interface GameClientState {
   hostId: string;
   gameId: string;
   peer: Peer;
@@ -67,12 +103,92 @@ interface GameOptions {
   sendAssets: boolean;
 }
 
-let curGame: GameState;
+let curGame: GameClientState;
+
+export function proccessEvent(state: GameState, event: ClientEvent): GameState {
+  switch (event.event) {
+    case 'chat': {
+      return {
+        ...state,
+        chat: [...state.chat, event],
+      };
+    }
+
+    case 'shuffle_discarded': {
+      const { deckId } = event;
+      const newState = {
+        ...state,
+        shuffled: {
+          [deckId]: [...state.shuffled[deckId], ...state.discarded[deckId]],
+        },
+        discarded: {
+          [deckId]: [],
+        },
+      };
+      newState.pieces[deckId].count = newState.shuffled[deckId].length;
+      return newState;
+    }
+
+    case 'play_cards': {
+      return { ...state };
+    }
+
+    default: {
+      return state;
+    }
+  }
+}
+
+export function getClientEvents(prevState: GameState, state: GameState) {
+  const events: {
+    room: GameEvent[];
+    players: { [playerId: string]: GameEvent[] };
+  } = {
+    room: [],
+    players: {},
+  };
+  const { added, removed, updated } = detailedDiff(prevState, state) as {
+    added: Partial<GameStateChange>;
+    removed: Partial<GameStateChange>;
+    updated: Partial<GameStateChange>;
+  };
+
+  const upddatedPieces = new Set<string>();
+
+  for (let prop in added) {
+    switch (prop) {
+      case 'chat': {
+        events.room.push(
+          ...((Object.values(added.chat || {}) as unknown) as ChatEvent[])
+        );
+        break;
+      }
+
+      case 'shuffled': {
+        for (let deckId in added.shuffled) {
+          upddatedPieces.add(deckId);
+        }
+      }
+    }
+  }
+
+  if (upddatedPieces.size) {
+    events.room.push({
+      event: 'update_piece',
+      pieces: _.keyBy(
+        Array.from(upddatedPieces).map(id => state.pieces[id]),
+        'id'
+      ),
+    });
+  }
+
+  return events;
+}
 
 export async function createNewGame(
   game: Game,
   options: GameOptions,
-  cb: (gameState: GameState) => void
+  cb: (gameState: GameClientState) => void
 ) {
   if (curGame) {
     curGame.peer.disconnect();
@@ -154,7 +270,7 @@ export async function createNewGame(
     });
 
     const players: Players = {};
-    const gameState: GameState = {
+    const gameState: GameClientState = {
       peer,
       hostId,
       gameId,

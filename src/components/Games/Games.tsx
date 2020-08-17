@@ -5,7 +5,7 @@ import { Redirect } from 'react-router-dom';
 import styled from 'styled-components';
 import { Loader } from 'pixi.js';
 
-import { createNewGame, GameState } from '../../utils/game';
+import { createNewGame, GameClientState } from '../../utils/game';
 import { EditorAction, Game } from '../../types';
 import { GameSelector } from '../GameSelector';
 import { isWebBuild } from '../../utils/meta';
@@ -113,7 +113,7 @@ const GamesWrapper = styled.div({
 export function Games(props: Props) {
   const { alertError } = useWebContext();
   const [configs, setConfigs] = React.useState<Game[]>([]);
-  const [newGame, setNewGame] = React.useState<GameState>();
+  const [newGame, setNewGame] = React.useState<GameClientState>();
   const [showCreateModal, setShowCreateModal] = React.useState<boolean>(false);
   const [loadingGame, setLoadingGame] = React.useState(false);
 
