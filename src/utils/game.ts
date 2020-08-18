@@ -129,7 +129,107 @@ export function proccessEvent(state: GameState, event: ClientEvent): GameState {
       return newState;
     }
 
+    case 'transaction': {
+      const newState = { ...state };
+      const { amount } = event;
+      const { from, to } = event.transaction;
+      const fromPiece = { ...state.pieces[from.id] };
+      let moneyTemplate = (fromPiece.type === 'money'
+        ? fromPiece
+        : {
+            ...Object.values(state.pieces).find(p => p.type === 'money'),
+            x: 0, // TODO
+            y: 0, // TODO
+          }) as MoneyTokenPiece;
+
+      if (fromPiece.balance < amount) {
+        console.error('Insufficient Funds');
+        return state;
+      }
+
+      const toPiece: MoneyTokenPiece | PlayerPiece = to.id
+        ? { ...(state.pieces[to.id] as MoneyTokenPiece | PlayerPiece) }
+        : {
+            ...moneyTemplate,
+            id: slug.nice(),
+            x: moneyTemplate.x + moneyTemplate.width + 40,
+            balance: 0,
+            delta: 0,
+          };
+
+      if (!toPiece) {
+        console.error('Unknown Recipient');
+        return state;
+      }
+
+      fromPiece.balance -= amount;
+      fromPiece.delta++;
+      toPiece.balance = (toPiece.balance || 0) + amount;
+      toPiece.delta++;
+
+      if (
+        fromPiece.balance === 0 &&
+        Object.values(state.pieces).find(
+          p => p.type === 'money' && p.id !== fromPiece.id
+        )
+      ) {
+        fromPiece.type = 'deleted';
+      }
+
+      newState.pieces = {
+        ...state.pieces,
+        [fromPiece.id]: fromPiece,
+        [toPiece.id]: toPiece,
+      };
+
+      return newState;
+    }
+
+    case 'prompt_players': {
+      return { ...state };
+    }
+
+    case 'prompt_submission': {
+      return { ...state };
+    }
+
+    case 'roll_dice': {
+      return { ...state };
+    }
+
+    case 'draw_cards': {
+      return { ...state };
+    }
+
+    case 'draw_cards_to_table': {
+      return { ...state };
+    }
+
+    case 'pick_up_cards': {
+      return { ...state };
+    }
+
     case 'play_cards': {
+      return { ...state };
+    }
+
+    case 'discard': {
+      return { ...state };
+    }
+
+    case 'discard_played': {
+      return { ...state };
+    }
+
+    case 'create_stack': {
+      return { ...state };
+    }
+
+    case 'split_stack': {
+      return { ...state };
+    }
+
+    case 'update_piece': {
       return { ...state };
     }
 
@@ -147,36 +247,45 @@ export function getClientEvents(prevState: GameState, state: GameState) {
     room: [],
     players: {},
   };
-  const { added, removed, updated } = detailedDiff(prevState, state) as {
+  const { added, deleted, updated } = detailedDiff(prevState, state) as {
     added: Partial<GameStateChange>;
-    removed: Partial<GameStateChange>;
+    deleted: Partial<GameStateChange>;
     updated: Partial<GameStateChange>;
   };
 
-  const upddatedPieces = new Set<string>();
+  const updatedPieces = new Set<string>();
 
-  for (let prop in added) {
-    switch (prop) {
-      case 'chat': {
-        events.room.push(
-          ...((Object.values(added.chat || {}) as unknown) as ChatEvent[])
-        );
-        break;
-      }
+  // Added
+  if (added.chat) {
+    events.room.push(
+      ...((Object.values(added.chat || {}) as unknown) as ChatEvent[])
+    );
+  }
 
-      case 'shuffled': {
-        for (let deckId in added.shuffled) {
-          upddatedPieces.add(deckId);
-        }
-      }
+  if (added.shuffled) {
+    for (let deckId in added.shuffled) {
+      updatedPieces.add(deckId);
     }
   }
 
-  if (upddatedPieces.size) {
+  if (added.pieces) {
+    for (let id in added.pieces) {
+      updatedPieces.add(id);
+    }
+  }
+
+  // Updated
+  if (updated.pieces) {
+    for (let id in updated.pieces) {
+      updatedPieces.add(id);
+    }
+  }
+
+  if (updatedPieces.size) {
     events.room.push({
       event: 'update_piece',
       pieces: _.keyBy(
-        Array.from(upddatedPieces).map(id => state.pieces[id]),
+        Array.from(updatedPieces).map(id => state.pieces[id]),
         'id'
       ),
     });

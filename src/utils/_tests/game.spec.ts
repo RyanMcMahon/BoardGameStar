@@ -3,10 +3,18 @@ import {
   getClientEvents,
   proccessEvent,
   GameState,
-} from './game';
-import { Game, ChatEvent, DeckPiece, UpdatePieceEvent } from '../types';
+} from '../game';
 
-jest.mock('./peer');
+import { emptyState } from './common';
+import {
+  Game,
+  ChatEvent,
+  DeckPiece,
+  UpdatePieceEvent,
+  MoneyTokenPiece,
+} from '../../types';
+
+jest.mock('../peer');
 
 // const gameConfig: Game = {
 //   version: 1,
@@ -103,7 +111,7 @@ jest.mock('./peer');
 //   // loadAssets: () => ({}),
 // };
 
-const { onConnection, conn, onData } = require('./peer');
+const { onConnection, conn, onData } = require('../peer');
 describe('game', () => {
   it.skip('should update pieces based on the number of players', () => {
     // createNewGame(gameConfig, { assets: {}, sendAssets: false }, () => {});
@@ -124,19 +132,7 @@ describe('game', () => {
   describe('proccessEvent -> getClientEvents', () => {
     it('should process a chat event', () => {
       const prevState = {
-        game: {} as Game,
-        hostId: '',
-        gameId: '',
-        players: [],
-        chat: [],
-        hands: {},
-        clients: {},
-        decks: [],
-        shuffled: {},
-        discarded: {},
-        board: [],
-        pieces: {},
-        prompts: {},
+        ...emptyState,
       };
       const state = proccessEvent(prevState, {
         event: 'chat',
@@ -155,13 +151,7 @@ describe('game', () => {
 
     it('should process a shuffle_discarded event', () => {
       const prevState: GameState = {
-        game: {} as Game,
-        hostId: '',
-        gameId: '',
-        players: [],
-        chat: [],
-        hands: {},
-        clients: {},
+        ...emptyState,
         decks: ['d'],
         shuffled: {
           d: [],
@@ -169,7 +159,6 @@ describe('game', () => {
         discarded: {
           d: ['a'],
         },
-        board: [],
         pieces: {
           d: {
             id: 'd',
@@ -178,7 +167,6 @@ describe('game', () => {
             total: 1,
           } as DeckPiece,
         },
-        prompts: {},
       };
       const state = proccessEvent(prevState, {
         event: 'shuffle_discarded',
@@ -191,6 +179,68 @@ describe('game', () => {
       const updateEvent = events.room[0] as UpdatePieceEvent;
       expect(updateEvent.pieces.d).toBeTruthy();
       expect(updateEvent.pieces.d.count).toBe(1);
+      expect(state.shuffled.d.length).toBe(1);
+      expect(state.discarded.d.length).toBe(0);
+    });
+
+    it('should process a prompt_players event', () => {
+      // TODO
+    });
+
+    it('should process a prompt_submission event', () => {
+      // TODO
+    });
+
+    it('should process a roll_dice event', () => {
+      // TODO
+    });
+
+    it('should process a draw_cards event', () => {
+      // TODO
+    });
+
+    it('should process a draw_cards_to_table event', () => {
+      // TODO
+    });
+
+    it('should process a pick_up_cards event', () => {
+      // TODO
+    });
+
+    it('should process a pass_cards event', () => {
+      // TODO
+    });
+
+    it('should process a peek_at_card event', () => {
+      // TODO
+    });
+
+    it('should process a rename_player event', () => {
+      // TODO
+    });
+
+    it('should process a play_cards event', () => {
+      // TODO
+    });
+
+    it('should process a discard event', () => {
+      // TODO
+    });
+
+    it('should process a discard_played event', () => {
+      // TODO
+    });
+
+    it('should process a create_stack event', () => {
+      // TODO
+    });
+
+    it('should process a split_stack event', () => {
+      // TODO
+    });
+
+    it('should process a update_piece event', () => {
+      // TODO
     });
   });
 });
