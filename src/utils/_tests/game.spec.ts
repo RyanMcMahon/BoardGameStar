@@ -134,11 +134,15 @@ describe('game', () => {
       const prevState = {
         ...emptyState,
       };
-      const state = proccessEvent(prevState, {
-        event: 'chat',
-        playerId: 'a',
-        message: 'Test',
-      });
+      const state = proccessEvent(
+        prevState,
+        {
+          event: 'chat',
+          playerId: 'a',
+          message: 'Test',
+        },
+        ''
+      );
       const events = getClientEvents(prevState, state);
 
       expect(events.room.length).toBe(1);
@@ -168,10 +172,14 @@ describe('game', () => {
           } as DeckPiece,
         },
       };
-      const state = proccessEvent(prevState, {
-        event: 'shuffle_discarded',
-        deckId: 'd',
-      });
+      const state = proccessEvent(
+        prevState,
+        {
+          event: 'shuffle_discarded',
+          deckId: 'd',
+        },
+        ''
+      );
       const events = getClientEvents(prevState, state);
 
       expect(events.room.length).toBe(1);

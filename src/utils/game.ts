@@ -105,7 +105,11 @@ interface GameOptions {
 
 let curGame: GameClientState;
 
-export function proccessEvent(state: GameState, event: ClientEvent): GameState {
+export function proccessEvent(
+  state: GameState,
+  event: ClientEvent,
+  playerId: string
+): GameState {
   switch (event.event) {
     case 'chat': {
       return {
@@ -194,7 +198,39 @@ export function proccessEvent(state: GameState, event: ClientEvent): GameState {
     }
 
     case 'roll_dice': {
-      return { ...state };
+      const playArea = Object.values(state.pieces).find(
+        p => p.playerId === playerId
+      );
+      if (!playArea) {
+        return state;
+      }
+
+      const { dice, hidden } = event;
+      const dicePieces: DicePiece[] = Object.entries(dice)
+        .filter(([faces, count]) => count > 0)
+        .reduce((agg, [faces, count], setIndex) => {
+          const d: DicePiece[] = [...Array(count)].map((x, index) => ({
+            hidden,
+            id: slug.nice(),
+            type: 'die',
+            faces: parseInt(faces, 10),
+            value: _.random(1, parseInt(faces, 10)),
+            delta: 0,
+            x: playArea.x + index * 150,
+            y: playArea.y + 50 + setIndex * 150,
+            layer: 6,
+          }));
+          return [...agg, ...d];
+        }, [] as DicePiece[]);
+      const diceById = (_.keyBy(dicePieces, 'id') as unknown) as Pieces;
+
+      return {
+        ...state,
+        pieces: {
+          ...state.pieces,
+          ...diceById,
+        },
+      };
     }
 
     case 'draw_cards': {
@@ -272,7 +308,14 @@ export function getClientEvents(prevState: GameState, state: GameState) {
     for (let id in added.pieces) {
       updatedPieces.add(id);
     }
+    events.room.push({
+      event: 'add_to_board',
+      pieces: Object.keys(added.pieces),
+    });
   }
+
+  // deleted
+  // TODO
 
   // Updated
   if (updated.pieces) {

@@ -1,10 +1,15 @@
 import { emptyState } from './common';
 import { GameState, proccessEvent, getClientEvents } from '../game';
-import { MoneyTokenPiece, UpdatePieceEvent, PlayerPiece } from '../../types';
+import {
+  MoneyTokenPiece,
+  UpdatePieceEvent,
+  PlayerPiece,
+  GameEvent,
+} from '../../types';
 
 jest.mock('../peer');
 
-describe.only('transaction event', () => {
+describe.only('transaction events', () => {
   it('should process a bank -> bank transaction event', () => {
     const prevState: GameState = {
       ...emptyState,
@@ -19,24 +24,30 @@ describe.only('transaction event', () => {
         } as MoneyTokenPiece,
       },
     };
-    const state = proccessEvent(prevState, {
-      event: 'transaction',
-      amount: 10,
-      transaction: {
-        from: {
-          id: 'm',
-          name: 'Old',
-          max: 100,
-        },
-        to: {
-          name: 'New',
+    const state = proccessEvent(
+      prevState,
+      {
+        event: 'transaction',
+        amount: 10,
+        transaction: {
+          from: {
+            id: 'm',
+            name: 'Old',
+            max: 100,
+          },
+          to: {
+            name: 'New',
+          },
         },
       },
-    });
+      ''
+    );
     const events = getClientEvents(prevState, state);
+    expect(events.room.length).toBe(2);
 
-    expect(events.room.length).toBe(1);
-    const updateEvent = events.room[0] as UpdatePieceEvent;
+    const updateEvent = events.room.find(
+      (e: GameEvent) => e.event === 'update_piece'
+    ) as UpdatePieceEvent;
     expect(updateEvent.pieces.m).toBeTruthy();
     expect(updateEvent.pieces.m.balance).toBe(90);
     expect(updateEvent.pieces.m.delta).toBe(1);
@@ -45,6 +56,11 @@ describe.only('transaction event', () => {
     expect(newPiece).toBeTruthy();
     expect(newPiece?.balance).toBe(10);
     expect(newPiece?.x).toBe(140);
+
+    const addToBoardEvent = events.room.find(
+      (e: GameEvent) => e.event === 'add_to_board'
+    ) as UpdatePieceEvent;
+    expect(addToBoardEvent.pieces).toEqual([newPiece!.id]);
   });
 
   it('should process a bank -> player transaction event', () => {
@@ -68,21 +84,25 @@ describe.only('transaction event', () => {
         } as PlayerPiece,
       },
     };
-    const state = proccessEvent(prevState, {
-      event: 'transaction',
-      amount: 10,
-      transaction: {
-        from: {
-          id: 'm',
-          name: 'Bank',
-          max: 100,
-        },
-        to: {
-          id: 'p',
-          name: 'Player',
+    const state = proccessEvent(
+      prevState,
+      {
+        event: 'transaction',
+        amount: 10,
+        transaction: {
+          from: {
+            id: 'm',
+            name: 'Bank',
+            max: 100,
+          },
+          to: {
+            id: 'p',
+            name: 'Player',
+          },
         },
       },
-    });
+      ''
+    );
     const events = getClientEvents(prevState, state);
     expect(events.room.length).toBe(1);
 
@@ -117,21 +137,25 @@ describe.only('transaction event', () => {
         } as PlayerPiece,
       },
     };
-    const state = proccessEvent(prevState, {
-      event: 'transaction',
-      amount: 10,
-      transaction: {
-        from: {
-          id: 'p',
-          name: 'From',
-          max: 100,
-        },
-        to: {
-          id: 'm',
-          name: 'To',
+    const state = proccessEvent(
+      prevState,
+      {
+        event: 'transaction',
+        amount: 10,
+        transaction: {
+          from: {
+            id: 'p',
+            name: 'From',
+            max: 100,
+          },
+          to: {
+            id: 'm',
+            name: 'To',
+          },
         },
       },
-    });
+      ''
+    );
     const events = getClientEvents(prevState, state);
     expect(events.room.length).toBe(1);
 
@@ -165,21 +189,25 @@ describe.only('transaction event', () => {
         } as PlayerPiece,
       },
     };
-    const state = proccessEvent(prevState, {
-      event: 'transaction',
-      amount: 10,
-      transaction: {
-        from: {
-          id: 'p1',
-          name: 'From',
-          max: 100,
-        },
-        to: {
-          id: 'p2',
-          name: 'To',
+    const state = proccessEvent(
+      prevState,
+      {
+        event: 'transaction',
+        amount: 10,
+        transaction: {
+          from: {
+            id: 'p1',
+            name: 'From',
+            max: 100,
+          },
+          to: {
+            id: 'p2',
+            name: 'To',
+          },
         },
       },
-    });
+      ''
+    );
     const events = getClientEvents(prevState, state);
     expect(events.room.length).toBe(1);
 
