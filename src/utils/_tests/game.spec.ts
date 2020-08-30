@@ -199,43 +199,7 @@ describe('game', () => {
       // TODO
     });
 
-    it('should process a roll_dice event', () => {
-      // TODO
-    });
-
-    it('should process a draw_cards event', () => {
-      // TODO
-    });
-
-    it('should process a draw_cards_to_table event', () => {
-      // TODO
-    });
-
-    it('should process a pick_up_cards event', () => {
-      // TODO
-    });
-
-    it('should process a pass_cards event', () => {
-      // TODO
-    });
-
-    it('should process a peek_at_card event', () => {
-      // TODO
-    });
-
     it('should process a rename_player event', () => {
-      // TODO
-    });
-
-    it('should process a play_cards event', () => {
-      // TODO
-    });
-
-    it('should process a discard event', () => {
-      // TODO
-    });
-
-    it('should process a discard_played event', () => {
       // TODO
     });
 

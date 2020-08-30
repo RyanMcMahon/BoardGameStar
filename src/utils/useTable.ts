@@ -423,6 +423,7 @@ function getRenderItem(
     case 'card': {
       const faceUpTexture = texture;
       const deck = piecesById[piece.deckId];
+      // debugger;
       const faceDownTexture = Loader.shared.resources[deck.image]
         ? Loader.shared.resources[deck.image].texture
         : Texture.from(assets[deck.image] || deck.image);

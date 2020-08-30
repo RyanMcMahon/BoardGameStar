@@ -572,42 +572,43 @@ export function App(props: { spectator?: boolean }) {
   }, [conn, sendUpdatedPieces]);
 
   React.useEffect(() => {
+    // debugger;
     setTablePieces(
-      board
-        .map(id => {
-          try {
-            const piece = pieces[id];
-            if (piece.type === 'player' && piece.playerId) {
-              return {
-                ...piece,
-                label: `${piece.name} (${handCounts[piece.playerId] ||
-                  0} cards in hand)`,
-              };
-            } else if (piece.type === 'stack') {
-              return {
-                ...pieces[piece.pieces.slice(-1)[0]],
-                id: piece.id,
-                x: piece.x,
-                y: piece.y,
-                pieces: piece.pieces,
-                delta: piece.delta,
-                counts: piece.counts,
-              };
-            } else {
-              return pieces[id];
-            }
-          } catch (err) {
-            return {} as any;
+      board.map(id => {
+        try {
+          const piece = pieces[id];
+          if (piece.type === 'player' && piece.playerId) {
+            return {
+              ...piece,
+              label: `${piece.name} (${handCounts[piece.playerId] ||
+                0} cards in hand)`,
+            };
+          } else if (piece.type === 'stack') {
+            return {
+              ...pieces[piece.pieces.slice(-1)[0]],
+              id: piece.id,
+              x: piece.x,
+              y: piece.y,
+              pieces: piece.pieces,
+              delta: piece.delta,
+              counts: piece.counts,
+            };
+          } else {
+            return pieces[id];
           }
-        })
-        .filter(
-          piece =>
-            (piece.type === 'player' && piece.playerId) ||
-            (piece.type !== 'player' &&
-              (!piece.counts ||
-                piece.type === 'card' ||
-                players.length >= parseInt(piece.counts.split(':')[0], 10)))
-        )
+        } catch (err) {
+          return {} as any;
+        }
+      })
+      // TODO???
+      // .filter(
+      //   piece =>
+      //     (piece.type === 'player' && piece.playerId) ||
+      //     (piece.type !== 'player' &&
+      //       (!piece.counts ||
+      //         piece.type === 'card' ||
+      //         players.length >= parseInt(piece.counts.split(':')[0], 10)))
+      // )
     );
     setRenderCount(renderCount); // Force re-render
   }, [
