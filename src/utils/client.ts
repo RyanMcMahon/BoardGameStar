@@ -103,6 +103,14 @@ function clientReducer(state: ClientState, data: GameEvent) {
       };
     }
 
+    case 'set_board_event': {
+      return {
+        ...state,
+        board: data.board,
+        renderCount: state.renderCount + 1,
+      };
+    }
+
     case 'player_join': {
       const { board: b, pieces: p } = data;
       return {
@@ -259,6 +267,11 @@ function clientReducer(state: ClientState, data: GameEvent) {
 
     case 'load_complete': {
       return { ...state, isLoaded: true };
+    }
+
+    default: {
+      console.error('unhandled event', data);
+      return state;
     }
   }
 }

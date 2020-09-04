@@ -194,13 +194,15 @@ export function proccessEvent(
       const pieces = getPiecesForPlayerCount(
         state.game,
         piecesForPlayerCounts,
-        state.players.length + 1
+        state.players.length + (spectator ? 0 : 1)
       );
-      // debugger;
       state.game.config.scenarios[state.game.config.curScenario].pieces.forEach(
         id => {
           if (!pieces[id]) {
-            const piece = { ...state.game.config.pieces[id], delta: 0 };
+            const piece = {
+              ...state.game.config.pieces[id],
+              delta: (state.pieces[id]?.delta || 0) + 1,
+            };
             if (piece.type === 'card') {
               return;
             }
@@ -210,6 +212,11 @@ export function proccessEvent(
               (piece as DeckPiece).total = 0; // TODO
             }
             pieces[id] = piece as RenderPiece;
+          } else {
+            pieces[id] = {
+              ...pieces[id],
+              delta: pieces[id].delta + 1,
+            };
           }
         }
       );
@@ -217,7 +224,6 @@ export function proccessEvent(
       const board = Object.values(pieces)
         .filter((p: any) => p.type !== 'card')
         .map((p: any) => p.id);
-      // debugger;
       const newState = {
         ...state,
         pieces,
@@ -966,9 +972,16 @@ export async function createNewGame(
             playerId
           );
           const events = getClientEvents(gameState, newState);
-          // TODO send events
-          // debugger;
-          events.room.forEach(sendToRoom);
+          events.room.forEach(event => {
+            if (event.event !== 'add_to_board') {
+              sendToRoom(event);
+            }
+          });
+          // Re-Send Board
+          sendToRoom({
+            event: 'set_board_event',
+            board: newState.board,
+          });
           gameState = newState;
         }
 
@@ -1029,6 +1042,7 @@ export async function createNewGame(
           const newState = proccessEvent(prevState, data, playerId);
           const events = getClientEvents(prevState, newState);
           gameState = newState;
+          events.room.forEach(sendToRoom);
           // debugger;
         });
 

@@ -570,6 +570,11 @@ export interface ClearPromptResult {
   event: 'clear_prompt_result';
 }
 
+export interface SetBoardEvent {
+  event: 'set_board_event';
+  board: string[];
+}
+
 export interface SetRequestAsset {
   event: 'set_request_asset';
   asset: string;
@@ -610,6 +615,7 @@ export type GameEvent =
   | LoadComplete
   | ChatEvent
   | AddToBoardEvent
+  | SetBoardEvent
   | DiceCountEvent
   | SetDiceEvent
   | HandCountEvent
