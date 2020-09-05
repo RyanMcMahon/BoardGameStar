@@ -305,6 +305,7 @@ export interface DeletedPiece extends PieceOption, Piece {
 export interface PlayerPiece extends PlayerOption, Piece {
   playerId?: string;
   handCount: number;
+  hand: string[];
 }
 
 export interface Pieces {

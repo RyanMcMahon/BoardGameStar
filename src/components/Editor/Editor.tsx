@@ -650,10 +650,12 @@ export function Editor(props: Props) {
                 {selectedPiece.type === 'image' && (
                   <>
                     {selectedPiece.back && (
-                      <img
-                        alt="selected piece"
-                        src={assets[selectedPiece.back]}
-                      />
+                      <div>
+                        <img
+                          alt="selected piece"
+                          src={assets[selectedPiece.back]}
+                        />
+                      </div>
                     )}
                     <Button
                       design="primary"
@@ -671,7 +673,7 @@ export function Editor(props: Props) {
                         });
                       }}
                     >
-                      Add Back
+                      Back Image
                     </Button>
                   </>
                 )}

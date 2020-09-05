@@ -181,18 +181,22 @@ export function ControlsMenu(props: Props) {
                 label: 'Flip Tokens',
                 fn: () =>
                   onUpdatePieces(
-                    (selectedPieces as StackPiece[])
-                      .reduce(
-                        (arr: StackPiece[], stack: StackPiece) => [
-                          ...arr,
-                          ...stack.pieces.map(id => pieces[id] as StackPiece),
-                        ],
-                        []
+                    (selectedPieces as StackPiece[]).reduce(
+                      (arr: StackPiece[], stack: StackPiece) => [
+                        ...arr,
+                        ...stack.pieces.map(
+                          id =>
+                            ({
+                              ...pieces[id],
+                              flipped: !pieces[stack.pieces.slice(-1)[0]]
+                                .flipped,
+                            } as StackPiece)
+                        ),
+                      ],
+                      selectedPieces.map(
+                        p => ({ ...p, delta: p.delta + 1 } as StackPiece)
                       )
-                      .map((piece: RenderPiece) => ({
-                        ...piece,
-                        flipped: !piece.flipped,
-                      }))
+                    )
                   ),
               },
             ]

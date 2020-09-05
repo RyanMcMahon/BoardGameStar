@@ -28,6 +28,7 @@ interface Props {
   onRename: () => void;
   playCards: (ids: string[], faceDown: boolean) => void;
   passCards: (ids: string[], playerId: string) => void;
+  showPrompt: boolean;
   promptTransaction: (transactions: Transaction[]) => void;
   onPromptPlayers: () => void;
   player: PlayerPiece | undefined;
@@ -211,6 +212,7 @@ export function PlayerHand(props: Props): JSX.Element {
     playCards,
     passCards,
     discard,
+    showPrompt,
     promptTransaction,
     onPromptPlayers,
     pieces,
@@ -374,10 +376,12 @@ export function PlayerHand(props: Props): JSX.Element {
             )}
           </MobileHidden>
 
-          <IconButton design="primary" onClick={onPromptPlayers}>
-            <MobileHidden>Prompt Players&nbsp;</MobileHidden>
-            <FaQuestionCircle />
-          </IconButton>
+          {showPrompt && (
+            <IconButton design="primary" onClick={onPromptPlayers}>
+              <MobileHidden>Prompt Players&nbsp;</MobileHidden>
+              <FaQuestionCircle />
+            </IconButton>
+          )}
 
           <ButtonControls>
             <Button

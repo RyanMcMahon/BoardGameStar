@@ -580,8 +580,7 @@ export function App(props: { spectator?: boolean }) {
           if (piece.type === 'player' && piece.playerId) {
             return {
               ...piece,
-              label: `${piece.name} (${handCounts[piece.playerId] ||
-                0} cards in hand)`,
+              label: `${piece.name} (${piece.hand.length} cards in hand)`,
             };
           } else if (piece.type === 'stack') {
             return {
@@ -643,11 +642,12 @@ export function App(props: { spectator?: boolean }) {
             config={game.config}
             assets={assets}
             pieces={pieces}
-            hand={myHand}
+            hand={player?.hand || []}
             onRename={handlePromptRename}
             playCards={handlePlayCards}
             passCards={handlePassCards}
             discard={handleDiscard}
+            showPrompt={!!game.config.prompts?.length}
             promptTransaction={setTransactionModalOptions}
             onPromptPlayers={() => setShowPromptSelectModal(true)}
             player={player}

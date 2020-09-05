@@ -191,46 +191,84 @@ export function proccessEvent(
   switch (event.event) {
     case 'player_connect': {
       const { playerId, spectator, piecesForPlayerCounts } = event;
+      const players = [...state.players];
+      if (!spectator) {
+        players.push(playerId);
+      }
+
+      const curScenario =
+        state.game.config.scenarios[state.game.config.curScenario];
       const pieces = getPiecesForPlayerCount(
         state.game,
         piecesForPlayerCounts,
-        state.players.length + (spectator ? 0 : 1)
+        players.length
       );
-      state.game.config.scenarios[state.game.config.curScenario].pieces.forEach(
-        id => {
-          if (!pieces[id]) {
-            const piece = {
-              ...state.game.config.pieces[id],
-              delta: (state.pieces[id]?.delta || 0) + 1,
-            };
-            if (piece.type === 'card') {
-              return;
-            }
+      const shuffled: { [deckId: string]: string[] } = {};
+      const discarded: { [deckId: string]: string[] } = {};
 
-            if (piece.type === 'deck') {
-              (piece as DeckPiece).count = 0; // TODO
-              (piece as DeckPiece).total = 0; // TODO
-            }
-            pieces[id] = piece as RenderPiece;
-          } else {
-            pieces[id] = {
-              ...pieces[id],
-              delta: pieces[id].delta + 1,
-            };
+      curScenario.pieces.forEach(id => {
+        if (!pieces[id]) {
+          const piece = {
+            ...state.game.config.pieces[id],
+            delta: (state.pieces[id]?.delta || 0) + 1,
+          };
+          if (piece.type === 'card') {
+            return;
           }
+
+          pieces[id] = piece as RenderPiece;
+        } else {
+          pieces[id] = {
+            ...pieces[id],
+            delta: pieces[id].delta + 1,
+          };
         }
-      );
+      });
+
+      if (!spectator) {
+        const playarea = {
+          ...pieces[curScenario.players[players.length - 1]],
+          playerId,
+          hand: [],
+          name: event.name || `Player ${players.length}`,
+        } as RenderPiece;
+        pieces[playarea.id] = playarea;
+      }
+
+      for (let id in pieces) {
+        if (pieces[id].counts && !pieces[id].parentId) {
+          // original piece
+          delete pieces[id];
+        }
+      }
+
+      Object.values(pieces).forEach(piece => {
+        if (piece.type !== 'deck') {
+          return;
+        }
+
+        const cards = Object.values(pieces)
+          .filter(p => p.deckId === piece.id)
+          .map(x => x.id);
+        shuffled[piece.id] = _.shuffle(cards);
+        discarded[piece.id] = [];
+
+        piece.count = cards.length;
+        piece.total = cards.length;
+      });
 
       const board = Object.values(pieces)
         .filter((p: any) => p.type !== 'card')
         .map((p: any) => p.id);
       const newState = {
         ...state,
+        shuffled,
+        discarded,
         pieces,
         board,
-        players: [playerId],
+        players,
       };
-      return newState as any;
+      return newState;
     }
 
     case 'chat': {
@@ -370,10 +408,11 @@ export function proccessEvent(
         ...(reShuffle ? _.shuffle(state.discarded[deckId]) : []),
       ];
       const discarded = reShuffle ? [] : [...state.discarded[deckId]];
-      const hand = [...state.hands[playerId], ...shuffled.splice(0, count)];
+      const hand = [...playArea.hand, ...shuffled.splice(0, count)];
       return {
         ...state,
         pieces: {
+          ...state.pieces,
           [deckId]: {
             ...state.pieces[deckId],
             count: shuffled.length,
@@ -381,6 +420,7 @@ export function proccessEvent(
           },
           [playArea.id]: {
             ...playArea,
+            hand,
             handCount: hand.length,
             delta: playArea.delta + 1,
           },
@@ -391,9 +431,9 @@ export function proccessEvent(
         discarded: {
           [deckId]: discarded,
         },
-        hands: {
-          [playerId]: hand,
-        },
+        // hands: {
+        //   [playerId]: hand,
+        // },
       };
     }
 
@@ -425,6 +465,7 @@ export function proccessEvent(
         ...state,
         board,
         pieces: {
+          ...state.pieces,
           ...cards,
           [deckId]: {
             ...state.pieces[deckId],
@@ -454,13 +495,13 @@ export function proccessEvent(
     case 'play_cards': {
       const playArea = Object.values(state.pieces).find(
         p => p.playerId === playerId
-      );
+      ) as PlayerPiece;
       if (!playArea) {
         return state;
       }
 
       const { cardIds, faceDown } = event;
-      const cards = state.hands[playerId]
+      const cards = playArea.hand
         .filter(id => cardIds.includes(id))
         .map((cardId, index) => {
           const card = state.pieces[cardId] as CardPiece;
@@ -481,9 +522,11 @@ export function proccessEvent(
         pieces: {
           ...state.pieces,
           ..._.keyBy(cards, 'id'),
-        },
-        hands: {
-          [playerId]: state.hands[playerId].filter(id => !cardIds.includes(id)),
+          [playArea.id]: {
+            ...playArea,
+            hand: playArea.hand.filter(id => !cardIds.includes(id)),
+            delta: playArea.delta + 1,
+          },
         },
         board: [...state.board, ...cardIds],
       };
@@ -558,6 +601,7 @@ export function proccessEvent(
       return {
         ...state,
         pieces: {
+          ...state.pieces,
           [stack.id]: stack,
         },
         board: [...state.board.filter(i => !ids.includes(i)), stack.id],
@@ -597,7 +641,7 @@ export function proccessEvent(
 
       if (top.length === 1) {
         const [topId] = top;
-        const topPiece = state.pieces[topId];
+        const topPiece = { ...state.pieces[topId] };
         piecesToAdd.push(topId);
 
         topPiece.x = stack.x + (topPiece.width || topPiece.radius * 2) + 20;
@@ -623,6 +667,7 @@ export function proccessEvent(
       return {
         ...state,
         pieces: {
+          ...state.pieces,
           ...updatedPieces,
         },
         board: [
@@ -703,12 +748,12 @@ export function getClientEvents(prevState: GameState, state: GameState) {
     // });
   }
 
-  if (added.board) {
-    events.room.push({
-      event: 'add_to_board',
-      pieces: Object.values(added.board),
-    });
-  }
+  // if (added.board) {
+  //   events.room.push({
+  //     event: 'add_to_board',
+  //     pieces: Object.values(added.board),
+  //   });
+  // }
 
   // deleted
   // TODO
@@ -718,6 +763,13 @@ export function getClientEvents(prevState: GameState, state: GameState) {
     for (let id in updated.pieces) {
       updatedPieces.add(id);
     }
+  }
+
+  if (added.board || updated.board || deleted.board) {
+    events.room.push({
+      event: 'set_board_event',
+      board: state.board,
+    });
   }
 
   if (updatedPieces.size) {
@@ -1043,7 +1095,6 @@ export async function createNewGame(
           const events = getClientEvents(prevState, newState);
           gameState = newState;
           events.room.forEach(sendToRoom);
-          // debugger;
         });
 
         conn.on('error', err => {
