@@ -225,6 +225,17 @@ export function proccessEvent(
         }
       });
 
+      curScenario.players.forEach(id => {
+        if (state.pieces[id]) {
+          pieces[id] = {
+            ...state.pieces[id],
+            hand: [],
+            balance: 0,
+            delta: state.pieces[id].delta + 1,
+          };
+        }
+      });
+
       if (!spectator) {
         const playarea = {
           ...pieces[curScenario.players[players.length - 1]],
@@ -534,11 +545,29 @@ export function proccessEvent(
 
     case 'pass_cards': {
       const { cardIds, playerId: receivingPlayerId } = event;
+      const sendingPlayer = Object.values(state.pieces).find(
+        p => p.playerId === playerId
+      ) as PlayerPiece;
+      const receivingPlayer = Object.values(state.pieces).find(
+        p => p.playerId === receivingPlayerId
+      ) as PlayerPiece;
+      if (!sendingPlayer || !receivingPlayer) {
+        return state;
+      }
       return {
         ...state,
-        hands: {
-          [receivingPlayerId]: [...state.hands[receivingPlayerId], ...cardIds],
-          [playerId]: state.hands[playerId].filter(id => !cardIds.includes(id)),
+        pieces: {
+          ...state.pieces,
+          [sendingPlayer.id]: {
+            ...sendingPlayer,
+            hand: sendingPlayer.hand.filter(id => !cardIds.includes(id)),
+            delta: sendingPlayer.delta + 1,
+          },
+          [receivingPlayer.id]: {
+            ...receivingPlayer,
+            hand: [...receivingPlayer.hand, ...cardIds],
+            delta: receivingPlayer.delta + 1,
+          },
         },
       };
     }
