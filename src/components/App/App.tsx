@@ -768,7 +768,7 @@ export function App(props: { spectator?: boolean }) {
         <PlayerPromptModal
           assets={assets}
           pieces={pieces}
-          hand={myHand}
+          hand={player?.hand || []}
           event={activePrompts[0]}
           onClose={clearPrompt}
           onSubmitAnswers={handleSubmitAnswers}

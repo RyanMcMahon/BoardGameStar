@@ -19,12 +19,14 @@ import {
   GamePromptAnswer,
   GamePrompt,
   PlayerJoinEvent,
+  PromptPlayersEvent,
 } from '../types';
 
 import { getHostId, getGameId, getInstanceId } from './identity';
 import { createPeer } from './peer';
 import { stat } from 'fs';
 import { send } from 'process';
+import { Prompt } from 'react-router-dom';
 
 interface GamePeerDataConnection extends Peer.DataConnection {
   send: (event: GameEvent) => void;
@@ -87,6 +89,13 @@ interface GameStateChange {
   discarded: { [index: string]: string };
   board: { [index: string]: string };
   pieces: Pieces;
+  prompts: {
+    [index: string]: {
+      prompt: GamePrompt;
+      answers: any;
+      players: string[];
+    };
+  };
 }
 
 export interface GameClientState {
@@ -361,11 +370,40 @@ export function proccessEvent(
     }
 
     case 'prompt_players': {
-      return { ...state };
+      const prompt = { ...event.prompt, id: slug.nice() };
+      return {
+        ...state,
+        prompts: {
+          [prompt.id]: {
+            prompt,
+            answers: {},
+            players: event.players,
+          },
+        },
+      };
     }
 
     case 'prompt_submission': {
-      return { ...state };
+      const { promptId, answers } = event;
+      const prompt = {
+        ...state.prompts[promptId],
+      };
+      prompt.answers = { ...prompt.answers };
+
+      if (answers) {
+        prompt.answers[playerId] = answers;
+      } else {
+        delete prompt.answers[playerId];
+      }
+
+      return {
+        ...state,
+        prompts: {
+          [promptId]: {
+            ...prompt,
+          },
+        },
+      };
     }
 
     case 'roll_dice': {
@@ -753,6 +791,7 @@ export function getClientEvents(prevState: GameState, state: GameState) {
   };
 
   const updatedPieces = new Set<string>();
+  const updatedPrompts = new Set<string>();
 
   // Added
   if (added.chat) {
@@ -771,18 +810,49 @@ export function getClientEvents(prevState: GameState, state: GameState) {
     for (let id in added.pieces) {
       updatedPieces.add(id);
     }
-    // events.room.push({
-    //   event: 'add_to_board',
-    //   pieces: Object.keys(added.pieces),
-    // });
   }
 
-  // if (added.board) {
-  //   events.room.push({
-  //     event: 'add_to_board',
-  //     pieces: Object.values(added.board),
-  //   });
-  // }
+  if (added.prompts) {
+    for (let id in added.prompts) {
+      if (!prevState.prompts[id]) {
+        events.room.push({
+          prompt: added.prompts[id].prompt,
+          players: added.prompts[id].players,
+          event: 'prompt_players',
+        });
+      } else {
+        updatedPrompts.add(id);
+      }
+    }
+  }
+
+  if (deleted.prompts) {
+    for (let id in deleted.prompts) {
+      if (deleted.prompts[id].answers) {
+        updatedPrompts.add(id);
+      }
+    }
+  }
+
+  updatedPrompts.forEach(promptId => {
+    const prompt = state.prompts[promptId];
+    if (prompt.players.every(id => prompt.answers[id])) {
+      events.room.push({
+        promptId,
+        results: prompt.answers,
+        event: 'prompt_results',
+      });
+    } else {
+      events.room.push({
+        promptId,
+        results: Object.keys(prompt.answers).reduce(
+          (agg, id) => ({ ...agg, [id]: true }),
+          {}
+        ),
+        event: 'prompt_results',
+      });
+    }
+  });
 
   // deleted
   // TODO

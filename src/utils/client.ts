@@ -271,6 +271,7 @@ function clientReducer(state: ClientState, data: GameEvent) {
 
     default: {
       console.error('unhandled event', data);
+      debugger;
       return state;
     }
   }
