@@ -359,6 +359,7 @@ export function App(props: { spectator?: boolean }) {
   };
 
   const table = useTable({
+    playerId,
     spectator: props.spectator,
     handleCreateStack,
     handleSplitStack,
@@ -684,7 +685,7 @@ export function App(props: { spectator?: boolean }) {
           onZoomIn={() => container && (container as Viewport).zoom(-200)}
           onZoomOut={() => container && (container as Viewport).zoom(200)}
           onShowSettingsModal={() => setShowSettingsModal(true)}
-          onPeekAtCards={(cardIds: string[]) => handlePeekAtCard(cardIds, true)}
+          onPeekAtCards={handlePeekAtCard}
         />
       )}
 
@@ -778,7 +779,7 @@ export function App(props: { spectator?: boolean }) {
         />
       )}
 
-      {!!peekingCards.length && (
+      {/* {!!peekingCards.length && (
         <DeckPeekModal
           pieces={pieces}
           assets={assets}
@@ -787,7 +788,7 @@ export function App(props: { spectator?: boolean }) {
           onTakeCards={() => handlePickUpCards(peekingCards)}
           onClose={() => handlePeekAtCard(peekingCards, false)}
         />
-      )}
+      )} */}
 
       {/* {(peekingCards.length || peekingDiscardedCards.length) && (
         <DeckPeekModal

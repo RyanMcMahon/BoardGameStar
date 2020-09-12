@@ -46,7 +46,7 @@ interface Props {
   onDiscardPlayed: (deckId: string) => void;
   onDiscardSelected: (cardIds: string[]) => void;
   onPickUpSelected: (cardIds: string[]) => void;
-  onPeekAtCards: (cardIds: string[]) => void;
+  onPeekAtCards: (cardIds: string[], peeking: boolean) => void;
   onPromptTransaction: (bankId: string) => void;
   onClearSelectedPieces: () => void;
   onShowDiceModal: () => void;
@@ -101,7 +101,7 @@ const UnreadIcon = styled(FaCommentDots)({
 
 export function ControlsMenu(props: Props) {
   const {
-    // playerId,
+    playerId,
     pieces,
     selectedPieces,
     chat,
@@ -261,8 +261,15 @@ export function ControlsMenu(props: Props) {
               ? [
                   {
                     icon: <FaEye />,
-                    label: 'Peek',
-                    fn: () => onPeekAtCards(selectedPieces.map(p => p.id)),
+                    label: 'Toggle Peek',
+                    fn: () =>
+                      onPeekAtCards(
+                        selectedPieces.map(p => p.id),
+                        !(
+                          selectedPieces[0].peeking &&
+                          selectedPieces[0].peeking.includes(playerId)
+                        )
+                      ),
                   },
                 ]
               : []),
@@ -342,12 +349,12 @@ export function ControlsMenu(props: Props) {
               : `Chat`,
           fn: onShowChat,
         },
-
-        {
-          icon: <FaDiceFive />,
-          label: 'Roll Dice',
-          fn: onShowDiceModal,
-        },
+        // TODO
+        // {
+        //   icon: <FaDiceFive />,
+        //   label: 'Roll Dice',
+        //   fn: onShowDiceModal,
+        // },
         {
           icon: <FaPlus />,
           label: 'Zoom In',

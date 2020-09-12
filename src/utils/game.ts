@@ -303,9 +303,11 @@ export function proccessEvent(
       const newState = {
         ...state,
         shuffled: {
+          ...state.shuffled,
           [deckId]: [...state.shuffled[deckId], ...state.discarded[deckId]],
         },
         discarded: {
+          ...state.discarded,
           [deckId]: [],
         },
       };
@@ -374,6 +376,7 @@ export function proccessEvent(
       return {
         ...state,
         prompts: {
+          ...state.prompts,
           [prompt.id]: {
             prompt,
             answers: {},
@@ -399,6 +402,7 @@ export function proccessEvent(
       return {
         ...state,
         prompts: {
+          ...state.prompts,
           [promptId]: {
             ...prompt,
           },
@@ -475,9 +479,11 @@ export function proccessEvent(
           },
         },
         shuffled: {
+          ...state.shuffled,
           [deckId]: shuffled,
         },
         discarded: {
+          ...state.discarded,
           [deckId]: discarded,
         },
         // hands: {
@@ -523,9 +529,11 @@ export function proccessEvent(
           },
         },
         shuffled: {
+          ...state.shuffled,
           [deckId]: shuffled,
         },
         discarded: {
+          ...state.discarded,
           [deckId]: discarded,
         },
       };
@@ -533,12 +541,26 @@ export function proccessEvent(
 
     case 'pick_up_cards': {
       const { cardIds } = event;
-      const newState = {
+      const playArea = Object.values(state.pieces).find(
+        p => p.playerId === playerId
+      ) as PlayerPiece;
+
+      if (!playArea) {
+        return state;
+      }
+
+      return {
         ...state,
         board: state.board.filter(pieceId => !cardIds.includes(pieceId)),
+        pieces: {
+          ...state.pieces,
+          [playArea.id]: {
+            ...playArea,
+            hand: [...playArea.hand, ...cardIds],
+            delta: playArea.delta + 1,
+          },
+        },
       };
-      newState.hands[playerId].push(...cardIds);
-      return newState;
     }
 
     case 'play_cards': {
@@ -611,25 +633,27 @@ export function proccessEvent(
     }
 
     case 'discard': {
-      const { cardIds } = event;
-      const cards = cardIds.map(id => state.pieces[id]);
-      const cardsByDeck = _.groupBy(cards, 'deckId');
-      const discarded = { ...state.discarded };
-      for (let deckId in cardsByDeck) {
-        discarded[deckId] = [
-          ...discarded[deckId],
-          ...cardsByDeck[deckId].map(card => card.id),
-        ];
-      }
+      // TODO
+      return state;
+      // const { cardIds } = event;
+      // const cards = cardIds.map(id => state.pieces[id]);
+      // const cardsByDeck = _.groupBy(cards, 'deckId');
+      // const discarded = { ...state.discarded };
+      // for (let deckId in cardsByDeck) {
+      //   discarded[deckId] = [
+      //     ...discarded[deckId],
+      //     ...cardsByDeck[deckId].map(card => card.id),
+      //   ];
+      // }
 
-      return {
-        ...state,
-        ...discarded,
-        hands: {
-          [playerId]: state.hands[playerId].filter(id => !cardIds.includes(id)),
-        },
-        board: state.board.filter(id => !cardIds.includes(id)),
-      };
+      // return {
+      //   ...state,
+      //   ...discarded,
+      //   hands: {
+      //     [playerId]: state.hands[playerId].filter(id => !cardIds.includes(id)),
+      //   },
+      //   board: state.board.filter(id => !cardIds.includes(id)),
+      // };
     }
 
     case 'discard_played': {
@@ -641,6 +665,7 @@ export function proccessEvent(
       return {
         ...state,
         discarded: {
+          ...state.discarded,
           [deckId]: [...state.discarded[deckId], ...cardIds],
         },
         board: state.board.filter(pieceId => cardIds.includes(pieceId)),
@@ -761,6 +786,30 @@ export function proccessEvent(
             name,
             delta: playArea.delta + 1,
           },
+        },
+      };
+    }
+
+    case 'peek_at_card': {
+      const { cardIds, peeking } = event;
+      const cards = cardIds.map(cardId => {
+        const card = { ...state.pieces[cardId] };
+        card.peeking = (card.peeking || []).filter(
+          (id: string) => id !== playerId
+        );
+
+        if (peeking) {
+          card.peeking.push(playerId);
+        }
+        card.delta++;
+        return card;
+      });
+
+      return {
+        ...state,
+        pieces: {
+          ...state.pieces,
+          ..._.keyBy(cards, 'id'),
         },
       };
     }

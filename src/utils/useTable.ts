@@ -36,6 +36,7 @@ interface PieceConfig {
 }
 
 interface TableOptions {
+  playerId?: string;
   spectator?: boolean;
   checkDelta?: boolean;
   singleSelection?: boolean;
@@ -318,6 +319,7 @@ export const useTable = (options: TableOptions) => {
 function getRenderItem(
   piece: RenderPiece,
   {
+    playerId,
     piecesRef,
     container,
     piecesById,
@@ -433,7 +435,11 @@ function getRenderItem(
         texture: faceUpTexture,
         onSync: (el, curPiece) => {
           el.setDimensions(curPiece as CardPiece);
-          if ((curPiece as CardPiece).faceDown) {
+          if (
+            (curPiece as CardPiece).faceDown &&
+            (!(curPiece as CardPiece).peeking ||
+              !(curPiece as CardPiece).peeking?.includes(playerId || ''))
+          ) {
             el.sprite.texture = faceDownTexture;
           } else {
             el.sprite.texture = faceUpTexture;
