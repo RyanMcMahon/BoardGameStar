@@ -913,13 +913,6 @@ export function getClientEvents(prevState: GameState, state: GameState) {
     }
   }
 
-  if (added.board || updated.board || deleted.board) {
-    events.room.push({
-      event: 'set_board_event',
-      board: state.board,
-    });
-  }
-
   if (updatedPieces.size) {
     events.room.push({
       event: 'update_piece',
@@ -927,6 +920,13 @@ export function getClientEvents(prevState: GameState, state: GameState) {
         Array.from(updatedPieces).map(id => state.pieces[id]),
         'id'
       ),
+    });
+  }
+
+  if (added.board || updated.board || deleted.board) {
+    events.room.push({
+      event: 'set_board_event',
+      board: state.board,
     });
   }
 
