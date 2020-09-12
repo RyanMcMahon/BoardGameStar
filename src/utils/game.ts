@@ -98,6 +98,11 @@ interface GameStateChange {
   };
 }
 
+interface SaveGame {
+  gameId: string;
+  gameState: GameState;
+}
+
 export interface GameClientState {
   hostId: string;
   gameId: string;
@@ -128,6 +133,11 @@ interface PiecesForPlayerCounts {
 }
 
 let curGame: GameClientState;
+
+const saveGameDebounced = _.debounce(saveGame, 500);
+function saveGame(saveGame: SaveGame) {
+  localStorage.setItem('gameState', JSON.stringify(saveGame));
+}
 
 function getPiecesForPlayerCounts(game: Game): PiecesForPlayerCounts {
   const scenario = game.config.scenarios[game.config.curScenario];
@@ -1049,6 +1059,10 @@ export async function createNewGame(
           const events = getClientEvents(prevState, newState);
           gameState = newState;
           events.room.forEach(sendToRoom);
+          saveGameDebounced({
+            gameId,
+            gameState,
+          });
         });
 
         conn.on('error', err => {
