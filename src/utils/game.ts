@@ -98,7 +98,7 @@ interface GameStateChange {
   };
 }
 
-interface SaveGame {
+export interface SaveGame {
   gameId: string;
   gameState: GameState;
 }
@@ -210,6 +210,11 @@ export function proccessEvent(
   switch (event.event) {
     case 'player_connect': {
       const { playerId, spectator, piecesForPlayerCounts } = event;
+
+      if (state.players.includes(playerId)) {
+        return state;
+      }
+
       const players = [...state.players];
       if (!spectator) {
         players.push(playerId);
@@ -1033,19 +1038,18 @@ export async function createGameConn({
             },
             playerId
           );
-          const events = getClientEvents(gameState, newState);
-          events.room.forEach(event => {
-            if (event.event !== 'add_to_board') {
-              sendToRoom(event);
-            }
-          });
-          // Re-Send Board
-          sendToRoom({
-            event: 'set_board_event',
-            board: newState.board,
-          });
           gameState = newState;
         }
+
+        // Resend Everything
+        sendToRoom({
+          event: 'update_piece',
+          pieces: gameState.pieces,
+        });
+        sendToRoom({
+          event: 'set_board_event',
+          board: gameState.board,
+        });
 
         const syncConfig = { ...game };
         delete syncConfig.loadAssets;
