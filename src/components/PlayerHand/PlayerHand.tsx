@@ -411,7 +411,7 @@ export function PlayerHand(props: Props): JSX.Element {
               onClick={handleDiscard}
               disabled={!selectedCards.length}
             >
-              discard
+              Discard
             </Button>
           </ButtonControls>
 

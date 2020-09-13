@@ -315,7 +315,7 @@ export function proccessEvent(
 
     case 'shuffle_discarded': {
       const { deckId } = event;
-      const newState = {
+      const newState: GameState = {
         ...state,
         shuffled: {
           ...state.shuffled,
@@ -325,8 +325,16 @@ export function proccessEvent(
           ...state.discarded,
           [deckId]: [],
         },
+        pieces: {
+          ...state.pieces,
+          [deckId]: {
+            ...state.pieces[deckId],
+          },
+        },
       };
       newState.pieces[deckId].count = newState.shuffled[deckId].length;
+      newState.pieces[deckId].delta++;
+
       return newState;
     }
 
@@ -648,27 +656,38 @@ export function proccessEvent(
     }
 
     case 'discard': {
-      // TODO
-      return state;
-      // const { cardIds } = event;
-      // const cards = cardIds.map(id => state.pieces[id]);
-      // const cardsByDeck = _.groupBy(cards, 'deckId');
-      // const discarded = { ...state.discarded };
-      // for (let deckId in cardsByDeck) {
-      //   discarded[deckId] = [
-      //     ...discarded[deckId],
-      //     ...cardsByDeck[deckId].map(card => card.id),
-      //   ];
-      // }
+      const playArea = Object.values(state.pieces).find(
+        p => p.playerId === playerId
+      );
+      if (!playArea) {
+        return state;
+      }
 
-      // return {
-      //   ...state,
-      //   ...discarded,
-      //   hands: {
-      //     [playerId]: state.hands[playerId].filter(id => !cardIds.includes(id)),
-      //   },
-      //   board: state.board.filter(id => !cardIds.includes(id)),
-      // };
+      const { cardIds } = event;
+      const cards = cardIds.map(id => state.pieces[id]);
+      const cardsByDeck = _.groupBy(cards, 'deckId');
+      const discarded = { ...state.discarded };
+      for (let deckId in cardsByDeck) {
+        discarded[deckId] = [
+          ...discarded[deckId],
+          ...cardsByDeck[deckId].map(card => card.id),
+        ];
+      }
+      console.log(discarded);
+
+      return {
+        ...state,
+        discarded,
+        board: state.board.filter(id => !cardIds.includes(id)),
+        pieces: {
+          ...state.pieces,
+          [playArea.id]: {
+            ...playArea,
+            hand: playArea.hand.filter((id: string) => !cardIds.includes(id)),
+            delta: playArea.delta + 1,
+          },
+        },
+      };
     }
 
     case 'discard_played': {
