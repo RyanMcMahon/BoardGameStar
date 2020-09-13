@@ -955,16 +955,13 @@ export async function createNewGame(
   // const scenario = game.config.scenarios[game.config.curScenario];
   const hostId = getHostId();
   const gameId = getGameId();
-  const peer = await createPeer(getInstanceId(gameId, hostId));
-  const { assets, sendAssets } = options;
-
-  peer.on('open', () => {
-    const chat: ChatEvent[] = [];
-    const piecesForPlayerCounts: PiecesForPlayerCounts = getPiecesForPlayerCounts(
-      game
-    );
-
-    let gameState: GameState = {
+  createGameConn({
+    hostId,
+    gameId,
+    game,
+    options,
+    cb,
+    initialState: {
       game,
       hostId,
       gameId,
@@ -978,7 +975,35 @@ export async function createNewGame(
       board: [],
       pieces: {},
       prompts: {},
-    };
+    },
+  });
+}
+
+export async function createGameConn({
+  gameId,
+  hostId,
+  game,
+  initialState,
+  options,
+  cb,
+}: {
+  gameId: string;
+  hostId: string;
+  game: Game;
+  initialState: GameState;
+  options: GameOptions;
+  cb: (gameState: GameClientState) => void;
+}) {
+  const { assets, sendAssets } = options;
+  let gameState: GameState = initialState;
+
+  const peer = await createPeer(getInstanceId(gameId, hostId));
+
+  peer.on('open', () => {
+    const chat: ChatEvent[] = [];
+    const piecesForPlayerCounts: PiecesForPlayerCounts = getPiecesForPlayerCounts(
+      game
+    );
 
     const clients: GamePeerDataConnection[] = [];
     const sendToRoom = (event: GameEvent) => {
