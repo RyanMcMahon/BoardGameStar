@@ -54,7 +54,8 @@ export function ResumeGame(props: Props) {
   }
 
   if (resuming) {
-    return <>Resuming Game</>;
+    // TODO show resuming game screen
+    return <></>;
   }
 
   return <>{children}</>;

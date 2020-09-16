@@ -350,11 +350,11 @@ export function ControlsMenu(props: Props) {
           fn: onShowChat,
         },
         // TODO
-        // {
-        //   icon: <FaDiceFive />,
-        //   label: 'Roll Dice',
-        //   fn: onShowDiceModal,
-        // },
+        {
+          icon: <FaDiceFive />,
+          label: 'Roll Dice',
+          fn: onShowDiceModal,
+        },
         {
           icon: <FaPlus />,
           label: 'Zoom In',

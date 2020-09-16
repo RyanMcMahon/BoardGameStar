@@ -397,6 +397,14 @@ export function useGameClient(
         });
       } else if (game) {
         Loader.shared.reset();
+        [
+          'd4.png',
+          'd6.png',
+          'd8.png',
+          'd10.png',
+          'd12.png',
+          'd20.png',
+        ].forEach(img => Loader.shared.add(img));
 
         for (let name in assets) {
           Loader.shared.add(name, assets[name]);

@@ -462,6 +462,7 @@ export function proccessEvent(
 
       return {
         ...state,
+        board: [...state.board, ...Object.keys(diceById)],
         pieces: {
           ...state.pieces,
           ...diceById,
