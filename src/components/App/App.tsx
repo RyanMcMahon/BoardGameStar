@@ -37,6 +37,7 @@ import { PromptSelectModal } from '../PromptSelectModal';
 import { PlayerPromptModal } from '../PlayerPromptModal/PlayerPromptModal';
 import { DeckPeekModal } from '../DeckPeekModal';
 import { supportedBrowser } from '../../utils/meta';
+import { HostDisconnectModal } from '../HostDisconnectModal';
 
 const MainContainer = styled.div({
   height: '100%',
@@ -139,6 +140,7 @@ export function App(props: { spectator?: boolean }) {
     playerId,
     conn,
     isLoaded,
+    hostDisconnected,
     game,
     chat,
     pieces,
@@ -419,21 +421,21 @@ export function App(props: { spectator?: boolean }) {
   //   }
   // }, []);
 
-  React.useEffect(() => {
-    const w = window as any;
-    if (!w.visualViewport) {
-      return;
-    }
+  // React.useEffect(() => {
+  //   const w = window as any;
+  //   if (!w.visualViewport) {
+  //     return;
+  //   }
 
-    const zoomListener = () => {
-      if (showZoomWarning === 1) {
-        setShowZoomWarning(2); // zoom was changed and first warning
-      }
-    };
+  //   const zoomListener = () => {
+  //     if (showZoomWarning === 1) {
+  //       setShowZoomWarning(2); // zoom was changed and first warning
+  //     }
+  //   };
 
-    w.visualViewport.addEventListener('resize', zoomListener);
-    return () => w.visualViewport.removeEventListener('resize', zoomListener);
-  }, [showZoomWarning]);
+  //   w.visualViewport.addEventListener('resize', zoomListener);
+  //   return () => w.visualViewport.removeEventListener('resize', zoomListener);
+  // }, [showZoomWarning]);
 
   React.useEffect(() => {
     if (showChat) {
@@ -799,6 +801,8 @@ export function App(props: { spectator?: boolean }) {
           playerId={playerId}
         />
       )}
+
+      {hostDisconnected && <HostDisconnectModal />}
 
       {showZoomWarning === 2 && (
         <ZoomWarningModal onClose={() => setShowZoomWarning(-1)} />

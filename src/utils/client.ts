@@ -283,6 +283,7 @@ export function useGameClient(
   spectator?: boolean
 ) {
   const [failedConnection, setFailedConnection] = React.useState(false);
+  const [hostDisconnected, setHostDisconnected] = React.useState(false);
   const [checkTimeout, setCheckTimeout] = React.useState(false);
   const [playerId, setPlayerId] = React.useState<string>('');
   const [percentLoaded, setPercentLoaded] = React.useState<number>(5);
@@ -444,8 +445,12 @@ export function useGameClient(
             reliable: true,
           });
           conn.on('data', dispatch);
+          conn.on('close', () => {
+            setHostDisconnected(true);
+          });
           conn.on('error', err => {
             console.log(err);
+            setHostDisconnected(true);
             setFailedConnection(true);
           });
           setConn(conn);
@@ -478,6 +483,7 @@ export function useGameClient(
     playerId,
     conn,
     isLoaded,
+    hostDisconnected,
     game,
     chat,
     board,

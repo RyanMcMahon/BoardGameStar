@@ -674,7 +674,6 @@ export function proccessEvent(
           ...cardsByDeck[deckId].map(card => card.id),
         ];
       }
-      console.log(discarded);
 
       return {
         ...state,
