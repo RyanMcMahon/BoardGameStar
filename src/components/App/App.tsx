@@ -12,6 +12,7 @@ import { ControlsModal } from '../ControlsModal';
 import { InviteModal } from '../InviteModal';
 
 import { PlayerHand } from '../PlayerHand';
+import { ZoomWarningModal } from '../ZoomWarningModal';
 import { DeckModal } from '../DeckModal';
 import { TransactionModal } from '../TransactionModal';
 import { RenameModal } from '../RenameModal';
@@ -393,6 +394,10 @@ export function App(props: { spectator?: boolean }) {
   const [showRenameModal, setShowRenameModal] = React.useState<boolean>(false);
   const [showInviteModal, setShowInviteModal] = React.useState<boolean>(true);
   const [showDiceModal, setShowDiceModal] = React.useState<boolean>(false);
+  const [showConnectionModal, setShowConnectionModal] = React.useState<boolean>(
+    false
+  );
+  const [showZoomWarning, setShowZoomWarning] = React.useState<number>(1);
   const [lastReadChat, setLastReadChat] = React.useState<number>(0);
   const [showChat, setShowChat] = React.useState<boolean>(false);
   const [showControlsModal, setShowControlsModal] = React.useState<boolean>(
@@ -413,6 +418,22 @@ export function App(props: { spectator?: boolean }) {
   //     setShowPlayerControls(false);
   //   }
   // }, []);
+
+  React.useEffect(() => {
+    const w = window as any;
+    if (!w.visualViewport) {
+      return;
+    }
+
+    const zoomListener = () => {
+      if (showZoomWarning === 1) {
+        setShowZoomWarning(2); // zoom was changed and first warning
+      }
+    };
+
+    w.visualViewport.addEventListener('resize', zoomListener);
+    return () => w.visualViewport.removeEventListener('resize', zoomListener);
+  }, [showZoomWarning]);
 
   React.useEffect(() => {
     if (showChat) {
@@ -777,6 +798,10 @@ export function App(props: { spectator?: boolean }) {
           players={players}
           playerId={playerId}
         />
+      )}
+
+      {showZoomWarning === 2 && (
+        <ZoomWarningModal onClose={() => setShowZoomWarning(-1)} />
       )}
 
       {/* {!!peekingCards.length && (
