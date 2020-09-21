@@ -421,21 +421,24 @@ export function App(props: { spectator?: boolean }) {
   //   }
   // }, []);
 
-  // React.useEffect(() => {
-  //   const w = window as any;
-  //   if (!w.visualViewport) {
-  //     return;
-  //   }
+  React.useEffect(() => {
+    const w = window as any;
+    if (!w.visualViewport) {
+      return;
+    }
 
-  //   const zoomListener = () => {
-  //     if (showZoomWarning === 1) {
-  //       setShowZoomWarning(2); // zoom was changed and first warning
-  //     }
-  //   };
+    const zoomListener = () => {
+      if (
+        showZoomWarning === 1 &&
+        w.visualViewport.width !== Math.round(w.visualViewport.width)
+      ) {
+        setShowZoomWarning(2); // zoom was changed and first warning
+      }
+    };
 
-  //   w.visualViewport.addEventListener('resize', zoomListener);
-  //   return () => w.visualViewport.removeEventListener('resize', zoomListener);
-  // }, [showZoomWarning]);
+    w.visualViewport.addEventListener('resize', zoomListener);
+    return () => w.visualViewport.removeEventListener('resize', zoomListener);
+  }, [showZoomWarning]);
 
   React.useEffect(() => {
     if (showChat) {
