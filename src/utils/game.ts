@@ -385,6 +385,10 @@ export function proccessEvent(
         fromPiece.type = 'deleted';
       }
 
+      if (!state.board.includes(toPiece.id)) {
+        newState.board = [...newState.board, toPiece.id];
+      }
+
       newState.pieces = {
         ...state.pieces,
         [fromPiece.id]: fromPiece,
