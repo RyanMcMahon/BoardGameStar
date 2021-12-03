@@ -2,9 +2,9 @@ import React from 'react';
 import {
   BrowserRouter,
   HashRouter,
-  Switch,
+  Navigate,
   Route,
-  Redirect,
+  Routes,
 } from 'react-router-dom';
 
 import { App } from '../App';
@@ -62,86 +62,75 @@ export function Router() {
   );
 
   React.useEffect(() => {
-    if (!isWebBuild) {
-      const appVersion = window.require('electron').remote.app.getVersion();
-      const version = `v${appVersion}`;
-
-      const checkForUpdate = async () => {
-        const data = await fetch(
-          `https://api.github.com/repos/RyanMcMahon/BoardGameStar/releases/latest`
-        );
-        const release = await data.json();
-        if (release.tag_name && release.tag_name !== version) {
-          setRelease(release);
-          setShowUpdateModal(true);
-        }
-      };
-
-      checkForUpdate();
-    }
+    // if (!isWebBuild) {
+    //   const appVersion = window.require('electron').remote.app.getVersion();
+    //   const version = `v${appVersion}`;
+    //   const checkForUpdate = async () => {
+    //     const data = await fetch(
+    //       `https://api.github.com/repos/RyanMcMahon/BoardGameStar/releases/latest`
+    //     );
+    //     const release = await data.json();
+    //     if (release.tag_name && release.tag_name !== version) {
+    //       setRelease(release);
+    //       setShowUpdateModal(true);
+    //     }
+    //   };
+    //   checkForUpdate();
+    // }
   }, []);
 
   return (
     <AppRouter>
       <WebContext.Provider value={webReducer}>
-        <Switch>
-          <Route path="/play/:hostId/:gameId">
-            <App />
-          </Route>
-          <Route path="/spectate/:hostId/:gameId">
-            <App spectator={true} />
-          </Route>
+        <Routes>
+          <Route path="/play/:hostId/:gameId" element={<App />} />
+          <Route
+            path="/spectate/:hostId/:gameId"
+            element={<App spectator={true} />}
+          />
 
-          <Route path="/editor">
-            {editorState.curScenario ? (
-              <Editor dispatch={editorDispatch} state={editorState} />
-            ) : (
-              <Redirect to="/games" />
-            )}
-          </Route>
+          <Route
+            path="/editor"
+            element={
+              editorState.curScenario ? (
+                <Editor dispatch={editorDispatch} state={editorState} />
+              ) : (
+                <Navigate to="/games" />
+              )
+            }
+          />
 
-          <Route path="/">
-            <WebPage>
-              <Switch>
-                <Route path="/sign-up">
-                  <SignUp />
-                </Route>
-                <Route path="/log-in">
-                  <LogIn />
-                </Route>
-                <Route path="/my-account">
-                  <MyAccount />
-                </Route>
-                <Route path="/users/:userId">
-                  <UserProfile />
-                </Route>
-                <Route path="/games/:gameId">
-                  <GameProfile />
-                </Route>
+          <Route
+            path="/"
+            element={
+              <WebPage>
+                <Routes>
+                  <Route path="/" element={<Store />} />
+                  <Route path="/sign-up" element={<SignUp />} />
+                  <Route path="/log-in" element={<LogIn />} />
+                  <Route path="/my-account" element={<MyAccount />} />
+                  <Route path="/users/:userId" element={<UserProfile />} />
 
-                <Route exact path="/games">
-                  {editorState.curScenario ? (
-                    <Redirect to="/editor" />
-                  ) : (
-                    <Games dispatch={editorDispatch} />
-                  )}
-                </Route>
+                  <Route
+                    path="/games"
+                    element={
+                      editorState.curScenario ? (
+                        <Navigate to="/editor" />
+                      ) : (
+                        <Games dispatch={editorDispatch} />
+                      )
+                    }
+                  />
+                  <Route path="/games/:gameId" element={<GameProfile />} />
 
-                <Route path="/terms">
-                  <Terms />
-                </Route>
+                  <Route path="/terms" element={<Terms />} />
 
-                <Route path="/privacy">
-                  <Privacy />
-                </Route>
-
-                <Route exact path="/">
-                  <Store />
-                </Route>
-              </Switch>
-            </WebPage>
-          </Route>
-        </Switch>
+                  <Route path="/privacy" element={<Privacy />} />
+                </Routes>
+              </WebPage>
+            }
+          />
+        </Routes>
 
         {showUpdateModal && (
           <UpdateModal

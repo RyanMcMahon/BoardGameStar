@@ -4,6 +4,8 @@ import styled from 'styled-components';
 
 import { Viewport } from 'pixi-viewport';
 import {
+  CanvasResource,
+  Resource,
   utils,
   Graphics,
   Loader,
@@ -343,12 +345,14 @@ function getRenderItem(
   // }
 
   const pieceConfig = config[piece.type];
-  let texture = Texture.EMPTY;
+  let texture: Texture<CanvasResource> | Texture<Resource> = Texture.EMPTY;
 
   if (piece.image) {
-    texture = Loader.shared.resources[piece.image]
-      ? Loader.shared.resources[piece.image].texture
-      : Texture.from(assets[piece.image] || piece.image || '');
+    texture =
+      (Loader.shared.resources[piece.image]
+        ? Loader.shared.resources[piece.image].texture
+        : Texture.from(assets[piece.image] || piece.image || '')) ||
+      Texture.EMPTY;
   }
 
   switch (piece.type) {
@@ -433,7 +437,7 @@ function getRenderItem(
         onSync: (el, curPiece) => {
           el.setDimensions(curPiece as CardPiece);
           if ((curPiece as CardPiece).faceDown) {
-            el.sprite.texture = faceDownTexture;
+            el.sprite.texture = faceDownTexture || Texture.EMPTY;
           } else {
             el.sprite.texture = faceUpTexture;
           }
@@ -562,7 +566,7 @@ function getRenderItem(
           el.setDimensions(curPiece as ImageTokenPiece);
 
           if ((curPiece as ImageTokenPiece).flipped) {
-            el.sprite.texture = faceDownTexture;
+            el.sprite.texture = faceDownTexture || Texture.EMPTY;
           } else {
             el.sprite.texture = faceUpTexture;
           }

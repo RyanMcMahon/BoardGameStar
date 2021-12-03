@@ -6,7 +6,7 @@ import 'firebase/firestore';
 import 'firebase/storage';
 import React from 'react';
 import { Game, Assets, PublicGame, PublishableGame } from '../types';
-import { PaymentMethod } from '@stripe/stripe-js';
+// import { PaymentMetho } from '@stripe/stripe-js';
 import { addGame, cacheAsset } from './store';
 
 const firebaseConfig = {
@@ -46,61 +46,65 @@ export interface SignUpForm {
 }
 
 export async function signUp(form: SignUpForm) {
-  return firebase
-    .auth()
-    .createUserWithEmailAndPassword(form.email, form.password);
+  return true;
+  // return firebase
+  //   .auth()
+  //   .createUserWithEmailAndPassword(form.email, form.password);
 }
 
 export async function logIn(email: string, password: string) {
-  return firebase.auth().signInWithEmailAndPassword(email, password);
+  return true;
+  // return firebase.auth().signInWithEmailAndPassword(email, password);
 }
 
 export async function signOut() {
-  return firebase.auth().signOut();
+  return true;
+  // return firebase.auth().signOut();
 }
 
 export async function resetPassword(email: string) {}
 
 export async function sendVerificationEmail() {
-  firebase.auth().currentUser?.sendEmailVerification({
-    url: 'https://boardgamestar.com/my-account',
-  });
+  return true;
+  // firebase.auth().currentUser?.sendEmailVerification({
+  //   url: 'https://boardgamestar.com/my-account',
+  // });
 }
 
 export function useUser() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [userSettings, setUserSettings] = React.useState<UserSettings | null>();
-  const [currentUser, setCurrentUser] = React.useState<firebase.User | null>();
+  const [currentUser, setCurrentUser] = [{}, {}]; //React.useState<firebase.User | null>();
   const [permissions, setPermissions] = React.useState<Permissions>({
     creator: false,
     publisher: false,
   });
 
-  React.useEffect(() => {
-    firebase.auth().onAuthStateChanged(async user => {
-      if (user) {
-        console.log('reload token');
-        await user.getIdToken(true);
-        const userSettings = await (
-          await firebase
-            .firestore()
-            .collection('users')
-            .doc(user.uid)
-            .get()
-        ).data();
-        const { claims } = (await user.getIdTokenResult(true)) as any;
-        setUserSettings((userSettings as unknown) as UserSettings);
-        setPermissions({
-          creator: claims.creator,
-          publisher: claims.publisher,
-        });
-      } else {
-        setUserSettings(null);
-      }
-      setCurrentUser(user);
-      setIsLoading(false);
-    });
-  }, []);
+  // React.useEffect(() => {
+  //   firebase.auth().onAuthStateChanged(async user => {
+  //     if (user) {
+  //       console.log('reload token');
+  //       await user.getIdToken(true);
+  //       const userSettings = await (
+  //         await firebase
+  //           .firestore()
+  //           .collection('users')
+  //           .doc(user.uid)
+  //           .get()
+  //       ).data();
+  //       const { claims } = (await user.getIdTokenResult(true)) as any;
+  //       setUserSettings((userSettings as unknown) as UserSettings);
+  //       setPermissions({
+  //         creator: claims.creator,
+  //         publisher: claims.publisher,
+  //       });
+  //     } else {
+  //       setUserSettings(null);
+  //     }
+  //     setCurrentUser(user);
+  //     setIsLoading(false);
+  //   });
+  // }, []);
 
   return {
     isLoading,
@@ -111,63 +115,68 @@ export function useUser() {
 }
 
 export function getCurrentUser() {
-  return firebase.auth().currentUser;
+  return {} as any;
+  // return firebase.auth().currentUser;
 }
 
 export async function getUserSettings() {
-  return (
-    await firebase
-      .firestore()
-      .collection('users')
-      .doc(getCurrentUser()?.uid)
-      .get()
-  ).data();
+  return {};
+  // return (
+  //   await firebase
+  //     .firestore()
+  //     .collection('users')
+  //     .doc(getCurrentUser()?.uid)
+  //     .get()
+  // ).data();
 }
 
 export async function updateUserSettings(userSettings: Partial<UserSettings>) {
-  await firebase
-    .firestore()
-    .collection('users')
-    .doc(getCurrentUser()?.uid)
-    .set(userSettings, { merge: true });
+  return {};
+  // await firebase
+  //   .firestore()
+  //   .collection('users')
+  //   .doc(getCurrentUser()?.uid)
+  //   .set(userSettings, { merge: true });
 }
 
 export async function getAllGames(): Promise<PublicGame[]> {
-  return ((
-    await firebase
-      .firestore()
-      .collection('games')
-      .get()
-  ).docs.map(doc => doc.data()) as unknown) as PublicGame[];
+  return [];
+  // return ((
+  //   await firebase
+  //     .firestore()
+  //     .collection('games')
+  //     .get()
+  // ).docs.map(doc => doc.data()) as unknown) as PublicGame[];
 }
 
 export async function getGame(
   gameId: string
 ): Promise<{ game: PublicGame; user: any }> {
-  const game = (
-    await firebase
-      .firestore()
-      .collection('games')
-      .doc(gameId)
-      .get()
-  ).data() as PublicGame;
+  return {} as any;
+  // const game = (
+  //   await firebase
+  //     .firestore()
+  //     .collection('games')
+  //     .doc(gameId)
+  //     .get()
+  // ).data() as PublicGame;
 
-  if (!game || !game.userId) {
-    return {} as any;
-  }
+  // if (!game || !game.userId) {
+  //   return {} as any;
+  // }
 
-  const user = (
-    await firebase
-      .firestore()
-      .collection('users')
-      .doc(game.userId)
-      .get()
-  ).data();
+  // const user = (
+  //   await firebase
+  //     .firestore()
+  //     .collection('users')
+  //     .doc(game.userId)
+  //     .get()
+  // ).data();
 
-  return {
-    game,
-    user,
-  };
+  // return {
+  //   game,
+  //   user,
+  // };
 }
 
 export async function getUserGames(userId: string) {
@@ -183,91 +192,93 @@ export async function getDownloadUrl(
   gameId: string,
   src: string
 ) {
-  const storageRef = firebase.storage().ref();
-  const path = `users/${userId}/games/${gameId}/public/${src}`;
-  return storageRef.child(path).getDownloadURL();
+  return '';
+  // const storageRef = firebase.storage().ref();
+  // const path = `users/${userId}/games/${gameId}/public/${src}`;
+  // return storageRef.child(path).getDownloadURL();
 }
 
 export async function publishGame(game: PublishableGame, assets: Assets) {
-  const gameId = game.id;
-  const userId = getCurrentUser()?.uid;
-  const thumbnail = game.thumbnail;
-  const banner = game.banner;
-  const files = game.files;
-  const rules = game.rules;
+  return true;
+  // const gameId = game.id;
+  // const userId = getCurrentUser()?.uid;
+  // const thumbnail = game.thumbnail;
+  // const banner = game.banner;
+  // const files = game.files;
+  // const rules = game.rules;
 
-  const gameData = {
-    ...game,
-    userId,
-    thumbnail: thumbnail ? '_thumbnail' : null,
-    banner: banner ? '_banner' : null,
-    rules: rules ? '_rules' : null,
-    files: [], // TODO files.map(file => file.name),
-    config: {
-      ...game.config,
-      prompts: game.config.prompts || null,
-      currency: game.config.currency || null,
-    },
-  };
+  // const gameData = {
+  //   ...game,
+  //   userId,
+  //   thumbnail: thumbnail ? '_thumbnail' : null,
+  //   banner: banner ? '_banner' : null,
+  //   rules: rules ? '_rules' : null,
+  //   files: [], // TODO files.map(file => file.name),
+  //   config: {
+  //     ...game.config,
+  //     prompts: game.config.prompts || null,
+  //     currency: game.config.currency || null,
+  //   },
+  // };
 
-  if (rules && getFileSizeMB(rules) > 5) {
-    throw new Error(`Rules PDF is too large. Max 5mb.`);
-  }
+  // if (rules && getFileSizeMB(rules) > 5) {
+  //   throw new Error(`Rules PDF is too large. Max 5mb.`);
+  // }
 
-  if (banner && getFileSizeMB(banner) > 1) {
-    throw new Error(`Banner is too large. Max 1mb.`);
-  }
+  // if (banner && getFileSizeMB(banner) > 1) {
+  //   throw new Error(`Banner is too large. Max 1mb.`);
+  // }
 
-  if (thumbnail && getFileSizeMB(thumbnail) > 1) {
-    throw new Error(`Thumbnail is too large. Max 1mb.`);
-  }
+  // if (thumbnail && getFileSizeMB(thumbnail) > 1) {
+  //   throw new Error(`Thumbnail is too large. Max 1mb.`);
+  // }
 
-  // check file sizes
-  for (let name in assets) {
-    if (getFileSizeMB(assets[name]) > 1) {
-      throw new Error(`${name} is too large. Max 1mb.`);
-    }
-  }
+  // // check file sizes
+  // for (let name in assets) {
+  //   if (getFileSizeMB(assets[name]) > 1) {
+  //     throw new Error(`${name} is too large. Max 1mb.`);
+  //   }
+  // }
 
-  await firebase
-    .firestore()
-    .collection('games')
-    .doc(gameId)
-    .set(gameData);
+  // await firebase
+  //   .firestore()
+  //   .collection('games')
+  //   .doc(gameId)
+  //   .set(gameData);
 
-  const storageRef = firebase.storage().ref();
-  const folder = game.price > 0 ? 'private' : 'public';
-  const basePath = `users/${userId}/games/${gameId}/${folder}`;
+  // const storageRef = firebase.storage().ref();
+  // const folder = game.price > 0 ? 'private' : 'public';
+  // const basePath = `users/${userId}/games/${gameId}/${folder}`;
 
-  if (rules) {
-    await storageRef.child(`${basePath}/_rules`).putString(rules, 'data_url');
-  }
+  // if (rules) {
+  //   await storageRef.child(`${basePath}/_rules`).putString(rules, 'data_url');
+  // }
 
-  if (banner) {
-    await storageRef.child(`${basePath}/_banner`).putString(banner, 'data_url');
-  }
+  // if (banner) {
+  //   await storageRef.child(`${basePath}/_banner`).putString(banner, 'data_url');
+  // }
 
-  if (thumbnail) {
-    await storageRef
-      .child(`${basePath}/_thumbnail`)
-      .putString(thumbnail, 'data_url');
-  }
+  // if (thumbnail) {
+  //   await storageRef
+  //     .child(`${basePath}/_thumbnail`)
+  //     .putString(thumbnail, 'data_url');
+  // }
 
-  await Promise.all(
-    files.map(file =>
-      storageRef
-        .child(`${basePath}/${file.name}`)
-        .putString(file.content, 'data_url')
-    )
-  );
+  // await Promise.all(
+  //   files.map(file =>
+  //     storageRef
+  //       .child(`${basePath}/${file.name}`)
+  //       .putString(file.content, 'data_url')
+  //   )
+  // );
 
-  return Promise.all(
-    Object.entries(assets).map(([name, content]) => {
-      return storageRef
-        .child(`${basePath}/${name}`)
-        .putString(content, 'data_url');
-    })
-  );
+  // return Promise.all(
+  //   Object.entries(assets).map(([name, content]) => {
+  //     return storageRef
+  //       .child(`${basePath}/${name}`)
+  //       .putString(content, 'data_url');
+  //   })
+  // );
 }
 
 export async function updatePublishedGame(game: any) {
@@ -281,64 +292,60 @@ export async function deletePublishedGame(gameId: string) {
 export async function getCustomerData() {
   const currentUser = getCurrentUser();
   if (!currentUser) {
-    return;
+    return {} as any;
   }
 
-  const { uid } = currentUser;
-  return await (
-    await firebase
-      .firestore()
-      .collection('users')
-      .doc(uid)
-      .get()
-  ).data();
+  // const { uid } = currentUser;
+  // return await (
+  //   await firebase
+  //     .firestore()
+  //     .collection('users')
+  //     .doc(uid)
+  //     .get()
+  // ).data();
 }
 
-export async function getUserProfile(userId: string) {
-  const userProfilePromise = firebase
-    .firestore()
-    .collection('users')
-    .doc(userId)
-    .get();
-
-  const userGamesPromise = firebase
-    .firestore()
-    .collection('games')
-    .where('config.userId', '==', userId)
-    .get();
-
-  const profile = (await userProfilePromise).data() as UserSettings;
-  const games = (await userGamesPromise).docs.map(x => x.data()) as Game[];
-
-  return {
-    profile,
-    games,
-  };
+export async function getUserProfile(userId?: string) {
+  return {} as any;
+  // const userProfilePromise = firebase
+  //   .firestore()
+  //   .collection('users')
+  //   .doc(userId)
+  //   .get();
+  // const userGamesPromise = firebase
+  //   .firestore()
+  //   .collection('games')
+  //   .where('config.userId', '==', userId)
+  //   .get();
+  // const profile = (await userProfilePromise).data() as UserSettings;
+  // const games = (await userGamesPromise).docs.map(x => x.data()) as Game[];
+  // return {
+  //   profile,
+  //   games,
+  // };
 }
 
 export async function buyGame(
   game: PublicGame,
-  paymentMethod: PaymentMethod,
+  // paymentMethod: PaymentMethod,
   tip: number,
   tax: number // TODO
 ) {
-  const { uid } = getCurrentUser()!;
-
-  await firebase.auth().applyActionCode;
-
-  await firebase
-    .firestore()
-    .collection('users')
-    .doc(uid)
-    .collection('payments')
-    .add({
-      tip,
-      tax,
-      amount: game.price,
-      currency: 'usd',
-      payment_method: paymentMethod.id,
-      gameId: game.id,
-    });
+  // const { uid } = getCurrentUser()!;
+  // await firebase.auth().applyActionCode;
+  // await firebase
+  //   .firestore()
+  //   .collection('users')
+  //   .doc(uid)
+  //   .collection('payments')
+  //   .add({
+  //     tip,
+  //     tax,
+  //     amount: game.price,
+  //     currency: 'usd',
+  //     payment_method: paymentMethod.id,
+  //     gameId: game.id,
+  //   });
 }
 
 export async function getIceServers() {

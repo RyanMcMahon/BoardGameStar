@@ -299,7 +299,8 @@ export async function createNewGame(
 
         const syncConfig = { ...game };
         delete syncConfig.loadAssets;
-        delete syncConfig.store;
+        // delete syncConfig.store;
+        syncConfig.store = 'browser';
 
         try {
           conn.send({

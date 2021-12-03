@@ -8,7 +8,7 @@ import styled from 'styled-components';
 import { PublishModal } from '../PublishModal';
 import { DropdownButton } from '../DropdownButton';
 import { useUser } from '../../utils/api';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   disabled: boolean;
@@ -42,7 +42,7 @@ const Select = styled.select({
 });
 
 export function GameSelector(props: Props) {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { currentUser, permissions } = useUser();
   const { config: game, disabled, name, onReloadConfigs } = props;
   const [showPublishModal, setShowPublishModal] = React.useState(false);
@@ -70,12 +70,12 @@ export function GameSelector(props: Props) {
     } else if (currentUser) {
       dropdownItems.push({
         label: 'Enable publishing',
-        fn: () => history.push('/my-account'),
+        fn: () => navigate('/my-account'),
       });
     } else {
       dropdownItems.push({
         label: 'Login to Publish',
-        fn: () => history.push('/log-in'),
+        fn: () => navigate('/log-in'),
       });
     }
   }

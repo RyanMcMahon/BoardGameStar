@@ -9,4 +9,4 @@ export const supportedBrowser =
   browser?.name === 'edge' ||
   (browser?.name === 'firefox' && desktopOS.includes(browser.os || ''));
 
-export const isWebBuild = !!process.env.REACT_APP_WEB_BUILD;
+export const isWebBuild = true; //!!process.env.REACT_APP_WEB_BUILD;

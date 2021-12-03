@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { Button } from '../../utils/style';
-import { Link, Redirect } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import {
   useUser,
   signOut,
@@ -21,7 +21,7 @@ const Checklist = styled.ul({
 });
 
 export function MyAccount() {
-  const { currentUser, isLoading, userSettings } = useUser();
+  const { currentUser, isLoading, userSettings } = useUser() as any;
   const [formInitialized, setFormInitialized] = React.useState(false);
   const [form, setForm] = React.useState<
     Pick<UserSettings, 'displayName' | 'profile'>
@@ -42,7 +42,7 @@ export function MyAccount() {
     if (isLoading) {
       return null;
     } else {
-      return <Redirect to="/games" />;
+      return <Navigate to="/games" />;
     }
   }
 

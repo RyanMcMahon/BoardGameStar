@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Link, useHistory, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 import {
   primaryColor,
@@ -140,8 +140,8 @@ export function WebPage(props: Props) {
   const context = useWebContext();
   const { state } = context;
   const location = useLocation();
-  const history = useHistory();
-  const { currentUser, isLoading } = useUser();
+  const navigate = useNavigate();
+  const { currentUser, isLoading } = useUser() as any;
   // const [tags, setTags] = React.useState<string[]>([]);
   const [isSideMenuVisible, setIsSideMenuVisible] = React.useState<boolean>(
     false
@@ -158,7 +158,7 @@ export function WebPage(props: Props) {
     ) {
       const hostId = hostIdRef.current.value;
       const gameId = gameIdRef.current.value;
-      history.push(`/play/${hostId}/${gameId}`);
+      navigate(`/play/${hostId}/${gameId}`);
     }
   };
 

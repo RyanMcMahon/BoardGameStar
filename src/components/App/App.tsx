@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import * as _ from 'lodash';
 // import FPSStats from 'react-fps-stats';
 import { Viewport } from 'pixi-viewport';
-import { useParams, Link, Redirect } from 'react-router-dom';
+import { useParams, Link, Navigate } from 'react-router-dom';
 
 import { useGameClient } from '../../utils/client';
 // import { breakpoints, maxMobileWidth } from '../../utils/style';
@@ -621,7 +621,7 @@ export function App(props: { spectator?: boolean }) {
   ]);
 
   if (!gameId) {
-    return <Redirect to="/" />;
+    return <Navigate to="/" />;
   }
 
   return (

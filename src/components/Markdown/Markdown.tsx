@@ -6,7 +6,7 @@ interface Props {
   source: string;
 }
 
-const MarkdownContainer = styled(ReactMarkdown)({
+const MarkdownContainer = styled<any>(ReactMarkdown)({
   '*': {
     margin: 0,
   },
@@ -32,4 +32,5 @@ const MarkdownContainer = styled(ReactMarkdown)({
 
 export function Markdown(props: Props) {
   return <MarkdownContainer linkTarget="_blank" source={props.source} />;
+  // return <MarkdownContainer linkTarget="_blank" source={props.source} />;
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Button } from '../../utils/style';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { signUp, SignUpForm, useUser } from '../../utils/api';
 
 export function SignUp() {
@@ -13,7 +13,7 @@ export function SignUp() {
   const handleSubmit = () => signUp(form);
 
   if (currentUser) {
-    return <Redirect to="/games" />;
+    return <Navigate to="/games" />;
   }
 
   return (

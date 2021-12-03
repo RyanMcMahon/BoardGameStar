@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { Button, primaryColor } from '../../utils/style';
-import { Link, useParams, useHistory } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
   // useUser,
   // logIn,
@@ -47,18 +47,18 @@ const DesignerLink = styled(Link)({
 });
 
 export function GameProfile() {
-  const { gameId } = useParams();
+  const { gameId = '' } = useParams();
   const [game, setGame] = React.useState<PublicGame | null>();
   const [user, setUser] = React.useState<any | null>();
   const [downloadProgress, setDownloadProgress] = React.useState<number>(-1);
   const [purchaseGame, setPurchaseGame] = React.useState<Game | null>(null);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleDownload = async (gameId: string) => {
     setDownloadProgress(0);
     await downloadGame(gameId, setDownloadProgress);
     setDownloadProgress(-1);
-    history.push(`/games`);
+    navigate(`/games`);
   };
 
   React.useEffect(() => {

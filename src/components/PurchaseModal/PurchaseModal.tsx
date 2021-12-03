@@ -131,7 +131,7 @@ export function PurchaseModal(props: Props) {
       }
 
       if (paymentMethod) {
-        await buyGame(game, paymentMethod, form.tip, tax);
+        // await buyGame(game, paymentMethod, form.tip, tax);
       }
     } catch (err) {}
   };

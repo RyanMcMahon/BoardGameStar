@@ -5,7 +5,7 @@ import { publishGame, getCurrentUser } from '../../utils/api';
 import { Modal } from '../Modal';
 import { Game, PublishableGame } from '../../types';
 import { filePrompt } from '../../utils/assets';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useWebContext } from '../../utils/WebContext';
 
 interface Props {
@@ -30,14 +30,14 @@ export function PublishModal(props: Props) {
   delete cleanConfig.loadAssets;
   const [game, setGame] = React.useState<PublishableGame>(cleanConfig);
   const [isPublishing, setIsPublishing] = React.useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     try {
       const assets = await loadAssets();
       setIsPublishing(true);
       await publishGame(game, assets);
-      history.push(`/games/${cleanConfig.id}`);
+      navigate(`/games/${cleanConfig.id}`);
     } catch (err) {
       alertError(`Error publishing game. ${err}`);
       setIsPublishing(false);

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import slug from 'slugid';
 import React from 'react';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { Loader } from 'pixi.js';
 
@@ -180,7 +180,7 @@ export function Games(props: Props) {
   }, []);
 
   if (newGame) {
-    return <Redirect to={`/play/${newGame.hostId}/${newGame.gameId}`} />;
+    return <Navigate to={`/play/${newGame.hostId}/${newGame.gameId}`} />;
   }
 
   return (
