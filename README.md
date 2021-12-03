@@ -27,6 +27,7 @@ Board Game Star is a platform for playing digital boardgames online with a focus
 ## Run From Source
 
 ```bash
+npx husky install
 yarn install -g foreman
 yarn install
 
