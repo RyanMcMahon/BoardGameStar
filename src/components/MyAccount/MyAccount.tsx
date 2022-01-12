@@ -97,7 +97,10 @@ export function MyAccount() {
           ) : (
             <>
               Verify Email
-              <Button design="primary" onClick={sendVerificationEmail}>
+              <Button
+                design="primary"
+                onClick={() => sendVerificationEmail(currentUser)}
+              >
                 Send Verification Email
               </Button>
             </>

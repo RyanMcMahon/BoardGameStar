@@ -101,11 +101,10 @@ export function Router() {
           />
 
           <Route
-            path="/"
+            path="/*"
             element={
               <WebPage>
                 <Routes>
-                  <Route path="/" element={<Store />} />
                   <Route path="/sign-up" element={<SignUp />} />
                   <Route path="/log-in" element={<LogIn />} />
                   <Route path="/my-account" element={<MyAccount />} />
@@ -126,6 +125,7 @@ export function Router() {
                   <Route path="/terms" element={<Terms />} />
 
                   <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/" element={<Store />} />
                 </Routes>
               </WebPage>
             }

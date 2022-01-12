@@ -58,9 +58,11 @@
     "electron": "^16.0.4",
     "electron-builder": "^22.14.5",
     "husky": "^7.0.4",
+    "jest-cli": "^27.4.7",
     "prettier": "^2.5.0",
     "pretty-quick": "^3.1.2",
-    "react-scripts": "^4.0.3"
+    "react-scripts": "^4.0.3",
+    "ts-jest": "^27.1.2"
   },
   "scripts": {
     "start:web": "cross-env REACT_APP_WEB_BUILD=1 BROWSER=none ./node_modules/.bin/react-scripts start",

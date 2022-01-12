@@ -1,15 +1,22 @@
 import _ from 'lodash';
 import axios from 'axios';
-import * as firebase from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/firestore';
-import 'firebase/storage';
+import { initializeApp } from '@firebase/app';
+import { createUserWithEmailAndPassword ,signInWithEmailAndPassword, sendPasswordResetEmail, sendEmailVerification, getAuth, initializeAuth } from '@firebase/auth';
+import type { User } from '@firebase/auth';
+import { getFirestore } from '@firebase/firestore';
+import { getDownloadURL, getStorage, ref, uploadString } from '@firebase/storage';
+import { addDoc, deleteDoc, doc, getDoc, getDocs, updateDoc, setDoc, collection } from "firebase/firestore"; 
+// import 'firebase/auth';
+// import 'firebase/firestore';
+// import 'firebase/storage';
 import React from 'react';
 import { Game, Assets, PublicGame, PublishableGame } from '../types';
 // import { PaymentMetho } from '@stripe/stripe-js';
 import { addGame, cacheAsset } from './store';
 
-const firebaseConfig = {
+const firebaseServer = `https://us-central1-boardgamestar-21111.cloudfunctions.net`;
+
+const firebaseApp = initializeApp({
   apiKey: 'AIzaSyAeH5C7Uaem7FN2OpIQAUE2uIDQEGbvSoY',
   authDomain: 'boardgamestar-21111.firebaseapp.com',
   databaseURL: 'https://boardgamestar-21111.firebaseio.com',
@@ -17,11 +24,10 @@ const firebaseConfig = {
   storageBucket: 'boardgamestar-21111.appspot.com',
   messagingSenderId: '78022014928',
   appId: '1:78022014928:web:d729d5cd3ae1fe595babd5',
-};
+});
 
-const firebaseServer = `https://us-central1-boardgamestar-21111.cloudfunctions.net`;
-
-firebase.initializeApp(firebaseConfig);
+const db = getFirestore();
+const storage = getStorage();
 
 interface StripeAccount {
   id: 'stripe';
@@ -46,65 +52,53 @@ export interface SignUpForm {
 }
 
 export async function signUp(form: SignUpForm) {
-  return true;
-  // return firebase
-  //   .auth()
-  //   .createUserWithEmailAndPassword(form.email, form.password);
+  return createUserWithEmailAndPassword(getAuth(), form.email, form.password);
 }
 
 export async function logIn(email: string, password: string) {
-  return true;
-  // return firebase.auth().signInWithEmailAndPassword(email, password);
+  return signInWithEmailAndPassword(getAuth(), email, password);
 }
 
 export async function signOut() {
-  return true;
-  // return firebase.auth().signOut();
+  return getAuth().signOut();
 }
 
-export async function resetPassword(email: string) {}
+export async function resetPassword(email: string) {
+  return sendPasswordResetEmail(getAuth(), email);
+}
 
-export async function sendVerificationEmail() {
-  return true;
-  // firebase.auth().currentUser?.sendEmailVerification({
-  //   url: 'https://boardgamestar.com/my-account',
-  // });
+export async function sendVerificationEmail(user: User) {
+  return sendEmailVerification(user);
 }
 
 export function useUser() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [userSettings, setUserSettings] = React.useState<UserSettings | null>();
-  const [currentUser, setCurrentUser] = [{}, {}]; //React.useState<firebase.User | null>();
+  const [currentUser, setCurrentUser] = React.useState<User | null>();
   const [permissions, setPermissions] = React.useState<Permissions>({
     creator: false,
     publisher: false,
   });
 
-  // React.useEffect(() => {
-  //   firebase.auth().onAuthStateChanged(async user => {
-  //     if (user) {
-  //       console.log('reload token');
-  //       await user.getIdToken(true);
-  //       const userSettings = await (
-  //         await firebase
-  //           .firestore()
-  //           .collection('users')
-  //           .doc(user.uid)
-  //           .get()
-  //       ).data();
-  //       const { claims } = (await user.getIdTokenResult(true)) as any;
-  //       setUserSettings((userSettings as unknown) as UserSettings);
-  //       setPermissions({
-  //         creator: claims.creator,
-  //         publisher: claims.publisher,
-  //       });
-  //     } else {
-  //       setUserSettings(null);
-  //     }
-  //     setCurrentUser(user);
-  //     setIsLoading(false);
-  //   });
-  // }, []);
+  React.useEffect(() => {
+    getAuth().onAuthStateChanged(async user => {
+      if (user) {
+        console.log('reload token');
+        await user.getIdToken(true);
+        const userSettings = await getUserSettings(user);
+        const { claims } = (await user.getIdTokenResult(true)) as any;
+        setUserSettings((userSettings as unknown) as UserSettings);
+        setPermissions({
+          creator: claims.creator,
+          publisher: claims.publisher,
+        });
+      } else {
+        setUserSettings(null);
+      }
+      setCurrentUser(user);
+      setIsLoading(false);
+    });
+  }, []);
 
   return {
     isLoading,
@@ -115,68 +109,54 @@ export function useUser() {
 }
 
 export function getCurrentUser() {
-  return {} as any;
-  // return firebase.auth().currentUser;
+  return getAuth().currentUser;
 }
 
-export async function getUserSettings() {
-  return {};
-  // return (
-  //   await firebase
-  //     .firestore()
-  //     .collection('users')
-  //     .doc(getCurrentUser()?.uid)
-  //     .get()
-  // ).data();
+export async function getCurrentUserSettings() {
+  return getUserSettings(getAuth().currentUser);
+}
+
+export async function getUserSettings(user: User | null) {
+  if (!user) {
+    return null;
+  }
+
+    const userSettingsRef = doc(db, 'users', user.uid);
+  const userSettings = await (await getDoc(userSettingsRef)).data();
+  return userSettings;
 }
 
 export async function updateUserSettings(userSettings: Partial<UserSettings>) {
-  return {};
-  // await firebase
-  //   .firestore()
-  //   .collection('users')
-  //   .doc(getCurrentUser()?.uid)
-  //   .set(userSettings, { merge: true });
+  const user = getCurrentUser();
+  if (!user || !user.uid) {
+    return {};
+  }
+
+  const userSettingsRef = doc(db, 'users', user.uid);
+  return setDoc(userSettingsRef, userSettings, {merge: true});
 }
 
 export async function getAllGames(): Promise<PublicGame[]> {
-  return [];
-  // return ((
-  //   await firebase
-  //     .firestore()
-  //     .collection('games')
-  //     .get()
-  // ).docs.map(doc => doc.data()) as unknown) as PublicGame[];
+  return (await getDocs(collection(db, 'games'))).docs.map(doc => doc.data()) as unknown as PublicGame[];
 }
 
 export async function getGame(
   gameId: string
 ): Promise<{ game: PublicGame; user: any }> {
-  return {} as any;
-  // const game = (
-  //   await firebase
-  //     .firestore()
-  //     .collection('games')
-  //     .doc(gameId)
-  //     .get()
-  // ).data() as PublicGame;
+  const gameRef = doc(db, 'games', gameId);
+  const game = await (await getDoc(gameRef)).data() as PublicGame;
 
-  // if (!game || !game.userId) {
-  //   return {} as any;
-  // }
+  if (!game || !game.userId) {
+    return {} as any;
+  }
 
-  // const user = (
-  //   await firebase
-  //     .firestore()
-  //     .collection('users')
-  //     .doc(game.userId)
-  //     .get()
-  // ).data();
+  const userRef = doc(db, 'users', game.userId);
+  const user = await ( await getDoc(userRef)).data();
 
-  // return {
-  //   game,
-  //   user,
-  // };
+  return {
+    game,
+    user,
+  };
 }
 
 export async function getUserGames(userId: string) {
@@ -192,93 +172,86 @@ export async function getDownloadUrl(
   gameId: string,
   src: string
 ) {
-  return '';
-  // const storageRef = firebase.storage().ref();
-  // const path = `users/${userId}/games/${gameId}/public/${src}`;
-  // return storageRef.child(path).getDownloadURL();
+  const path = `users/${userId}/games/${gameId}/public/${src}`;
+  return getDownloadURL(ref(storage, path));
 }
 
 export async function publishGame(game: PublishableGame, assets: Assets) {
-  return true;
-  // const gameId = game.id;
-  // const userId = getCurrentUser()?.uid;
-  // const thumbnail = game.thumbnail;
-  // const banner = game.banner;
-  // const files = game.files;
-  // const rules = game.rules;
+  const gameId = game.id;
+  const userId = getCurrentUser()?.uid;
+  const thumbnail = game.thumbnail;
+  const banner = game.banner;
+  const files = game.files;
+  const rules = game.rules;
 
-  // const gameData = {
-  //   ...game,
-  //   userId,
-  //   thumbnail: thumbnail ? '_thumbnail' : null,
-  //   banner: banner ? '_banner' : null,
-  //   rules: rules ? '_rules' : null,
-  //   files: [], // TODO files.map(file => file.name),
-  //   config: {
-  //     ...game.config,
-  //     prompts: game.config.prompts || null,
-  //     currency: game.config.currency || null,
-  //   },
-  // };
+  const gameData = {
+    ...game,
+    userId,
+    thumbnail: thumbnail ? '_thumbnail' : null,
+    banner: banner ? '_banner' : null,
+    rules: rules ? '_rules' : null,
+    files: [], // TODO files.map(file => file.name),
+    config: {
+      ...game.config,
+      prompts: game.config.prompts || null,
+      currency: game.config.currency || null,
+    },
+  };
 
-  // if (rules && getFileSizeMB(rules) > 5) {
-  //   throw new Error(`Rules PDF is too large. Max 5mb.`);
-  // }
+  if (rules && getFileSizeMB(rules) > 5) {
+    throw new Error(`Rules PDF is too large. Max 5mb.`);
+  }
 
-  // if (banner && getFileSizeMB(banner) > 1) {
-  //   throw new Error(`Banner is too large. Max 1mb.`);
-  // }
+  if (banner && getFileSizeMB(banner) > 1) {
+    throw new Error(`Banner is too large. Max 1mb.`);
+  }
 
-  // if (thumbnail && getFileSizeMB(thumbnail) > 1) {
-  //   throw new Error(`Thumbnail is too large. Max 1mb.`);
-  // }
+  if (thumbnail && getFileSizeMB(thumbnail) > 1) {
+    throw new Error(`Thumbnail is too large. Max 1mb.`);
+  }
 
-  // // check file sizes
-  // for (let name in assets) {
-  //   if (getFileSizeMB(assets[name]) > 1) {
-  //     throw new Error(`${name} is too large. Max 1mb.`);
-  //   }
-  // }
+  // check file sizes
+  for (let name in assets) {
+    if (getFileSizeMB(assets[name]) > 1) {
+      throw new Error(`${name} is too large. Max 1mb.`);
+    }
+  }
 
-  // await firebase
-  //   .firestore()
-  //   .collection('games')
-  //   .doc(gameId)
-  //   .set(gameData);
+  const gameRef = doc(db, 'games', gameId);
+  await setDoc(gameRef, gameData);
 
-  // const storageRef = firebase.storage().ref();
-  // const folder = game.price > 0 ? 'private' : 'public';
-  // const basePath = `users/${userId}/games/${gameId}/${folder}`;
+  const folder = game.price > 0 ? 'private' : 'public';
+  const basePath = `users/${userId}/games/${gameId}/${folder}/`;
+  const storageRef = ref(storage, basePath);//firebase.storage().ref();
 
-  // if (rules) {
-  //   await storageRef.child(`${basePath}/_rules`).putString(rules, 'data_url');
-  // }
+  if (rules) {
+    const rulesRef = ref(storageRef, '_rules');
+    await uploadString(rulesRef, rules, 'data_url');
+  }
 
-  // if (banner) {
-  //   await storageRef.child(`${basePath}/_banner`).putString(banner, 'data_url');
-  // }
+  if (banner) {
+    const bannerRef = ref(storageRef, '_banner');
+    await uploadString(bannerRef, banner, 'data_url');
+  }
 
-  // if (thumbnail) {
-  //   await storageRef
-  //     .child(`${basePath}/_thumbnail`)
-  //     .putString(thumbnail, 'data_url');
-  // }
+  if (thumbnail) {
+    const thumbnailRef = ref(storageRef, '_thumbnail');
+    await uploadString(thumbnailRef, thumbnail, 'data_url');
+  }
 
-  // await Promise.all(
-  //   files.map(file =>
-  //     storageRef
-  //       .child(`${basePath}/${file.name}`)
-  //       .putString(file.content, 'data_url')
-  //   )
-  // );
+  await Promise.all(
+    files.map(file => {
+      const fileRef = ref(storageRef, file.name);
+      return uploadString(fileRef, file.content, 'data_url');
+    })
+  );
 
-  // return Promise.all(
-  //   Object.entries(assets).map(([name, content]) => {
-  //     return storageRef
-  //       .child(`${basePath}/${name}`)
-  //       .putString(content, 'data_url');
-  //   })
-  // );
+  return Promise.all(
+    Object.entries(assets).map(([name, content]) => {
+      const entriesRef = ref(storageRef, name);
+      return uploadString(entriesRef, content, 'data_url');
+    })
+  );
 }
 
 export async function updatePublishedGame(game: any) {

@@ -222,9 +222,8 @@ export function Editor(props: Props) {
   const [deckModalId, setDeckModalId] = React.useState<string>();
   const [showControls, setShowControls] = React.useState(true);
   const [showEditGameModal, setShowEditGameModal] = React.useState(false);
-  const [scenarioModalIsShowing, setScenarioModalIsShowing] = React.useState(
-    false
-  );
+  const [scenarioModalIsShowing, setScenarioModalIsShowing] =
+    React.useState(false);
 
   const table = useTable({
     assets,
@@ -235,7 +234,7 @@ export function Editor(props: Props) {
     handleCreateStack: () => {},
     handleSubmitTransaction: () => {},
     handleSplitStack: () => {},
-    handleUpdatePiece: p =>
+    handleUpdatePiece: (p) =>
       dispatch({
         type: 'update_piece',
         piece: {
@@ -280,39 +279,39 @@ export function Editor(props: Props) {
       }
     }
 
-    if (game.store === 'browser') {
-      await addGame(game, assets);
-    } else {
-      const fs = window.require('fs');
-      const configFile = `module.exports = ${JSON.stringify(
-        game,
-        null,
-        '\t'
-      )};`;
-      const outPath = `./games/${game.name}`;
+    // if (game.store === 'browser') {
+    //   await addGame(game, assets);
+    // } else {
+    //   const fs = window.require('fs');
+    //   const configFile = `module.exports = ${JSON.stringify(
+    //     game,
+    //     null,
+    //     '\t'
+    //   )};`;
+    //   const outPath = `./games/${game.name}`;
 
-      try {
-        fs.mkdirSync(outPath, { recursive: true });
-        fs.mkdirSync(`${outPath}/images`, { recursive: true });
-        fs.writeFileSync(`${outPath}/config.js`, configFile, 'utf8');
-        for (let i in assets) {
-          fs.writeFileSync(
-            `${outPath}/images/${i}`,
-            assets[i].replace(/^data:image\/\w+;base64,/, ''),
-            'base64'
-          );
-        }
-      } catch (err) {
-        console.log('Save Error');
-        console.log(err);
-      }
-    }
+    //   try {
+    //     fs.mkdirSync(outPath, { recursive: true });
+    //     fs.mkdirSync(`${outPath}/images`, { recursive: true });
+    //     fs.writeFileSync(`${outPath}/config.js`, configFile, 'utf8');
+    //     for (let i in assets) {
+    //       fs.writeFileSync(
+    //         `${outPath}/images/${i}`,
+    //         assets[i].replace(/^data:image\/\w+;base64,/, ''),
+    //         'base64'
+    //       );
+    //     }
+    //   } catch (err) {
+    //     console.log('Save Error');
+    //     console.log(err);
+    //   }
+    // }
 
     // Exit (HACK)
-    dispatch({
-      type: 'set_cur_scenario',
-      scenarioId: '',
-    });
+    // dispatch({
+    //   type: 'set_cur_scenario',
+    //   scenarioId: '',
+    // });
   };
 
   const handleAddPlayer = () => {
@@ -359,7 +358,7 @@ export function Editor(props: Props) {
           piece,
           type: 'add_piece',
         });
-        setAssets(a => ({ ...a, [filename]: asset }));
+        setAssets((a) => ({ ...a, [filename]: asset }));
         setSelectedPieceIds(new Set([id]));
       });
     } catch (err) {
@@ -454,17 +453,19 @@ export function Editor(props: Props) {
 
   React.useEffect(() => {
     setPieces([
-      ...(curScenario.pieces.map(id => {
-        const piece = state.pieces[id] as RenderPiece;
-        if (piece.type === 'deck') {
-          const cardCount = Object.values(state.pieces).filter(
-            c => c.type === 'card' && c.deckId === piece.id
-          ).length;
-          piece.total = cardCount;
-          piece.count = cardCount;
-        }
-        return piece;
-      }) as RenderPiece[]).filter(piece => piece.type !== 'card'),
+      ...(
+        curScenario.pieces.map((id) => {
+          const piece = state.pieces[id] as RenderPiece;
+          if (piece.type === 'deck') {
+            const cardCount = Object.values(state.pieces).filter(
+              (c) => c.type === 'card' && c.deckId === piece.id
+            ).length;
+            piece.total = cardCount;
+            piece.count = cardCount;
+          }
+          return piece;
+        }) as RenderPiece[]
+      ).filter((piece) => piece.type !== 'card'),
       {
         id: 'axis',
         type: 'image',
@@ -534,7 +535,7 @@ export function Editor(props: Props) {
                     })
                   }
                 >
-                  {Object.values(state.scenarios).map(scenario => (
+                  {Object.values(state.scenarios).map((scenario) => (
                     <option key={scenario.id} value={scenario.id}>
                       {scenario.name}
                     </option>
@@ -565,7 +566,7 @@ export function Editor(props: Props) {
             {state.prompts && (
               <PromptsWrapper>
                 <select
-                  onChange={e => {
+                  onChange={(e) => {
                     const index = parseInt(e.currentTarget.value, 10);
                     setSelectedPrompt(index);
                   }}
@@ -661,7 +662,7 @@ export function Editor(props: Props) {
                         const [file] = await filePrompt({ multiple: false });
                         const filename = file.name;
                         const asset = file.content;
-                        setAssets(a => ({ ...a, [filename]: asset }));
+                        setAssets((a) => ({ ...a, [filename]: asset }));
                         dispatch({
                           type: 'update_piece',
                           piece: {
@@ -805,18 +806,18 @@ export function Editor(props: Props) {
                           <ColorSwatch
                             key={playerId}
                             style={{
-                              backgroundColor: (state.pieces[
-                                playerId
-                              ] as PlayerOption).color,
+                              backgroundColor: (
+                                state.pieces[playerId] as PlayerOption
+                              ).color,
                             }}
                             onClick={() =>
                               dispatch({
                                 type: 'update_piece',
                                 piece: {
                                   id: selectedPieceId,
-                                  color: (state.pieces[
-                                    playerId
-                                  ] as PlayerOption).color,
+                                  color: (
+                                    state.pieces[playerId] as PlayerOption
+                                  ).color,
                                 } as AnyPieceOption,
                               })
                             }
@@ -851,7 +852,7 @@ export function Editor(props: Props) {
           </div>
           <EditorNav>
             <SaveButton design="success" onClick={handleSave}>
-              Save & Exit
+              Save
             </SaveButton>
             <ExitButton
               design="danger"
@@ -872,7 +873,7 @@ export function Editor(props: Props) {
         <ScenarioModal
           onClose={() => setScenarioModalIsShowing(false)}
           scenario={curScenario}
-          onSave={name => {
+          onSave={(name) => {
             dispatch({
               type: 'update_scenario',
               scenario: {
@@ -891,7 +892,7 @@ export function Editor(props: Props) {
           <EditPromptModal
             prompt={state.prompts[promptModalIndex]}
             onClose={() => setPromptModalIndex(null)}
-            onUpdate={prompt => {
+            onUpdate={(prompt) => {
               dispatch({
                 game: {
                   prompts: [
