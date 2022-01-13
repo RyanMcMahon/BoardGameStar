@@ -1,4 +1,10 @@
-import { AnyPieceOption, ClientEvent, GameConfig, Piece } from '../types';
+import {
+  AnyPieceOption,
+  ClientEvent,
+  GameConfig,
+  GameStateEvent,
+  Piece,
+} from '../types';
 
 export class GameState {
   pieces: { [id: string]: AnyPieceOption };
@@ -16,7 +22,7 @@ export class GameState {
     // TODO
   }
 
-  syncEvent(event: ClientEvent) {
+  syncEvent(event: GameStateEvent) {
     // TODO
   }
 }

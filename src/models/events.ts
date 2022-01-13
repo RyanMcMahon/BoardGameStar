@@ -11,7 +11,15 @@ import type {
   RenderPiece,
   Transaction,
 } from './game';
-import type { DiceSet, EditorState, GameConfig, Game, GamePrompt, GamePromptAnswer, ScenarioOption } from './data';
+import type {
+  DiceSet,
+  EditorState,
+  GameConfig,
+  Game,
+  GamePrompt,
+  GamePromptAnswer,
+  ScenarioOption,
+} from './data';
 
 export interface CreateGameAction {
   type: 'create_game';
@@ -369,3 +377,14 @@ export type GameEvent =
   | SetHandEvent
   | AssetLoadedEvent
   | UpdatePieceEvent;
+
+export interface BaseGameStateEvent {
+  event: string;
+  player: string;
+}
+
+export interface JoinGameEvent extends BaseGameStateEvent {
+  event: 'join_game';
+}
+
+export type GameStateEvent = JoinGameEvent;
