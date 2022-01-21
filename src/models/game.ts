@@ -34,14 +34,19 @@ export interface BoardOption extends ImagePieceOption {
 export interface CardOption extends ImagePieceOption {
   type: 'card';
   deckId: string;
+  cardId: string;
   faceDown: boolean;
-  counts: string;
+  // counts: string;
 }
 
 export interface DeckOption extends ImagePieceOption {
   type: 'deck';
   name: string;
-  cards: (CardOption | string)[];
+  shuffled: string[];
+  discarded: string[];
+  removed: string[];
+  drawn: string[];
+  shuffleOnStart: boolean;
 }
 
 export interface PlayerOption extends RectPieceOption {

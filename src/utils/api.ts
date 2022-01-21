@@ -1,11 +1,33 @@
 import _ from 'lodash';
 import axios from 'axios';
 import { initializeApp } from '@firebase/app';
-import { createUserWithEmailAndPassword ,signInWithEmailAndPassword, sendPasswordResetEmail, sendEmailVerification, getAuth, initializeAuth } from '@firebase/auth';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  sendEmailVerification,
+  getAuth,
+  initializeAuth,
+} from '@firebase/auth';
 import type { User } from '@firebase/auth';
-import { getFirestore } from '@firebase/firestore';
-import { getDownloadURL, getStorage, ref, uploadString } from '@firebase/storage';
-import { addDoc, deleteDoc, doc, getDoc, getDocs, updateDoc, setDoc, collection } from "firebase/firestore"; 
+import { getFirestore, runTransaction } from '@firebase/firestore';
+import type { Transaction } from '@firebase/firestore';
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadString,
+} from '@firebase/storage';
+import {
+  addDoc,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  setDoc,
+  collection,
+} from 'firebase/firestore';
 // import 'firebase/auth';
 // import 'firebase/firestore';
 // import 'firebase/storage';
@@ -26,7 +48,7 @@ const firebaseApp = initializeApp({
   appId: '1:78022014928:web:d729d5cd3ae1fe595babd5',
 });
 
-const db = getFirestore();
+export const db = getFirestore();
 const storage = getStorage();
 
 interface StripeAccount {
@@ -81,13 +103,13 @@ export function useUser() {
   });
 
   React.useEffect(() => {
-    getAuth().onAuthStateChanged(async user => {
+    getAuth().onAuthStateChanged(async (user) => {
       if (user) {
         console.log('reload token');
         await user.getIdToken(true);
         const userSettings = await getUserSettings(user);
         const { claims } = (await user.getIdTokenResult(true)) as any;
-        setUserSettings((userSettings as unknown) as UserSettings);
+        setUserSettings(userSettings as unknown as UserSettings);
         setPermissions({
           creator: claims.creator,
           publisher: claims.publisher,
@@ -108,6 +130,12 @@ export function useUser() {
   };
 }
 
+export function withTransaction(
+  fn: (transaction: Transaction) => Promise<unknown>
+) {
+  return runTransaction(db, fn);
+}
+
 export function getCurrentUser() {
   return getAuth().currentUser;
 }
@@ -121,7 +149,7 @@ export async function getUserSettings(user: User | null) {
     return null;
   }
 
-    const userSettingsRef = doc(db, 'users', user.uid);
+  const userSettingsRef = doc(db, 'users', user.uid);
   const userSettings = await (await getDoc(userSettingsRef)).data();
   return userSettings;
 }
@@ -133,25 +161,27 @@ export async function updateUserSettings(userSettings: Partial<UserSettings>) {
   }
 
   const userSettingsRef = doc(db, 'users', user.uid);
-  return setDoc(userSettingsRef, userSettings, {merge: true});
+  return setDoc(userSettingsRef, userSettings, { merge: true });
 }
 
 export async function getAllGames(): Promise<PublicGame[]> {
-  return (await getDocs(collection(db, 'games'))).docs.map(doc => doc.data()) as unknown as PublicGame[];
+  return (await getDocs(collection(db, 'games'))).docs.map((doc) =>
+    doc.data()
+  ) as unknown as PublicGame[];
 }
 
 export async function getGame(
   gameId: string
 ): Promise<{ game: PublicGame; user: any }> {
   const gameRef = doc(db, 'games', gameId);
-  const game = await (await getDoc(gameRef)).data() as PublicGame;
+  const game = (await (await getDoc(gameRef)).data()) as PublicGame;
 
   if (!game || !game.userId) {
     return {} as any;
   }
 
   const userRef = doc(db, 'users', game.userId);
-  const user = await ( await getDoc(userRef)).data();
+  const user = await (await getDoc(userRef)).data();
 
   return {
     game,
@@ -222,7 +252,7 @@ export async function publishGame(game: PublishableGame, assets: Assets) {
 
   const folder = game.price > 0 ? 'private' : 'public';
   const basePath = `users/${userId}/games/${gameId}/${folder}/`;
-  const storageRef = ref(storage, basePath);//firebase.storage().ref();
+  const storageRef = ref(storage, basePath); //firebase.storage().ref();
 
   if (rules) {
     const rulesRef = ref(storageRef, '_rules');
@@ -240,7 +270,7 @@ export async function publishGame(game: PublishableGame, assets: Assets) {
   }
 
   await Promise.all(
-    files.map(file => {
+    files.map((file) => {
       const fileRef = ref(storageRef, file.name);
       return uploadString(fileRef, file.content, 'data_url');
     })
@@ -375,12 +405,12 @@ export async function downloadGame(
 }
 
 function getBase64FromImageUrl(url: string): Promise<string> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const img = new Image();
 
     img.setAttribute('crossOrigin', 'anonymous');
 
-    img.onload = function() {
+    img.onload = function () {
       const canvas = document.createElement('canvas');
       canvas.width = (this as any).width;
       canvas.height = (this as any).height;

@@ -36,6 +36,7 @@ import { PromptSelectModal } from '../PromptSelectModal';
 import { PlayerPromptModal } from '../PlayerPromptModal/PlayerPromptModal';
 import { DeckPeekModal } from '../DeckPeekModal';
 import { supportedBrowser } from '../../utils/meta';
+import { useGameState } from '../../utils/gameState';
 
 const MainContainer = styled.div({
   height: '100%',
@@ -159,17 +160,18 @@ export function App(props: { spectator?: boolean }) {
     // peekingCards,
     // peekingDiscardedCards,
   } = useGameClient(gameId, hostId, props.spectator);
-  const players = Object.values(pieces).filter(
-    p => p.type === 'player' && p.playerId
-  ) as PlayerPiece[];
-  const player = players.find(p => p.playerId === playerId);
-  const [showPromptSelectModal, setShowPromptSelectModal] = React.useState(
-    false
-  );
 
-  let sendUpdatedPiecesRef = React.useRef<
-    (updatedPieces: { [id: string]: RenderPiece }) => void
-  >();
+  const gameState = useGameState(game, hostId, gameId);
+
+  const players = Object.values(pieces).filter(
+    (p) => p.type === 'player' && p.playerId
+  ) as PlayerPiece[];
+  const player = players.find((p) => p.playerId === playerId);
+  const [showPromptSelectModal, setShowPromptSelectModal] =
+    React.useState(false);
+
+  let sendUpdatedPiecesRef =
+    React.useRef<(updatedPieces: { [id: string]: RenderPiece }) => void>();
 
   const sendUpdatedPieces = React.useCallback(
     (updatedPiecesById: { [id: string]: RenderPiece }) => {
@@ -194,14 +196,14 @@ export function App(props: { spectator?: boolean }) {
 
     if (updatedPieces.length === 1 && selectedPieceIds.has(mainPiece.id)) {
       const otherPieceIds = Array.from(selectedPieceIds).filter(
-        id => id !== mainPiece.id
+        (id) => id !== mainPiece.id
       );
       const diff = {
         x: mainPiece.x - pieces[mainPiece.id].x,
         y: mainPiece.y - pieces[mainPiece.id].y,
       };
 
-      otherPieceIds.forEach(id => {
+      otherPieceIds.forEach((id) => {
         updatedPiecesById[id] = {
           ...pieces[id],
           x: diff.x + pieces[id].x,
@@ -240,7 +242,7 @@ export function App(props: { spectator?: boolean }) {
         cardIds: ids,
       });
       const selectedIds = new Set(selectedPieceIds);
-      ids.forEach(id => {
+      ids.forEach((id) => {
         selectedIds.delete(id);
       });
       setSelectedPieceIds(selectedIds);
@@ -386,26 +388,25 @@ export function App(props: { spectator?: boolean }) {
   const [transactionModalOptions, setTransactionModalOptions] = React.useState<
     Transaction[] | null
   >(null);
-  const [showSettingsModal, setShowSettingsModal] = React.useState<boolean>(
-    false
-  );
+  const [showSettingsModal, setShowSettingsModal] =
+    React.useState<boolean>(false);
   const [showRenameModal, setShowRenameModal] = React.useState<boolean>(false);
   const [showInviteModal, setShowInviteModal] = React.useState<boolean>(true);
   const [showDiceModal, setShowDiceModal] = React.useState<boolean>(false);
   const [lastReadChat, setLastReadChat] = React.useState<number>(0);
   const [showChat, setShowChat] = React.useState<boolean>(false);
-  const [showControlsModal, setShowControlsModal] = React.useState<boolean>(
-    false
-  );
+  const [showControlsModal, setShowControlsModal] =
+    React.useState<boolean>(false);
   const selectedPieces = Array.from(selectedPieceIds)
-    .map(id => pieces[id])
-    .filter(p => p.type !== 'deleted');
-  const allUnlocked = selectedPieces.every(piece => !piece.locked);
+    .map((id) => pieces[id])
+    .filter((p) => p.type !== 'deleted');
+  const allUnlocked = selectedPieces.every((piece) => !piece.locked);
   const peekingCards = Object.values(pieces)
     .filter(
-      piece => piece.type === 'card' && (piece.peeking || []).includes(playerId)
+      (piece) =>
+        piece.type === 'card' && (piece.peeking || []).includes(playerId)
     )
-    .map(c => c.id);
+    .map((c) => c.id);
 
   // React.useLayoutEffect(() => {
   //   if (document.documentElement.clientWidth < maxMobileWidth) {
@@ -521,7 +522,7 @@ export function App(props: { spectator?: boolean }) {
   const handleDiscard = (cardIds: string[]) => {
     if (conn) {
       const remainingSelected = new Set(selectedPieceIds);
-      cardIds.forEach(id => remainingSelected.delete(id));
+      cardIds.forEach((id) => remainingSelected.delete(id));
       setSelectedPieceIds(remainingSelected);
       conn.send({
         cardIds,
@@ -574,14 +575,15 @@ export function App(props: { spectator?: boolean }) {
   React.useEffect(() => {
     setTablePieces(
       board
-        .map(id => {
+        .map((id) => {
           try {
             const piece = pieces[id];
             if (piece.type === 'player' && piece.playerId) {
               return {
                 ...piece,
-                label: `${piece.name} (${handCounts[piece.playerId] ||
-                  0} cards in hand)`,
+                label: `${piece.name} (${
+                  handCounts[piece.playerId] || 0
+                } cards in hand)`,
               };
             } else if (piece.type === 'stack') {
               return {
@@ -601,7 +603,7 @@ export function App(props: { spectator?: boolean }) {
           }
         })
         .filter(
-          piece =>
+          (piece) =>
             (piece.type === 'player' && piece.playerId) ||
             (piece.type !== 'player' &&
               (!piece.counts ||
@@ -652,7 +654,7 @@ export function App(props: { spectator?: boolean }) {
             player={player}
             players={
               Object.values(pieces).filter(
-                p =>
+                (p) =>
                   p.type === 'player' &&
                   p.playerId &&
                   p.playerId !== (player || {}).playerId

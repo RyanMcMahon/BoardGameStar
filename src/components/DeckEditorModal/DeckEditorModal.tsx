@@ -55,12 +55,13 @@ export function DeckEditorModal(props: Props) {
           rotation: 0,
           counts: '1',
           layer: 3,
+          cardId: '1',
         };
         dispatch({
           piece,
           type: 'add_piece',
         });
-        setAssets(a => ({ ...a, [filename]: asset }));
+        setAssets((a) => ({ ...a, [filename]: asset }));
       });
     } catch (err) {
       console.log(err);
@@ -68,7 +69,7 @@ export function DeckEditorModal(props: Props) {
   };
 
   const cards = Object.values(state.pieces).filter(
-    piece => (piece as any).deckId === deckId
+    (piece) => (piece as any).deckId === deckId
   );
 
   return (
@@ -80,7 +81,7 @@ export function DeckEditorModal(props: Props) {
         </Button>
 
         <CardsWrapper>
-          {cards.map(card => (
+          {cards.map((card) => (
             <CardEditor
               key={card.id}
               onDelete={() =>

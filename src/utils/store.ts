@@ -43,7 +43,7 @@ class BGSDB extends Dexie {
 }
 
 let dbResolve: (db: BGSDB) => void;
-let getDB = new Promise<BGSDB>(resolve => {
+let getDB = new Promise<BGSDB>((resolve) => {
   dbResolve = resolve;
 });
 
@@ -60,10 +60,10 @@ const resolveMockDB = () =>
     },
   } as any);
 
-if (window.indexedDB) {
+if (global.indexedDB) {
   const testDB = indexedDB.open('test');
   testDB.onerror = resolveMockDB;
-  testDB.onsuccess = function() {
+  testDB.onsuccess = function () {
     const db = new BGSDB();
     dbResolve(db);
   };

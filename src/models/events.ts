@@ -10,6 +10,7 @@ import type {
   Pieces,
   RenderPiece,
   Transaction,
+  Piece,
 } from './game';
 import type {
   DiceSet,
@@ -379,12 +380,84 @@ export type GameEvent =
   | UpdatePieceEvent;
 
 export interface BaseGameStateEvent {
+  ts: number;
   event: string;
-  player: string;
+  playerId: string;
 }
 
-export interface JoinGameEvent extends BaseGameStateEvent {
-  event: 'join_game';
+export interface StartGameEvent extends BaseGameStateEvent {
+  event: 'start_game';
 }
 
-export type GameStateEvent = JoinGameEvent;
+export interface RequestJoinGameEvent extends BaseGameStateEvent {
+  event: 'request_join_game';
+  name: string;
+}
+
+export interface AdmitJoinGameEvent extends BaseGameStateEvent {
+  event: 'admit_join_game';
+}
+
+export interface DrawCardGameEvent extends BaseGameStateEvent {
+  event: 'draw_cards';
+  deckId: string;
+  count: number;
+}
+
+export interface DrawCardToTableGameEvent extends BaseGameStateEvent {
+  event: 'draw_cards_to_table';
+  deckId: string;
+  count: number;
+  faceDown?: boolean;
+}
+
+export interface PickUpCardsGameEvent extends BaseGameStateEvent {
+  event: 'pick_up_cards';
+  ids: string[];
+}
+
+export interface PlayCardsGameEvent extends BaseGameStateEvent {
+  event: 'play_cards';
+  ids: string[];
+  faceDown?: boolean;
+}
+
+export interface DiscardCardsGameEvent extends BaseGameStateEvent {
+  event: 'discard_cards';
+  ids: string[];
+}
+
+export interface PassCardsGameEvent extends BaseGameStateEvent {
+  event: 'pass_cards';
+  ids: string[];
+  receivingPlayerId: string;
+}
+
+export interface UpdatePiecesGameEvent extends BaseGameStateEvent {
+  event: 'update_pieces';
+  piece: Piece;
+}
+
+export interface CreateStackGameEvent extends BaseGameStateEvent {
+  event: 'create_stack';
+  // TODO
+}
+
+export interface SplitStackGameEvent extends BaseGameStateEvent {
+  event: 'spit_stack';
+  // TODO
+}
+
+export type GameStateEvent =
+  | StartGameEvent
+  | DrawCardGameEvent
+  | DrawCardToTableGameEvent
+  | PickUpCardsGameEvent
+  | PlayCardsGameEvent
+  | PassCardsGameEvent
+  | DiscardCardsGameEvent
+  | UpdatePiecesGameEvent
+  | CreateStackGameEvent
+  | SplitStackGameEvent
+  | RequestJoinGameEvent
+  | AdmitJoinGameEvent;
