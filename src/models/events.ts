@@ -380,7 +380,8 @@ export type GameEvent =
   | UpdatePieceEvent;
 
 export interface BaseGameStateEvent {
-  ts: number;
+  id: string;
+  ts: number | object;
   event: string;
   playerId: string;
 }
@@ -435,7 +436,7 @@ export interface PassCardsGameEvent extends BaseGameStateEvent {
 
 export interface UpdatePiecesGameEvent extends BaseGameStateEvent {
   event: 'update_pieces';
-  piece: Piece;
+  pieces: (Partial<Piece> & Pick<Piece, 'id'>)[];
 }
 
 export interface CreateStackGameEvent extends BaseGameStateEvent {

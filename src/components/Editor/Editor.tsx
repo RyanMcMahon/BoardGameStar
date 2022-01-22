@@ -250,6 +250,14 @@ export function Editor(props: Props) {
   const curScenario = state.scenarios[state.curScenario];
 
   const handleSave = async () => {
+    const pieces = state.pieces;
+    Object.values(pieces).forEach((p) => {
+      if (p.type === 'deck') {
+        p.shuffled = Object.values(pieces)
+          .filter((x) => x.type === 'card' && x.deckId === p.id)
+          .map((x) => x.id);
+      }
+    });
     const game: Game | PublicGame = {
       id: state.id,
       tags: state.tags,
@@ -265,9 +273,10 @@ export function Editor(props: Props) {
         currency: state.currency,
         curScenario: state.curScenario,
         scenarios: state.scenarios,
-        pieces: state.pieces,
+        pieces,
       },
     };
+    debugger;
 
     for (let asset in assets) {
       if (
@@ -279,6 +288,7 @@ export function Editor(props: Props) {
       }
     }
 
+    await addGame(game, assets);
     // if (game.store === 'browser') {
     //   await addGame(game, assets);
     // } else {
@@ -370,7 +380,10 @@ export function Editor(props: Props) {
   const handleAddDeck = createNewImagePiece({
     type: 'deck',
     layer: 3,
-    cards: [],
+    shuffled: [],
+    discarded: [],
+    drawn: [],
+    played: [],
     name: 'Deck',
   });
   const handleAddMoney = createNewImagePiece({

@@ -1,10 +1,12 @@
+import slug from 'slugid';
+
 import {
-  ClientEvent,
   DeckOption,
+  DeckPiece,
   Game,
   GameConfig,
   GameStateEvent,
-  JoinEvent,
+  PlayerPiece,
 } from '../types';
 import { GameState } from './gameState';
 
@@ -60,6 +62,7 @@ const gameConfig: Game = {
         discarded: [],
         removed: [],
         drawn: [],
+        played: [],
         shuffleOnStart: true,
       },
       x1: {
@@ -110,7 +113,14 @@ describe('GameState', () => {
   });
 
   describe('Events', () => {
+    const startGameEvent: GameStateEvent = {
+      id: slug.nice(),
+      event: 'start_game',
+      playerId: '1',
+      ts: 1000,
+    };
     const joinEvent: GameStateEvent = {
+      id: slug.nice(),
       playerId: '1',
       event: 'request_join_game',
       ts: 1000,
@@ -119,14 +129,9 @@ describe('GameState', () => {
 
     it('should sync a start_game event', () => {
       const gameState = new GameState(gameConfig, '1', '2');
-      const event: GameStateEvent = {
-        event: 'start_game',
-        playerId: '1',
-        ts: 1000,
-      };
-      gameState.syncEvent(event);
+      gameState.syncEvent(startGameEvent);
       expect(
-        (gameState.pieces.fire_deck as DeckOption).shuffled.toString()
+        (gameState.pieces.fire_deck as DeckPiece).shuffled.toString()
       ).toBe(`x2,x3,x1`);
     });
 
@@ -134,55 +139,150 @@ describe('GameState', () => {
       const gameState = new GameState(gameConfig, '1', '2');
       gameState.syncEvent(joinEvent);
       expect(gameState.players['1'].name).toBe('Ryan');
+      expect((gameState.pieces.player1 as PlayerPiece).name).toBe('Ryan');
     });
 
     it('should sync a draw_cards event', () => {
       const gameState = new GameState(gameConfig, '1', '2');
       const event: GameStateEvent = {
+        id: slug.nice(),
         playerId: '1',
         ts: 1000,
         event: 'draw_cards',
         deckId: 'fire_deck',
         count: 2,
       };
+      gameState.syncEvent(startGameEvent);
       gameState.syncEvent(joinEvent);
       gameState.syncEvent(event);
       expect(gameState.players['1'].hand.toString()).toBe('x2,x3');
       expect(
-        (gameState.pieces.fire_deck as DeckOption).shuffled.toString()
+        (gameState.pieces.fire_deck as DeckPiece).shuffled.toString()
       ).toBe(`x1`);
     });
-  });
 
-  it('should sync a draw_cards_to_table event', () => {
-    // TODO
-  });
+    it('should sync a draw_cards_to_table event', () => {
+      const gameState = new GameState(gameConfig, '1', '2');
+      const event: GameStateEvent = {
+        id: slug.nice(),
+        playerId: '1',
+        ts: 1000,
+        event: 'draw_cards_to_table',
+        deckId: 'fire_deck',
+        count: 2,
+      };
+      gameState.syncEvent(startGameEvent);
+      gameState.syncEvent(joinEvent);
+      gameState.syncEvent(event);
+      expect((gameState.pieces.fire_deck as DeckPiece).played.toString()).toBe(
+        `x2,x3`
+      );
+    });
 
-  it('should sync a pick_up_cards event', () => {
-    // TODO
-  });
+    it('should sync a pick_up_cards event', () => {
+      const gameState = new GameState(gameConfig, '1', '2');
+      const event: GameStateEvent = {
+        id: slug.nice(),
+        playerId: '1',
+        ts: 1000,
+        event: 'pick_up_cards',
+        ids: ['x2'],
+      };
+      const drawCardsToTableEvent: GameStateEvent = {
+        id: slug.nice(),
+        playerId: '1',
+        ts: 1000,
+        event: 'draw_cards_to_table',
+        deckId: 'fire_deck',
+        count: 2,
+      };
+      gameState.syncEvent(startGameEvent);
+      gameState.syncEvent(joinEvent);
+      gameState.syncEvent(drawCardsToTableEvent);
+      gameState.syncEvent(event);
+      expect(gameState.players['1'].hand.toString()).toBe('x2');
+      expect((gameState.pieces.fire_deck as DeckPiece).played.toString()).toBe(
+        'x3'
+      );
+    });
 
-  it('should sync a pass_cards event', () => {
-    // TODO
-  });
+    it.skip('should sync a pass_cards event', () => {
+      // TODO
+    });
 
-  it('should sync a play_cards event', () => {
-    // TODO
-  });
+    it('should sync a play_cards event', () => {
+      const gameState = new GameState(gameConfig, '1', '2');
+      const drawCardsEvent: GameStateEvent = {
+        id: slug.nice(),
+        playerId: '1',
+        ts: 1000,
+        event: 'draw_cards',
+        deckId: 'fire_deck',
+        count: 2,
+      };
+      const event: GameStateEvent = {
+        id: slug.nice(),
+        playerId: '1',
+        ts: 1000,
+        event: 'play_cards',
+        ids: ['x2'],
+      };
+      gameState.syncEvent(startGameEvent);
+      gameState.syncEvent(joinEvent);
+      gameState.syncEvent(drawCardsEvent);
+      gameState.syncEvent(event);
+      expect(gameState.players['1'].hand.toString()).toBe(`x3`);
+      expect((gameState.pieces.fire_deck as DeckPiece).played.toString()).toBe(
+        `x2`
+      );
+    });
 
-  it('should sync a discard_cards event', () => {
-    // TODO
-  });
+    it('should sync a discard_cards event', () => {
+      // TODO
+    });
 
-  it('should sync a update_piece event', () => {
-    // TODO
-  });
+    // it('should sync a discard_played_cards event', () => {
+    //   // TODO
+    // });
 
-  it.skip('should sync a create_stack event', () => {
-    // TODO
-  });
+    it('should sync a update_piece event', () => {
+      const gameState = new GameState(gameConfig, '1', '2');
+      const event1: GameStateEvent = {
+        id: slug.nice(),
+        playerId: '1',
+        ts: 1000,
+        event: 'update_pieces',
+        pieces: [
+          {
+            id: 'fire_deck',
+            x: 2,
+          },
+        ],
+      };
+      const event2: GameStateEvent = {
+        id: slug.nice(),
+        playerId: '1',
+        ts: 1000,
+        event: 'update_pieces',
+        pieces: [
+          {
+            id: 'fire_deck',
+            y: 3,
+          },
+        ],
+      };
+      gameState.syncEvent(event1);
+      gameState.syncEvent(event2);
+      expect(gameState.pieces.fire_deck.x).toBe(2);
+      expect(gameState.pieces.fire_deck.y).toBe(3);
+    });
 
-  it.skip('should sync a split_stack event', () => {
-    // TODO
+    it.skip('should sync a create_stack event', () => {
+      // TODO
+    });
+
+    it.skip('should sync a split_stack event', () => {
+      // TODO
+    });
   });
 });

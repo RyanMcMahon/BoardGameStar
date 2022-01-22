@@ -43,6 +43,7 @@ export interface DeckOption extends ImagePieceOption {
   type: 'deck';
   name: string;
   shuffled: string[];
+  played: string[];
   discarded: string[];
   removed: string[];
   drawn: string[];

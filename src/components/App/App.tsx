@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import slug from 'slugid';
 import * as _ from 'lodash';
 // import FPSStats from 'react-fps-stats';
 import { Viewport } from 'pixi-viewport';
@@ -17,7 +18,7 @@ import { TransactionModal } from '../TransactionModal';
 import { RenameModal } from '../RenameModal';
 import { ProgressBar } from '../ProgressBar';
 import { facts } from '../../utils/facts';
-import { setName } from '../../utils/identity';
+import { getIdentity, getPlayerId, setName } from '../../utils/identity';
 import {
   RenderPiece,
   PlayerPiece,
@@ -25,10 +26,11 @@ import {
   Transaction,
   GamePrompt,
   GamePromptAnswer,
+  Piece,
 } from '../../types';
 import { ControlsMenu } from '../ControlsMenu';
 import { DiceModal } from '../DiceModal';
-import { Chat } from '../Chat';
+// import { Chat } from '../Chat';
 import { SettingsModal } from '../SettingsModal';
 import { AppContext, initialState, appReducer } from './AppContext';
 import { PromptSelectModal } from '../PromptSelectModal';
@@ -37,6 +39,7 @@ import { PlayerPromptModal } from '../PlayerPromptModal/PlayerPromptModal';
 import { DeckPeekModal } from '../DeckPeekModal';
 import { supportedBrowser } from '../../utils/meta';
 import { useGameState } from '../../utils/gameState';
+import { serverTimestamp } from 'firebase/database';
 
 const MainContainer = styled.div({
   height: '100%',
@@ -135,18 +138,19 @@ const tableConfig = {
 export function App(props: { spectator?: boolean }) {
   const [state, dispatch] = React.useReducer(appReducer, initialState);
   const { gameId = '', hostId = '' } = useParams();
+  const [playerId] = React.useState(getPlayerId());
   const {
-    playerId,
-    conn,
+    // playerId,
+    // conn,
     isLoaded,
     game,
-    chat,
-    pieces,
+    // chat,
+    // pieces,
     board,
-    myHand,
+    // myHand,
     assets,
     percentLoaded,
-    handCounts,
+    // handCounts,
     updatePieces,
     failedConnection,
     activePrompts,
@@ -161,12 +165,19 @@ export function App(props: { spectator?: boolean }) {
     // peekingDiscardedCards,
   } = useGameClient(gameId, hostId, props.spectator);
 
-  const gameState = useGameState(game, hostId, gameId);
+  const { gameState, sendEvent } = useGameState(game, hostId, gameId);
+  const pieces = gameState?.pieces || {};
+  const handCounts: { [id: string]: number } = Object.values(
+    gameState?.players || {}
+  ).reduce((hc, p) => ({ ...hc, [p.id]: p.hand.length }), {});
+  console.log(handCounts, playerId);
 
-  const players = Object.values(pieces).filter(
-    (p) => p.type === 'player' && p.playerId
-  ) as PlayerPiece[];
-  const player = players.find((p) => p.playerId === playerId);
+  const players = Object.values(gameState?.players || {}).map(
+    (p) => pieces[p.pieceId] as PlayerPiece
+  );
+  const playerState = gameState?.players[playerId];
+  const player = pieces[playerState?.pieceId || ''] as PlayerPiece;
+  const myHand = playerState?.hand || [];
   const [showPromptSelectModal, setShowPromptSelectModal] =
     React.useState(false);
 
@@ -175,15 +186,15 @@ export function App(props: { spectator?: boolean }) {
 
   const sendUpdatedPieces = React.useCallback(
     (updatedPiecesById: { [id: string]: RenderPiece }) => {
-      if (!conn) {
-        return;
-      }
-      conn.send({
-        event: 'update_piece',
-        pieces: updatedPiecesById,
+      sendEvent({
+        playerId,
+        id: slug.nice(),
+        ts: serverTimestamp(),
+        event: 'update_pieces',
+        pieces: Object.values(updatedPiecesById) as any[], // TODO
       });
     },
-    [conn]
+    [sendEvent]
   );
 
   const handleUpdatePieces = (updatedPieces: RenderPiece[]) => {
@@ -236,86 +247,89 @@ export function App(props: { spectator?: boolean }) {
   };
 
   const handlePickUpCards = (ids: string[]) => {
-    if (conn) {
-      conn.send({
-        event: 'pick_up_cards',
-        cardIds: ids,
-      });
-      const selectedIds = new Set(selectedPieceIds);
-      ids.forEach((id) => {
-        selectedIds.delete(id);
-      });
-      setSelectedPieceIds(selectedIds);
-    }
+    const selectedIds = new Set(selectedPieceIds);
+    ids.forEach((id) => {
+      selectedIds.delete(id);
+    });
+    setSelectedPieceIds(selectedIds);
+
+    sendEvent({
+      ids,
+      playerId,
+      id: slug.nice(),
+      ts: serverTimestamp(),
+      event: 'pick_up_cards',
+    });
   };
 
   const handleCreateStack = (ids: string[]) => {
-    if (conn) {
-      conn.send({
-        ids,
-        event: 'create_stack',
-      });
-
-      setSelectedPieceIds(new Set());
-    }
+    // TODO
+    sendEvent({
+      playerId,
+      id: slug.nice(),
+      ts: serverTimestamp(),
+      event: 'create_stack',
+    });
+    setSelectedPieceIds(new Set());
   };
 
   const handleSplitStack = (id: string, count: number) => {
-    if (conn) {
-      conn.send({
-        id,
-        count,
-        event: 'split_stack',
-      });
-      setSelectedPieceIds(new Set());
-    }
+    // TODO
+    // if (conn) {
+    //   conn.send({
+    //     id,
+    //     count,
+    //     event: 'split_stack',
+    //   });
+    //   setSelectedPieceIds(new Set());
+    // }
   };
 
   const handleSubmitTransaction = (
     transaction: Transaction,
     amount: number
   ) => {
-    if (conn) {
-      conn.send({
-        event: 'transaction',
-        transaction,
-        amount,
-      });
-      setSelectedPieceIds(new Set());
-      setTransactionModalOptions(null);
-    }
+    // if (conn) {
+    //   conn.send({
+    //     event: 'transaction',
+    //     transaction,
+    //     amount,
+    //   });
+    //   setSelectedPieceIds(new Set());
+    //   setTransactionModalOptions(null);
+    // }
   };
 
   const handlePeekAtCard = (cardIds: string[], peeking: boolean) => {
-    if (conn) {
-      conn.send({
-        peeking,
-        cardIds,
-        event: 'peek_at_card',
-      });
-    }
+    // if (conn) {
+    //   conn.send({
+    //     peeking,
+    //     cardIds,
+    //     event: 'peek_at_card',
+    //   });
+    // }
   };
 
   const handleSelectPrompt = (prompt: GamePrompt, players: string[]) => {
-    if (conn) {
-      conn.send({
-        event: 'prompt_players',
-        prompt,
-        players,
-      });
-      setShowPromptSelectModal(false);
-    }
+    // if (conn) {
+    //   conn.send({
+    //     event: 'prompt_players',
+    //     prompt,
+    //     players,
+    //   });
+    //   setShowPromptSelectModal(false);
+    // }
   };
 
   const handleSubmitAnswers = (answers?: GamePromptAnswer[]) => {
-    if (conn) {
-      conn.send({
-        answers,
-        event: 'prompt_submission',
-        promptId: activePrompts[0].prompt.id || '',
-      });
-      setShowPromptSelectModal(false);
-    }
+    // if (conn) {
+    //   conn.send({
+    //     answers,
+    //     event: 'prompt_submission',
+    //     promptId: activePrompts[0].prompt.id || '',
+    //   });
+    //   setShowPromptSelectModal(false);
+    // }
   };
 
   const handlePromptTransaction = (id: string) => {
@@ -414,11 +428,11 @@ export function App(props: { spectator?: boolean }) {
   //   }
   // }, []);
 
-  React.useEffect(() => {
-    if (showChat) {
-      setLastReadChat(chat.length);
-    }
-  }, [chat.length, showChat]);
+  // React.useEffect(() => {
+  //   if (showChat) {
+  //     setLastReadChat(chat.length);
+  //   }
+  // }, [chat.length, showChat]);
 
   // const handleRevealPieces = (pieceIds: string[]) => {
   //   if (conn) {
@@ -441,36 +455,36 @@ export function App(props: { spectator?: boolean }) {
   // };
 
   const handleRollDice = (dice: DiceSet, hidden: boolean) => {
-    if (conn) {
-      conn.send({
-        hidden,
-        dice,
-        event: 'roll_dice',
-      });
-      setShowDiceModal(false);
-    }
+    // if (conn) {
+    //   conn.send({
+    //     hidden,
+    //     dice,
+    //     event: 'roll_dice',
+    //   });
+    //   setShowDiceModal(false);
+    // }
   };
 
   const handleRename = (name: string) => {
-    if (conn) {
-      conn.send({
-        name,
-        event: 'rename_player',
-      });
-      setName(name);
-      setShowRenameModal(false);
-    }
+    // if (conn) {
+    //   conn.send({
+    //     name,
+    //     event: 'rename_player',
+    //   });
+    //   setName(name);
+    //   setShowRenameModal(false);
+    // }
   };
 
   const handlePlayCards = (cardIds: string[], faceDown: boolean) => {
-    if (!conn) {
-      return;
-    }
-    conn.send({
-      cardIds,
-      faceDown,
+    sendEvent({
+      ids: cardIds,
+      playerId,
+      id: slug.nice(),
+      ts: serverTimestamp(),
       event: 'play_cards',
     });
+
     // if (document.documentElement.clientWidth < maxMobileWidth) {
     //   setShowPlayerControls(false);
     // }
@@ -478,41 +492,41 @@ export function App(props: { spectator?: boolean }) {
   };
 
   const handlePassCards = (cardIds: string[], playerId: string) => {
-    if (!conn) {
-      return;
-    }
-    conn.send({
-      cardIds,
-      playerId,
-      event: 'pass_cards',
-    });
+    // if (!conn) {
+    //   return;
+    // }
+    // conn.send({
+    //   cardIds,
+    //   playerId,
+    //   event: 'pass_cards',
+    // });
     // if (document.documentElement.clientWidth < maxMobileWidth) {
     //   setShowPlayerControls(false);
     // }
   };
 
   const handleDrawCardsToTable = (faceDown: boolean) => (count: number) => {
-    if (!conn) {
-      return;
-    }
-    conn.send({
-      faceDown,
+    sendEvent({
+      // faceDown, // TODO
       count,
-      deckId: drawModalId,
+      playerId,
+      id: slug.nice(),
+      ts: serverTimestamp(),
       event: 'draw_cards_to_table',
+      deckId: drawModalId,
     });
     setDrawModalId('');
     setSelectedPieceIds(new Set());
   };
 
   const handleDrawCards = (count: number) => {
-    if (!conn) {
-      return;
-    }
-    conn.send({
+    sendEvent({
+      count,
+      playerId,
+      id: slug.nice(),
+      ts: serverTimestamp(),
       event: 'draw_cards',
       deckId: drawModalId,
-      count,
     });
     setDrawModalId('');
     // setShowPlayerControls(true);
@@ -520,57 +534,57 @@ export function App(props: { spectator?: boolean }) {
   };
 
   const handleDiscard = (cardIds: string[]) => {
-    if (conn) {
-      const remainingSelected = new Set(selectedPieceIds);
-      cardIds.forEach((id) => remainingSelected.delete(id));
-      setSelectedPieceIds(remainingSelected);
-      conn.send({
-        cardIds,
-        event: 'discard',
-      });
-    }
+    // if (conn) {
+    //   const remainingSelected = new Set(selectedPieceIds);
+    //   cardIds.forEach((id) => remainingSelected.delete(id));
+    //   setSelectedPieceIds(remainingSelected);
+    //   conn.send({
+    //     cardIds,
+    //     event: 'discard',
+    //   });
+    // }
   };
 
   const handleShuffleDiscarded = (deckId: string) => {
-    if (conn) {
-      conn.send({
-        deckId,
-        event: 'shuffle_discarded',
-      });
-    }
+    // if (conn) {
+    //   conn.send({
+    //     deckId,
+    //     event: 'shuffle_discarded',
+    //   });
+    // }
   };
 
   const handleDiscardPlayed = (id: string) => {
-    if (conn) {
-      conn.send({
-        event: 'discard_played',
-        deckId: id,
-      });
-    }
+    // if (conn) {
+    //   conn.send({
+    //     event: 'discard_played',
+    //     deckId: id,
+    //   });
+    // }
     setSelectedPieceIds(new Set());
   };
 
-  const handleOnChat = (message: string) => {
-    if (conn) {
-      conn.send({
-        playerId,
-        message,
-        event: 'chat',
-      });
-    }
-  };
+  // const handleOnChat = (message: string) => {
+  //   if (conn) {
+  //     conn.send({
+  //       playerId,
+  //       message,
+  //       event: 'chat',
+  //     });
+  //   }
+  // };
 
   const handlePromptRename = () => {
     setShowRenameModal(true);
   };
 
   React.useEffect(() => {
-    if (conn && !sendUpdatedPiecesRef.current) {
+    if (!sendUpdatedPiecesRef.current) {
       sendUpdatedPiecesRef.current = _.throttle(sendUpdatedPieces, 50, {
         leading: false,
       });
     }
-  }, [conn, sendUpdatedPieces]);
+  }, [sendUpdatedPieces]);
 
   React.useEffect(() => {
     setTablePieces(
@@ -669,7 +683,7 @@ export function App(props: { spectator?: boolean }) {
           playerId={playerId}
           pieces={pieces}
           selectedPieces={selectedPieces}
-          chat={chat}
+          chat={[]}
           lastReadChat={lastReadChat}
           onShowChat={() => setShowChat(true)}
           allUnlocked={allUnlocked}
@@ -728,7 +742,7 @@ export function App(props: { spectator?: boolean }) {
         />
       )}
 
-      {showChat && (
+      {/* {showChat && (
         <Chat
           players={players}
           chat={chat}
@@ -737,7 +751,7 @@ export function App(props: { spectator?: boolean }) {
           onClose={() => setShowChat(false)}
           onRename={() => setShowRenameModal(true)}
         />
-      )}
+      )} */}
 
       {game && showSettingsModal && (
         <SettingsModal

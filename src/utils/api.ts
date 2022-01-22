@@ -35,6 +35,7 @@ import React from 'react';
 import { Game, Assets, PublicGame, PublishableGame } from '../types';
 // import { PaymentMetho } from '@stripe/stripe-js';
 import { addGame, cacheAsset } from './store';
+import { getDatabase } from 'firebase/database';
 
 const firebaseServer = `https://us-central1-boardgamestar-21111.cloudfunctions.net`;
 
@@ -49,6 +50,7 @@ const firebaseApp = initializeApp({
 });
 
 export const db = getFirestore();
+export const realtimeDb = getDatabase();
 const storage = getStorage();
 
 interface StripeAccount {
