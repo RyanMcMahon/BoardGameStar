@@ -18,6 +18,7 @@ import {
   PublicGame,
   StackablePieceOption,
   GamePrompt,
+  PublishableGame,
 } from '../../types';
 import { DeckEditorModal } from '../DeckEditorModal/DeckEditorModal';
 import { ScenarioModal } from '../ScenarioModal';
@@ -25,6 +26,7 @@ import { addGame } from '../../utils/store';
 import { FaExpand } from 'react-icons/fa';
 import { EditGameModal } from '../EditGameModal';
 import { EditPromptModal } from '../EditPromptModal';
+import { getCurrentUser, publishGame } from '../../utils/api';
 
 interface Props {
   state: EditorState;
@@ -276,7 +278,6 @@ export function Editor(props: Props) {
         pieces,
       },
     };
-    debugger;
 
     for (let asset in assets) {
       if (
@@ -288,34 +289,19 @@ export function Editor(props: Props) {
       }
     }
 
-    await addGame(game, assets);
-    // if (game.store === 'browser') {
-    //   await addGame(game, assets);
-    // } else {
-    //   const fs = window.require('fs');
-    //   const configFile = `module.exports = ${JSON.stringify(
-    //     game,
-    //     null,
-    //     '\t'
-    //   )};`;
-    //   const outPath = `./games/${game.name}`;
+    const cleanConfig: PublishableGame = {
+      ...game,
+      store: 'browser',
+      userId: getCurrentUser()?.uid!,
+      disableSync: true,
+      files: [],
+      price: 99,
+    };
 
-    //   try {
-    //     fs.mkdirSync(outPath, { recursive: true });
-    //     fs.mkdirSync(`${outPath}/images`, { recursive: true });
-    //     fs.writeFileSync(`${outPath}/config.js`, configFile, 'utf8');
-    //     for (let i in assets) {
-    //       fs.writeFileSync(
-    //         `${outPath}/images/${i}`,
-    //         assets[i].replace(/^data:image\/\w+;base64,/, ''),
-    //         'base64'
-    //       );
-    //     }
-    //   } catch (err) {
-    //     console.log('Save Error');
-    //     console.log(err);
-    //   }
-    // }
+    // await addGame(game, assets);
+    // TODO
+    await publishGame(cleanConfig, assets);
+    alert('Game Saved');
 
     // Exit (HACK)
     // dispatch({
@@ -858,11 +844,6 @@ export function Editor(props: Props) {
             )}
           </Controls>
 
-          <div>
-            {state.store === 'browser'
-              ? `Game Will Be Saved To Browser`
-              : `Game Will Be Saved To Disk`}
-          </div>
           <EditorNav>
             <SaveButton design="success" onClick={handleSave}>
               Save

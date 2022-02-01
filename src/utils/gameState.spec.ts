@@ -1,3 +1,14 @@
+jest.mock('pixi.js', () => ({
+  test: '',
+  Loader: {
+    shared: {
+      reset: () => {},
+      add: () => {},
+      load: () => {},
+    },
+  },
+}));
+
 import slug from 'slugid';
 
 import {
@@ -115,6 +126,7 @@ describe('GameState', () => {
   describe('Events', () => {
     const startGameEvent: GameStateEvent = {
       id: slug.nice(),
+      gameId: slug.nice(),
       event: 'start_game',
       playerId: '1',
       ts: 1000,

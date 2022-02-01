@@ -14,8 +14,8 @@ interface Props {
   disabled: boolean;
   name: string;
   config: Game;
-  onGameSelect: (config: Game) => void;
-  onEditGame: (config: Game) => void;
+  onGameSelect: (gameId: string) => void;
+  onEditGame: (gameId: string) => void;
   onReloadConfigs: () => void;
 }
 
@@ -54,7 +54,7 @@ export function GameSelector(props: Props) {
   const dropdownItems = [
     {
       label: 'Edit',
-      fn: () => props.onEditGame(game),
+      fn: () => props.onEditGame(game.id),
     },
   ];
 
@@ -83,23 +83,25 @@ export function GameSelector(props: Props) {
   dropdownItems.push({
     label: 'Delete',
     fn: () => {
-      deleteGame(game.id);
-      onReloadConfigs();
+      alert('ToDo');
+      // deleteGame(game.id);
+      // onReloadConfigs();
     },
   });
 
   const handleGameSelect = () => {
-    if (scenarioRef && scenarioRef.current) {
-      props.onGameSelect({
-        ...game,
-        config: {
-          ...game.config,
-          curScenario: scenarioRef.current.value,
-        },
-      });
-    } else {
-      props.onGameSelect(game);
-    }
+    props.onGameSelect(game.id);
+    // if (scenarioRef && scenarioRef.current) {
+    //   // props.onGameSelect({
+    //   //   ...game,
+    //   //   config: {
+    //   //     ...game.config,
+    //   //     curScenario: scenarioRef.current.value,
+    //   //   },
+    //   // });
+    // } else {
+    //   props.onGameSelect(game);
+    // }
   };
 
   return (
@@ -110,7 +112,7 @@ export function GameSelector(props: Props) {
       <GameHeader>{name}</GameHeader>
       Version {game.version}.0
       <br />
-      {_.size(game.config.scenarios) > 1 && (
+      {/* {_.size(game.config.scenarios) > 1 && (
         <Select defaultValue={game.config.curScenario} ref={scenarioRef}>
           {Object.values(game.config.scenarios).map(scenario => (
             <option key={scenario.id} value={scenario.id}>
@@ -118,7 +120,7 @@ export function GameSelector(props: Props) {
             </option>
           ))}
         </Select>
-      )}
+      )} */}
       <DropdownButton items={dropdownItems} disabled={disabled}>
         <Button design="primary" onClick={handleGameSelect} disabled={disabled}>
           Play

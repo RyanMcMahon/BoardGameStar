@@ -11,6 +11,7 @@ import {
   Assets,
   CardPiece,
   AnyPieceOption,
+  DeckPiece,
 } from '../../types';
 import { getAssetDimensions, filePrompt } from '../../utils/assets';
 
@@ -33,6 +34,7 @@ const CardsWrapper = styled.div({
 
 export function DeckEditorModal(props: Props) {
   const { assets, state, deckId, dispatch, setAssets } = props;
+  const deck = state.pieces[deckId] as DeckPiece;
   const handleAddCard = async () => {
     try {
       const files = await filePrompt();
@@ -45,8 +47,8 @@ export function DeckEditorModal(props: Props) {
         const piece = {
           id,
           deckId,
-          width,
-          height,
+          width: deck.width, // TODO update after deck change
+          height: deck.height, // TODO update after deck change
           type: 'card' as const,
           image: filename,
           x: 50,

@@ -12,7 +12,8 @@ service firebase.storage {
     }
 
     match /users/{userId}/games/{gameId}/private/{all=**} {
-      allow read, write: if userId == request.auth.uid && checkFileSize();
+      allow read: if true;
+      allow write: if userId == request.auth.uid && checkFileSize();
     }
   }
 }

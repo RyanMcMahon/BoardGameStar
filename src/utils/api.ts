@@ -21,6 +21,8 @@ import {
 import {
   addDoc,
   deleteDoc,
+  query,
+  where,
   doc,
   getDoc,
   getDocs,
@@ -32,7 +34,13 @@ import {
 // import 'firebase/firestore';
 // import 'firebase/storage';
 import React from 'react';
-import { Game, Assets, PublicGame, PublishableGame } from '../types';
+import {
+  Game,
+  Assets,
+  PublicGame,
+  PublishableGame,
+  ImagePieceOption,
+} from '../types';
 // import { PaymentMetho } from '@stripe/stripe-js';
 import { addGame, cacheAsset } from './store';
 import { getDatabase } from 'firebase/database';
@@ -192,7 +200,11 @@ export async function getGame(
 }
 
 export async function getUserGames(userId: string) {
-  // TODO
+  const gamesRef = collection(db, `games`);
+  const q = await getDocs(query(gamesRef, where('userId', '==', userId)));
+  const configs: PublishableGame[] = [];
+  q.forEach((snap) => configs.push(snap.data() as PublishableGame));
+  return configs;
 }
 
 export async function getGameStats(gameId: string) {
@@ -202,9 +214,10 @@ export async function getGameStats(gameId: string) {
 export async function getDownloadUrl(
   userId: string,
   gameId: string,
-  src: string
+  src: string,
+  store: string = 'public'
 ) {
-  const path = `users/${userId}/games/${gameId}/public/${src}`;
+  const path = `users/${userId}/games/${gameId}/${store}/${src}`;
   return getDownloadURL(ref(storage, path));
 }
 
@@ -376,34 +389,52 @@ export async function downloadGame(
   }
 
   const { data } = await axios.get(`${firebaseServer}/games/${gameId}`);
-  const { game, assets } = data;
-  const assetList = Object.entries(assets);
-  const percentStep = 90 / assetList.length;
+  // const { game } = data;
+  // const assetList = Object.entries(assets);
+  const game = data as PublishableGame;
+  const { config } = game;
   const loadedAssets = {} as any;
 
-  while (assetList.length) {
-    const [key, url] = assetList.pop() as any;
-    const image = await getBase64FromImageUrl(url as string);
-    await cacheAsset(gameId, game.version, key, image);
-    curPrecentage += percentStep;
-    if (curPrecentage > 100) {
-      curPrecentage = 100;
+  const assetsList = Object.values(config.pieces)
+    .map((x) => (x as ImagePieceOption).image)
+    .filter((x) => x);
+  const store = game.price === 0 ? 'public' : 'private';
+  const percentStep = 90 / assetsList.length;
+  // debugger;
+
+  while (assetsList.length) {
+    const asset = assetsList.pop();
+    if (asset) {
+      const url = await getDownloadUrl(game.userId, game.id, asset, store);
+      loadedAssets[asset] = url;
     }
-    progress(curPrecentage);
-    loadedAssets[key] = image;
   }
+
+  // while (assetList.length) {
+  //   const [key, url] = assetList.pop() as any;
+  //   const image = await getBase64FromImageUrl(url as string);
+  //   await cacheAsset(gameId, game.version, key, image);
+  //   curPrecentage += percentStep;
+  //   if (curPrecentage > 100) {
+  //     curPrecentage = 100;
+  //   }
+  //   progress(curPrecentage);
+  //   loadedAssets[key] = image;
+  // }
 
   if (game.thumbnail) {
     const thumbnailUrl = await getDownloadUrl(
       game.userId,
       game.id,
-      `_thumbnail`
+      `_thumbnail`,
+      store
     );
     const thumbnail = await getBase64FromImageUrl(thumbnailUrl);
     game.thumbnail = thumbnail;
   }
 
-  await addGame(game, loadedAssets);
+  return { game, loadedAssets };
+  // await addGame(game, loadedAssets);
 }
 
 function getBase64FromImageUrl(url: string): Promise<string> {

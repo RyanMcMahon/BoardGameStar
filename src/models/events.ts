@@ -388,6 +388,7 @@ export interface BaseGameStateEvent {
 
 export interface StartGameEvent extends BaseGameStateEvent {
   event: 'start_game';
+  gameId: string;
 }
 
 export interface RequestJoinGameEvent extends BaseGameStateEvent {

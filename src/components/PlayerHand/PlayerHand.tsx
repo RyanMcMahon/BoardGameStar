@@ -167,7 +167,7 @@ const CardWrapper = styled.div({
 });
 
 const CardImageWrapper = styled.div<{ selected: boolean; zIndex: number }>(
-  props => ({
+  (props) => ({
     flexShrink: 1,
     height: `${CARD_OFFSET}px`,
     minWidth: `${CARD_OFFSET}px`,
@@ -217,16 +217,16 @@ export function PlayerHand(props: Props): JSX.Element {
     player,
     players,
   } = props;
+  console.log(assets, hand);
   const [showCardDrawer, setShowCardDrawer] = React.useState(false);
-  const [showPlayerSelectModal, setShowPlayerSelectModal] = React.useState(
-    false
-  );
+  const [showPlayerSelectModal, setShowPlayerSelectModal] =
+    React.useState(false);
   const [selectedCards, setSelectedCards] = React.useState<string[]>([]);
   const [hoverCard, setHoverCard] = React.useState<string>('');
 
   const handleSelectCard = (id: string) => () => {
     if (selectedCards.includes(id)) {
-      setSelectedCards(selectedCards.filter(cardId => cardId !== id));
+      setSelectedCards(selectedCards.filter((cardId) => cardId !== id));
     } else {
       setSelectedCards([...selectedCards, id]);
     }
@@ -309,8 +309,8 @@ export function PlayerHand(props: Props): JSX.Element {
             </DrawerControls>
 
             {hand
-              .map(id => pieces[id] as Card)
-              .filter(x => x)
+              .map((id) => pieces[id] as Card)
+              .filter((x) => x)
               .sort(sortCards)
               .map(
                 (card, index) =>
@@ -333,8 +333,8 @@ export function PlayerHand(props: Props): JSX.Element {
 
         <CardWrapper>
           {hand
-            .map(id => pieces[id] as Card)
-            .filter(x => x)
+            .map((id) => pieces[id] as Card)
+            .filter((x) => x)
             .sort(sortCards)
             .map(
               (card, index) =>
@@ -343,7 +343,7 @@ export function PlayerHand(props: Props): JSX.Element {
                     key={card.id}
                     zIndex={hand.length - index}
                     onClick={handleSelectCard(card.id)}
-                    onContextMenu={e => {
+                    onContextMenu={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       return false;
@@ -418,7 +418,7 @@ export function PlayerHand(props: Props): JSX.Element {
                   return;
                 }
                 promptTransaction(
-                  players.map(p => ({
+                  players.map((p) => ({
                     from: {
                       type: 'player',
                       name: 'You',

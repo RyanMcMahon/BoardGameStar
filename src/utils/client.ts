@@ -24,7 +24,7 @@ interface ClientPeerDataConnection extends Peer.DataConnection {
 
 interface ClientState {
   isLoaded: boolean;
-  game: Game | null;
+  // game: Game | null;
   board: string[];
   assets: Assets;
   pendingAssets: string[];
@@ -89,7 +89,7 @@ function clientReducer(state: ClientState, data: GameEvent) {
 
       Object.entries(asset).forEach(([key, value]) => {
         assets[key] = value;
-        pendingAssets = pendingAssets.filter(a => a !== key);
+        pendingAssets = pendingAssets.filter((a) => a !== key);
         if (loadedFromCache) {
           cachedAssets.push(key);
         }
@@ -205,8 +205,8 @@ function clientReducer(state: ClientState, data: GameEvent) {
     case 'remove_from_board': {
       const { ids } = data;
       const boardCopy = [...state.board];
-      ids.forEach(id => {
-        const index = boardCopy.findIndex(pieceId => pieceId === id);
+      ids.forEach((id) => {
+        const index = boardCopy.findIndex((pieceId) => pieceId === id);
         if (index > -1) {
           boardCopy.splice(index, 1);
         }
@@ -286,7 +286,7 @@ export function useGameClient(
       assets: {},
       chat: [],
       isLoaded: false,
-      game: null,
+      // game: null,
       pendingAssets: [],
       cachedAssets: [],
       myHand: [],
@@ -308,7 +308,7 @@ export function useGameClient(
     assets,
     chat,
     isLoaded,
-    game,
+    // game,
     pendingAssets,
     cachedAssets,
     myHand,
@@ -328,123 +328,123 @@ export function useGameClient(
   const updatePieces = (p: Pieces) =>
     dispatch({ event: 'local_piece_update', pieces: p });
 
-  const requestAsset = React.useCallback(
-    (asset: string) => {
-      if (!conn || !game) {
-        throw new Error(
-          'Time Paradox: requesting assets before connection established'
-        );
-      }
-      if (assets[asset]) {
-        return;
-      }
+  // const requestAsset = React.useCallback(
+  //   (asset: string) => {
+  //     if (!conn || !game) {
+  //       throw new Error(
+  //         'Time Paradox: requesting assets before connection established'
+  //       );
+  //     }
+  //     if (assets[asset]) {
+  //       return;
+  //     }
 
-      const loadAsset = async () => {
-        const a = await getCachedAsset(game.id, game.version.toString(), asset);
+  //     const loadAsset = async () => {
+  //       const a = await getCachedAsset(game.id, game.version.toString(), asset);
 
-        if (a) {
-          dispatch({
-            event: 'asset_loaded',
-            loadedFromCache: true,
-            asset: { [asset]: a.asset },
-          });
-          return;
-        }
+  //       if (a) {
+  //         dispatch({
+  //           event: 'asset_loaded',
+  //           loadedFromCache: true,
+  //           asset: { [asset]: a.asset },
+  //         });
+  //         return;
+  //       }
 
-        conn.send({
-          asset,
-          event: 'request_asset',
-        });
-      };
-      loadAsset();
-    },
-    [conn, assets, game]
-  );
+  //       conn.send({
+  //         asset,
+  //         event: 'request_asset',
+  //       });
+  //     };
+  //     loadAsset();
+  //   },
+  //   [conn, assets, game]
+  // );
 
-  React.useEffect(() => {
-    if (state.requestAsset) {
-      requestAsset(state.requestAsset);
-    }
-  }, [state.requestAsset, requestAsset]);
+  // React.useEffect(() => {
+  //   if (state.requestAsset) {
+  //     requestAsset(state.requestAsset);
+  //   }
+  // }, [state.requestAsset, requestAsset]);
 
-  React.useEffect(() => {
-    if (isLoaded) {
-      return;
-    }
+  // React.useEffect(() => {
+  //   if (isLoaded) {
+  //     return;
+  //   }
 
-    const checkForAssets = async () => {
-      if (pendingAssets.length) {
-        setPercentLoaded(
-          percent => percent + (100 - percent) / pendingAssets.length
-        );
-        dispatch({
-          event: 'set_request_asset',
-          asset: pendingAssets[0],
-        });
-      } else if (game) {
-        Loader.shared.reset();
+  //   const checkForAssets = async () => {
+  //     if (pendingAssets.length) {
+  //       setPercentLoaded(
+  //         percent => percent + (100 - percent) / pendingAssets.length
+  //       );
+  //       dispatch({
+  //         event: 'set_request_asset',
+  //         asset: pendingAssets[0],
+  //       });
+  //     } else if (game) {
+  //       Loader.shared.reset();
 
-        for (let name in assets) {
-          Loader.shared.add(name, assets[name]);
-          if (!cachedAssets.includes(name)) {
-            await cacheAsset(
-              game.id,
-              game.version.toString(),
-              name,
-              assets[name]
-            );
-          }
-        }
+  //       for (let name in assets) {
+  //         Loader.shared.add(name, assets[name]);
+  //         if (!cachedAssets.includes(name)) {
+  //           await cacheAsset(
+  //             game.id,
+  //             game.version.toString(),
+  //             name,
+  //             assets[name]
+  //           );
+  //         }
+  //       }
 
-        Loader.shared.load(() => {
-          dispatch({
-            event: 'load_complete',
-          });
-        });
-      }
-    };
-    checkForAssets();
-  }, [pendingAssets, cachedAssets, requestAsset, assets, isLoaded, game]);
+  //       Loader.shared.load(() => {
+  //         dispatch({
+  //           event: 'load_complete',
+  //         });
+  //       });
+  //     }
+  //   };
+  //   checkForAssets();
+  // }, [pendingAssets, cachedAssets, requestAsset, assets, isLoaded, game]);
 
-  React.useEffect(() => {
-    const initPeer = async () => {
-      try {
-        const { instanceId, playerId, name } = getIdentity();
-        const peer = await createPeer(instanceId);
+  // React.useEffect(() => {
+  //   const initPeer = async () => {
+  //     try {
+  //       const { instanceId, playerId, name } = getIdentity();
+  //       const peer = await createPeer(instanceId);
 
-        peer.on('open', () => {
-          const conn = peer.connect(getInstanceId(gameId, hostId), {
-            metadata: {
-              playerId,
-              name,
-              spectator,
-            },
-            reliable: true,
-          });
-          conn.on('data', dispatch);
-          conn.on('error', err => {
-            console.log(err);
-            setFailedConnection(true);
-          });
-          setConn(conn);
-          setPlayerId(playerId);
-          setPercentLoaded(5);
-        });
+  //       peer.on('open', () => {
+  //         const conn = peer.connect(getInstanceId(gameId, hostId), {
+  //           metadata: {
+  //             playerId,
+  //             name,
+  //             spectator,
+  //           },
+  //           reliable: true,
+  //         });
+  //         conn.on('data', dispatch);
+  //         conn.on('error', err => {
+  //           console.log(err);
+  //           setFailedConnection(true);
+  //         });
+  //         setConn(conn);
+  //         setPlayerId(playerId);
+  //         setPercentLoaded(5);
+  //       });
 
-        peer.on('error', err => {
-          console.log(err);
-          setFailedConnection(true);
-        });
+  //       peer.on('error', err => {
+  //         console.log(err);
+  //         setFailedConnection(true);
+  //       });
 
-        setTimeout(() => setCheckTimeout(true), 10 * 1000);
-      } catch (err) {
-        console.log(err);
-        setFailedConnection(true);
-        debugger;
-      }
-    };
-    initPeer();
-  }, [gameId, hostId, spectator]);
+  //       setTimeout(() => setCheckTimeout(true), 10 * 1000);
+  //     } catch (err) {
+  //       console.log(err);
+  //       setFailedConnection(true);
+  //       debugger;
+  //     }
+  //   };
+  //   initPeer();
+  // }, [gameId, hostId, spectator]);
 
   React.useEffect(() => {
     if (checkTimeout && !isLoaded && !_.size(assets)) {
@@ -455,8 +455,8 @@ export function useGameClient(
   return {
     playerId,
     conn,
-    isLoaded,
-    game,
+    // isLoaded: true,
+    // game,
     chat,
     board,
     pieces,

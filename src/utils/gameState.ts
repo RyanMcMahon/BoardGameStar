@@ -1,4 +1,5 @@
 import slug from 'slugid';
+import { Loader } from 'pixi.js';
 import * as _ from 'lodash';
 // import { doc, writeBatch } from 'firebase/firestore';
 import {
@@ -15,6 +16,7 @@ import { seed, shuffle } from './rng';
 import {
   AdmitJoinGameEvent,
   AnyPieceOption,
+  Assets,
   Card,
   CardPiece,
   ClientEvent,
@@ -31,18 +33,25 @@ import {
   StartGameEvent,
   UpdatePiecesGameEvent,
 } from '../types';
-import { db, realtimeDb, withTransaction } from './api';
+import { db, downloadGame, realtimeDb, withTransaction } from './api';
 import { update } from 'lodash';
 import { useEffect, useState } from 'react';
 import { getHostId, getPlayerId } from './identity';
 
 export function useGameState(
-  game: Game | null,
+  // game: Game | null,
   hostId: string,
-  gameId: string
+  sessionId: string
 ) {
   const [gameState, setGameState] = useState<GameState>();
-  const gamePath = `play/${hostId}/${gameId}`;
+  const [game, setGame] = useState<Game | null>(null);
+  const [assets, setAssets] = useState<Assets>({});
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [gameId, setGameId] = useState<string>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [unsyncedEvents, setUnsyncedEvents] = useState<GameStateEvent[]>([]);
+  const [eventCount, setEventCount] = useState(0);
+  const gamePath = `play/${hostId}/${sessionId}`;
   const [dbRef] = useState(ref(realtimeDb, gamePath));
   const curHostId = getHostId();
   const curPlayerId = getPlayerId();
@@ -51,47 +60,95 @@ export function useGameState(
 
   useEffect(() => {
     const connect = async () => {
-      if (!game) {
-        return;
+      const dbRef = ref(realtimeDb, gamePath);
+      onValue(dbRef, (snapshot) => {
+        const values = snapshot.val() as GameStateEvent[];
+        const sorted = Object.values(values).sort((a, b) =>
+          a.ts < b.ts ? -1 : 1
+        );
+        sorted.forEach(async (event) => {
+          if (event.event === 'start_game') {
+            setGameId(event.gameId);
+          }
+        });
+        setUnsyncedEvents((e) => [...e, ...sorted]);
+        setEventCount((c) => c + 1);
+      });
+    };
+    connect();
+  }, [hostId, sessionId]);
+
+  useEffect(() => {
+    if (!gameId || isLoaded || isLoading) {
+      return;
+    }
+    setIsLoading(true);
+
+    const load = async () => {
+      const { game, loadedAssets } = await downloadGame(gameId, () => {});
+
+      const cardCopies: { [id: string]: AnyPieceOption } = {};
+      Object.values(game.config.pieces).forEach((piece) => {
+        if (piece.type === 'card') {
+          const deck = game.config.pieces[piece.deckId] as DeckOption;
+          // TODO do in editor?
+          piece.width = deck.width;
+          piece.height = deck.height;
+
+          for (let i = 1; i < parseInt(piece.counts || '1', 10); i++) {
+            const newId = `${piece.id}_${i}`;
+            // TODO unshuffled deck
+            deck.shuffled.push(newId);
+            cardCopies[newId] = {
+              ...piece,
+              id: newId,
+            };
+          }
+        }
+      });
+      game.config.pieces = {
+        ...game.config.pieces,
+        ...cardCopies,
+      };
+
+      Loader.shared.reset();
+      for (let name in loadedAssets) {
+        Loader.shared.add(name, loadedAssets[name]);
       }
 
-      const gs = new GameState(game, hostId, gameId);
+      Loader.shared.load(() => {
+        const gs = new GameState(game, hostId, sessionId);
 
-      onValue(dbRef, (snapshot) => {
-        const values = snapshot.val() as GameStateEvent;
-        const sorted = Object.values(values).sort((a, b) =>
-          a.ts < b.ts ? 1 : -1
-        );
-        sorted.forEach((event) => gs.syncEvent(event));
-      });
-
-      // TODO fetch all events and check for start
-      if (curHostId === hostId) {
-        const startEvent: StartGameEvent = {
-          id: slug.nice(),
-          event: 'start_game',
+        const joinEvent: RequestJoinGameEvent = {
+          id: curHostId,
+          event: 'request_join_game',
           playerId: curPlayerId,
+          name: 'Player',
           ts: serverTimestamp(),
         };
-        push(dbRef, startEvent);
-      }
+        push(dbRef, joinEvent);
 
-      const joinEvent: RequestJoinGameEvent = {
-        id: curHostId,
-        event: 'request_join_game',
-        playerId: curPlayerId,
-        name: 'Player',
-        ts: serverTimestamp(),
-      };
-      push(dbRef, joinEvent);
-
-      setGameState(gs);
+        setAssets(loadedAssets);
+        setGameState(gs);
+        setGame(game);
+        setIsLoaded(true);
+      });
     };
+    load();
+  }, [gameId, isLoaded, isLoading]);
 
-    connect();
-  }, [game, hostId, gameId]);
+  useEffect(() => {
+    if (!gameState) {
+      return;
+    }
+    unsyncedEvents.forEach((event) => gameState.syncEvent(event));
+  }, [unsyncedEvents, gameState]);
 
   return {
+    assets,
+    game,
+    isLoaded,
+    eventCount,
     gameState,
     sendEvent,
   };

@@ -87,10 +87,10 @@ const LoadingFactSubheader = styled.h4({
   fontSize: '1.5rem',
 });
 
-const FailedConnection = styled.h4({
-  fontSize: '3rem',
-  color: '#e74c3c',
-});
+// const FailedConnection = styled.h4({
+//   fontSize: '3rem',
+//   color: '#e74c3c',
+// });
 
 const tableConfig = {
   board: {},
@@ -142,20 +142,20 @@ export function App(props: { spectator?: boolean }) {
   const {
     // playerId,
     // conn,
-    isLoaded,
-    game,
+    // isLoaded,
+    // game,
     // chat,
     // pieces,
-    board,
+    // board,
     // myHand,
-    assets,
+    // assets,
     percentLoaded,
     // handCounts,
-    updatePieces,
-    failedConnection,
-    activePrompts,
-    promptResults,
-    clearPrompt,
+    updatePieces, // KEEP!!!!!!!!!!!
+    // failedConnection,
+    // activePrompts,
+    // promptResults,
+    // clearPrompt,
     renderCount,
     // TODO
     // myDice,
@@ -165,12 +165,26 @@ export function App(props: { spectator?: boolean }) {
     // peekingDiscardedCards,
   } = useGameClient(gameId, hostId, props.spectator);
 
-  const { gameState, sendEvent } = useGameState(game, hostId, gameId);
+  const { assets, eventCount, gameState, sendEvent, game, isLoaded } =
+    useGameState(
+      // game,
+      hostId,
+      gameId
+    );
   const pieces = gameState?.pieces || {};
+  const board = Object.values(pieces || {})
+    .map((piece) => {
+      return piece.type !== 'card' ||
+        pieces[piece.deckId].played.includes(piece.id)
+        ? piece.id
+        : null;
+    })
+    .filter((x) => x);
+  // console.log(board, pieces);
   const handCounts: { [id: string]: number } = Object.values(
     gameState?.players || {}
   ).reduce((hc, p) => ({ ...hc, [p.id]: p.hand.length }), {});
-  console.log(handCounts, playerId);
+  // console.log(handCounts, playerId);
 
   const players = Object.values(gameState?.players || {}).map(
     (p) => pieces[p.pieceId] as PlayerPiece
@@ -633,6 +647,7 @@ export function App(props: { spectator?: boolean }) {
     setTablePieces,
     handCounts,
     renderCount,
+    eventCount,
     setRenderCount,
   ]);
 
@@ -779,7 +794,7 @@ export function App(props: { spectator?: boolean }) {
         />
       )}
 
-      {!!activePrompts.length && (
+      {/* {!!activePrompts.length && (
         <PlayerPromptModal
           assets={assets}
           pieces={pieces}
@@ -791,7 +806,7 @@ export function App(props: { spectator?: boolean }) {
           players={players}
           playerId={playerId}
         />
-      )}
+      )} */}
 
       {!!peekingCards.length && (
         <DeckPeekModal
@@ -823,17 +838,17 @@ export function App(props: { spectator?: boolean }) {
                 This browser may not be supported.
               </BrowserSupportBanner>
             )}
-            {failedConnection ? (
+            {/* {failedConnection ? (
               <FailedConnection>Connection Failed</FailedConnection>
-            ) : (
-              <>
-                <ProgressBar complete={percentLoaded} />
-                <LoadingFact>{fact}</LoadingFact>
-                <LoadingFactSubheader>
-                  - Loading Screen Facts
-                </LoadingFactSubheader>
-              </>
-            )}
+            ) : ( */}
+            <>
+              <ProgressBar complete={percentLoaded} />
+              <LoadingFact>{fact}</LoadingFact>
+              <LoadingFactSubheader>
+                - Loading Screen Facts
+              </LoadingFactSubheader>
+            </>
+            {/* )} */}
             <Link to="/games">Leave Game</Link>
           </LoadingContainer>
         </LoadingPage>

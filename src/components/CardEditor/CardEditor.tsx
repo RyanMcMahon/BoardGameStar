@@ -24,8 +24,9 @@ const Img = styled.img({
 
 export function CardEditor(props: Props) {
   const { assets, card } = props;
+  const image = assets[card.image];
   // const inputRef = React.createRef<HTMLInputElement>();
-  const image = useAsset(assets, card);
+  // const image = useAsset(assets, card);
 
   const handleOnChange = (e: React.FormEvent<HTMLInputElement>) => {
     props.onUpdateCount(e.currentTarget.value);
@@ -33,7 +34,8 @@ export function CardEditor(props: Props) {
 
   return (
     <Wrapper>
-      <Img src={image?.src} />
+      {/* <Img src={image?.src} /> */}
+      <Img src={image} />
       <br />
       <input
         type="text"
