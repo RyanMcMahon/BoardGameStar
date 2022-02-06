@@ -190,7 +190,6 @@ export function Games(props: Props) {
 
     const { game, loadedAssets } = await downloadGame(gameId, () => {});
 
-    debugger;
     // const loadedAssets = game.loadAssets ? await game.loadAssets() : {};
     Loader.shared.reset();
     Loader.shared.add('axis.png');

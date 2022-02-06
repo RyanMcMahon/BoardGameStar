@@ -38,6 +38,16 @@ import { update } from 'lodash';
 import { useEffect, useState } from 'react';
 import { getHostId, getPlayerId } from './identity';
 
+export interface GameStatePlayer {
+  id: string;
+  hand: string[];
+  name: string;
+  pieceId: string;
+  stats: {
+    [id: string]: string | null;
+  };
+}
+
 export function useGameState(
   // game: Game | null,
   hostId: string,
@@ -159,12 +169,7 @@ export class GameState {
   syncedEvents: { [id: string]: boolean } = {};
   pieces: Pieces; //{ [id: string]: Piece }; // TODO
   players: {
-    [id: string]: {
-      id: string;
-      hand: string[];
-      name: string;
-      pieceId: string;
-    };
+    [id: string]: GameStatePlayer;
   };
 
   constructor(game: Game, host: string, gameId: string) {
@@ -212,24 +217,48 @@ export class GameState {
         const { playerId } = event;
 
         // Associate with player piece
-        let assignedToPlayer = false;
-        Object.values(this.pieces).forEach((piece) => {
-          if (
-            !assignedToPlayer &&
-            piece.type === 'player' &&
-            !(piece as PlayerPiece).playerId
-          ) {
-            this.players[playerId] = {
-              id: playerId,
-              hand: [],
-              name: event.name,
-              pieceId: piece.id,
-            };
-            piece.name = event.name;
-            piece.playerId = playerId;
-            assignedToPlayer = true;
-          }
-        });
+        // let assignedToPlayer = false;
+        const playerPiece = Object.values(this.pieces)
+          .filter((p) => p.type === 'player' && !p.playerId)
+          .sort((a, b) => {
+            const aName = parseInt(a.name.replace('Player ', ''), 10);
+            const bName = parseInt(b.name.replace('Player ', ''), 10);
+            return aName < bName ? -1 : 1;
+          })
+          .shift() as PlayerPiece;
+        this.players[playerId] = {
+          id: playerId,
+          hand: [],
+          name: event.name,
+          pieceId: playerPiece.id,
+          stats: {},
+        };
+        playerPiece.name = event.name;
+        playerPiece.playerId = playerId;
+
+        // Object.values(this.pieces).forEach((piece) => {
+        //   if (
+        //     !assignedToPlayer &&
+        //     piece.type === 'player' &&
+        //     !(piece as PlayerPiece).playerId
+        //   ) {
+        //     this.players[playerId] = {
+        //       id: playerId,
+        //       hand: [],
+        //       name: event.name,
+        //       pieceId: piece.id,
+        //     };
+        //     piece.name = event.name;
+        //     piece.playerId = playerId;
+        //     assignedToPlayer = true;
+        //   }
+        // });
+        break;
+      }
+
+      case 'update_player_stat': {
+        const { targetPlayerId, statId, value } = event;
+        this.players[targetPlayerId].stats[statId] = value;
         break;
       }
 
@@ -294,11 +323,14 @@ export class GameState {
 
       case 'update_pieces': {
         const { pieces } = event;
-        pieces.forEach((piece) => {
-          this.pieces[piece.id] = {
-            ...this.pieces[piece.id],
-            ...piece,
-          };
+        pieces.forEach((p) => {
+          const piece = (this.pieces[p.id] = {
+            ...this.pieces[p.id],
+            ...p,
+          });
+          if (piece.type === 'player') {
+            this.players[piece.playerId || ''].name = piece.name;
+          }
         });
         break;
       }

@@ -87,7 +87,7 @@ export function GameProfile() {
         />
       )}
       <Title>{game.name}</Title>
-      <Tags>{game.tags.map(x => `#${x}`).join(' ')}</Tags>
+      <Tags>{game.tags.map((x) => `#${x}`).join(' ')}</Tags>
       <Summary>{game.summary}</Summary>
       <Designer>
         Designer:{' '}
@@ -99,15 +99,15 @@ export function GameProfile() {
         <ProgressBar complete={downloadProgress} />
       ) : (
         <>
-          {game.price ? (
+          {/* {game.price ? (
             <Button design="primary" onClick={() => setPurchaseGame(game)}>
               Purchase
             </Button>
-          ) : (
-            <Button design="primary" onClick={() => handleDownload(game.id)}>
-              Download v{game.version}.0
-            </Button>
-          )}
+          ) : ( */}
+          <Button design="primary" onClick={() => handleDownload(game.id)}>
+            Download v{game.version}.0
+          </Button>
+          {/* )} */}
         </>
       )}
       <Markdown source={game.description} />

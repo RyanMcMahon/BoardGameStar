@@ -217,7 +217,6 @@ export function PlayerHand(props: Props): JSX.Element {
     player,
     players,
   } = props;
-  console.log(assets, hand);
   const [showCardDrawer, setShowCardDrawer] = React.useState(false);
   const [showPlayerSelectModal, setShowPlayerSelectModal] =
     React.useState(false);
@@ -267,7 +266,7 @@ export function PlayerHand(props: Props): JSX.Element {
           ) : (
             <FaSortDown />
           )}
-          {hand.length} Cards In Hand
+          {hand.length} Cards
           {!showCardDrawer ? (
             <FaSortUp className="cardDrawerOffsetIcon" />
           ) : (
@@ -369,7 +368,7 @@ export function PlayerHand(props: Props): JSX.Element {
                 color={player.color}
                 onClick={onRename}
               >
-                {player.name}
+                {player.name || '[Unknown]'}
               </PlayerName>
             )}
           </MobileHidden>

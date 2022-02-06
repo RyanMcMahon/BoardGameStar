@@ -20,6 +20,8 @@ import type {
   GamePrompt,
   GamePromptAnswer,
   ScenarioOption,
+  PlayerStatConfig,
+  PlayerStatGroup,
 } from './data';
 
 export interface CreateGameAction {
@@ -31,6 +33,11 @@ export interface CreateGameAction {
 export interface EditGameAction {
   type: 'edit_game';
   config: EditorState & { loadAssets?: () => any };
+}
+
+export interface UpdatePlayerStatConfig {
+  type: 'update_player_stat_config';
+  playerStats: PlayerStatGroup[];
 }
 
 export interface SetCurScenarioAction {
@@ -97,6 +104,7 @@ export interface RemovePieceAction {
 export type EditorAction =
   | CreateGameAction
   | EditGameAction
+  | UpdatePlayerStatConfig
   | UpdateGame
   | SetCurScenarioAction
   | AddScenarioAction
@@ -395,6 +403,12 @@ export interface RequestJoinGameEvent extends BaseGameStateEvent {
   event: 'request_join_game';
   name: string;
 }
+export interface UpdatePlayerStatGameEvent extends BaseGameStateEvent {
+  event: 'update_player_stat';
+  targetPlayerId: string;
+  statId: string;
+  value: string;
+}
 
 export interface AdmitJoinGameEvent extends BaseGameStateEvent {
   event: 'admit_join_game';
@@ -462,4 +476,5 @@ export type GameStateEvent =
   | CreateStackGameEvent
   | SplitStackGameEvent
   | RequestJoinGameEvent
+  | UpdatePlayerStatGameEvent
   | AdmitJoinGameEvent;

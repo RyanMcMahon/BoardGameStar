@@ -80,6 +80,12 @@ export function editorReducer(
       };
     }
 
+    case 'update_player_stat_config': {
+      return {
+        ...state,
+        playerStats: action.playerStats,
+      };
+    }
     case 'set_cur_scenario': {
       return {
         ...state,
@@ -109,7 +115,7 @@ export function editorReducer(
       };
       const pieces: { [id: string]: AnyPieceOption } = {};
 
-      scenario.pieces.forEach(pieceId => {
+      scenario.pieces.forEach((pieceId) => {
         const piece = state.pieces[pieceId];
         if (piece.type === 'card') {
           return;
@@ -119,7 +125,7 @@ export function editorReducer(
         pieces[pieceCopy.id] = pieceCopy;
 
         if (piece.type === 'deck') {
-          Object.values(state.pieces).forEach(p => {
+          Object.values(state.pieces).forEach((p) => {
             if (p.type === 'card' && p.deckId === pieceId) {
               const cardCopy = { ...p, id: slug.nice(), deckId: pieceCopy.id };
               pieces[cardCopy.id] = cardCopy;
@@ -130,8 +136,8 @@ export function editorReducer(
 
       newScenario.pieces = Object.keys(pieces);
       newScenario.players = Object.values(pieces)
-        .filter(piece => piece.type === 'player')
-        .map(piece => piece.id);
+        .filter((piece) => piece.type === 'player')
+        .map((piece) => piece.id);
 
       return {
         ...state,
@@ -227,8 +233,8 @@ export function editorReducer(
       const curScenario = state.scenarios[state.curScenario];
       const updatedScenario = {
         ...curScenario,
-        pieces: curScenario.pieces.filter(pieceId => pieceId !== id),
-        players: curScenario.players.filter(pieceId => pieceId !== id),
+        pieces: curScenario.pieces.filter((pieceId) => pieceId !== id),
+        players: curScenario.players.filter((pieceId) => pieceId !== id),
       };
       const pieces = { ...state.pieces };
       const deletedPiece = pieces[id];

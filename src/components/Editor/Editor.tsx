@@ -21,6 +21,7 @@ import {
   PublishableGame,
 } from '../../types';
 import { DeckEditorModal } from '../DeckEditorModal/DeckEditorModal';
+import { PlayerStatEditorModal } from '../PlayerStatEditorModal';
 import { ScenarioModal } from '../ScenarioModal';
 import { addGame } from '../../utils/store';
 import { FaExpand } from 'react-icons/fa';
@@ -224,6 +225,8 @@ export function Editor(props: Props) {
   const [deckModalId, setDeckModalId] = React.useState<string>();
   const [showControls, setShowControls] = React.useState(true);
   const [showEditGameModal, setShowEditGameModal] = React.useState(false);
+  const [showPlayerStatEditorModal, setShowPlayerStatEditorModal] =
+    React.useState(false);
   const [scenarioModalIsShowing, setScenarioModalIsShowing] =
     React.useState(false);
 
@@ -275,6 +278,7 @@ export function Editor(props: Props) {
         currency: state.currency,
         curScenario: state.curScenario,
         scenarios: state.scenarios,
+        playerStats: state.playerStats,
         pieces,
       },
     };
@@ -636,6 +640,12 @@ export function Editor(props: Props) {
                 Add Deck
               </Button>
               <Button
+                design="primary"
+                onClick={() => setShowPlayerStatEditorModal(true)}
+              >
+                Player Stats
+              </Button>
+              <Button
                 className="u-full-width"
                 design="primary"
                 onClick={handleAddMoney}
@@ -900,6 +910,14 @@ export function Editor(props: Props) {
             }}
           />
         )}
+
+      {showPlayerStatEditorModal && (
+        <PlayerStatEditorModal
+          dispatch={dispatch}
+          state={state}
+          onClose={() => setShowPlayerStatEditorModal(false)}
+        />
+      )}
 
       {deckModalId && (
         <DeckEditorModal

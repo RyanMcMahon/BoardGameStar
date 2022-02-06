@@ -18,6 +18,7 @@ import {
   FaSync,
   FaMoneyBillAlt,
   FaEye,
+  FaRegIdCard,
 } from 'react-icons/fa';
 
 import { maxMobileWidth, theShadow } from '../../utils/style';
@@ -50,6 +51,7 @@ interface Props {
   onPromptTransaction: (bankId: string) => void;
   onClearSelectedPieces: () => void;
   onShowDiceModal: () => void;
+  onShowPlayerStats: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onShowSettingsModal: () => void;
@@ -118,6 +120,7 @@ export function ControlsMenu(props: Props) {
     onClearSelectedPieces,
     onPromptTransaction,
     onShowDiceModal,
+    onShowPlayerStats,
     onZoomIn,
     onZoomOut,
     onShowSettingsModal,
@@ -153,7 +156,7 @@ export function ControlsMenu(props: Props) {
               fn: () => {
                 onUpdatePieces(
                   selectedPieces.map(
-                    piece =>
+                    (piece) =>
                       ({
                         ...piece,
                         type: 'deleted',
@@ -170,8 +173,8 @@ export function ControlsMenu(props: Props) {
 
       case 'stack':
         if (
-          (selectedPieces as StackPiece[]).every(p =>
-            p.pieces.every(c => pieces[c].back)
+          (selectedPieces as StackPiece[]).every((p) =>
+            p.pieces.every((c) => pieces[c].back)
           )
         ) {
           items.push(
@@ -185,7 +188,7 @@ export function ControlsMenu(props: Props) {
                       .reduce(
                         (arr: StackPiece[], stack: StackPiece) => [
                           ...arr,
-                          ...stack.pieces.map(id => pieces[id] as StackPiece),
+                          ...stack.pieces.map((id) => pieces[id] as StackPiece),
                         ],
                         []
                       )
@@ -201,7 +204,7 @@ export function ControlsMenu(props: Props) {
         break;
 
       case 'image':
-        if (selectedPieces.every(p => p.back)) {
+        if (selectedPieces.every((p) => p.back)) {
           items.push(
             ...[
               {
@@ -209,7 +212,7 @@ export function ControlsMenu(props: Props) {
                 label: 'Flip Token',
                 fn: () =>
                   onUpdatePieces(
-                    selectedPieces.map(piece => ({
+                    selectedPieces.map((piece) => ({
                       ...piece,
                       flipped: !piece.flipped,
                     }))
@@ -240,25 +243,26 @@ export function ControlsMenu(props: Props) {
             {
               icon: <FaLevelUpAlt />,
               label: 'Pick Up Cards',
-              fn: () => onPickUpSelected(selectedPieces.map(piece => piece.id)),
+              fn: () =>
+                onPickUpSelected(selectedPieces.map((piece) => piece.id)),
             },
             {
               icon: <FaSync />,
               label: 'Flip Card',
               fn: () =>
                 onUpdatePieces(
-                  selectedPieces.map(piece => ({
+                  selectedPieces.map((piece) => ({
                     ...piece,
                     faceDown: !piece.faceDown,
                   }))
                 ),
             },
-            ...(selectedPieces.every(p => p.faceDown)
+            ...(selectedPieces.every((p) => p.faceDown)
               ? [
                   {
                     icon: <FaEye />,
                     label: 'Peek',
-                    fn: () => onPeekAtCards(selectedPieces.map(p => p.id)),
+                    fn: () => onPeekAtCards(selectedPieces.map((p) => p.id)),
                   },
                 ]
               : []),
@@ -266,7 +270,7 @@ export function ControlsMenu(props: Props) {
               icon: <FaBan />,
               label: 'Discard',
               fn: () =>
-                onDiscardSelected(selectedPieces.map(piece => piece.id)),
+                onDiscardSelected(selectedPieces.map((piece) => piece.id)),
             },
           ]
         );
@@ -314,7 +318,7 @@ export function ControlsMenu(props: Props) {
           label: allUnlocked ? 'Lock' : 'Unlock',
           fn: () =>
             onUpdatePieces(
-              selectedPieces.map(piece => ({
+              selectedPieces.map((piece) => ({
                 ...piece,
                 locked: allUnlocked,
               }))
@@ -339,6 +343,11 @@ export function ControlsMenu(props: Props) {
           fn: onShowChat,
         },
 
+        {
+          icon: <FaRegIdCard />,
+          label: 'Player Stats',
+          fn: onShowPlayerStats,
+        },
         {
           icon: <FaDiceFive />,
           label: 'Roll Dice',
@@ -394,7 +403,7 @@ export function ControlsMenu(props: Props) {
         <ExpandIcon> {isExpanded ? <>&lsaquo;</> : <>&rsaquo;</>}</ExpandIcon>
         {isExpanded && <>Collapse</>}
       </ControlsItem>
-      {items.map(item => (
+      {items.map((item) => (
         <ControlsItem key={item.label} onClick={item.fn}>
           <Icon>{item.icon}</Icon>
           {isExpanded && <>{item.label}</>}

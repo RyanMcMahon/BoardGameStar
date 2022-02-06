@@ -143,9 +143,8 @@ export function WebPage(props: Props) {
   const navigate = useNavigate();
   const { currentUser, isLoading } = useUser() as any;
   // const [tags, setTags] = React.useState<string[]>([]);
-  const [isSideMenuVisible, setIsSideMenuVisible] = React.useState<boolean>(
-    false
-  );
+  const [isSideMenuVisible, setIsSideMenuVisible] =
+    React.useState<boolean>(false);
   const hostIdRef = React.createRef<HTMLInputElement>();
   const gameIdRef = React.createRef<HTMLInputElement>();
   const handleSubmitJoin = (e: React.FormEvent<HTMLFormElement>) => {

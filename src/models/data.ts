@@ -34,10 +34,63 @@ export interface GamePromptSubmission {
   answers: GamePromptAnswer[];
 }
 
+export interface PlayerValueConfig {
+  id: string;
+  type: 'attr' | 'input' | 'select';
+  label: string;
+}
+
+export interface PlayerInputConfig extends PlayerValueConfig {
+  type: 'input';
+  format: 'number' | 'currency';
+}
+
+export interface PlayerSelectConfig extends PlayerValueConfig {
+  type: 'select';
+  exclusive: boolean;
+  values: {
+    id: string;
+    label: string;
+    description?: string | null;
+    value: string | null;
+    modifiers?: {
+      id: string;
+      label: string;
+      value: number;
+    }[];
+  }[];
+}
+
+export interface PlayerAttrConfig extends PlayerValueConfig {
+  type: 'attr';
+  checkable: boolean;
+  values: {
+    id: string;
+    label: string;
+    value: string | null;
+  }[];
+  modifiers?: {
+    id: string;
+    label: string;
+    value: string | null;
+  }[];
+}
+
+export interface PlayerStatGroup {
+  label: string;
+  stats: PlayerStatConfig[];
+}
+
+export type PlayerStatConfig =
+  | PlayerInputConfig
+  | PlayerSelectConfig
+  | PlayerAttrConfig;
+
 export interface GameConfig {
   currency?: string;
   prompts?: GamePrompt[];
   curScenario: string;
+  playerStats?: PlayerStatGroup[];
   scenarios: {
     [id: string]: ScenarioOption;
   };

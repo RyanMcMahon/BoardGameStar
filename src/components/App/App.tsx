@@ -40,6 +40,8 @@ import { DeckPeekModal } from '../DeckPeekModal';
 import { supportedBrowser } from '../../utils/meta';
 import { useGameState } from '../../utils/gameState';
 import { serverTimestamp } from 'firebase/database';
+import { PlayerStatModal } from '../PlayerStatModal';
+import { stat } from 'fs';
 
 const MainContainer = styled.div({
   height: '100%',
@@ -180,7 +182,6 @@ export function App(props: { spectator?: boolean }) {
         : null;
     })
     .filter((x) => x);
-  // console.log(board, pieces);
   const handCounts: { [id: string]: number } = Object.values(
     gameState?.players || {}
   ).reduce((hc, p) => ({ ...hc, [p.id]: p.hand.length }), {});
@@ -419,6 +420,7 @@ export function App(props: { spectator?: boolean }) {
   const [showSettingsModal, setShowSettingsModal] =
     React.useState<boolean>(false);
   const [showRenameModal, setShowRenameModal] = React.useState<boolean>(false);
+  const [editPlayerStats, setEditPlayerStats] = React.useState<string>();
   const [showInviteModal, setShowInviteModal] = React.useState<boolean>(true);
   const [showDiceModal, setShowDiceModal] = React.useState<boolean>(false);
   const [lastReadChat, setLastReadChat] = React.useState<number>(0);
@@ -480,14 +482,16 @@ export function App(props: { spectator?: boolean }) {
   };
 
   const handleRename = (name: string) => {
-    // if (conn) {
-    //   conn.send({
-    //     name,
-    //     event: 'rename_player',
-    //   });
-    //   setName(name);
-    //   setShowRenameModal(false);
-    // }
+    const id = gameState?.players[playerId].pieceId;
+    if (!id) {
+      return;
+    }
+    handleUpdatePiece({
+      id,
+      name,
+    });
+    setName(name);
+    setShowRenameModal(false);
   };
 
   const handlePlayCards = (cardIds: string[], faceDown: boolean) => {
@@ -611,7 +615,7 @@ export function App(props: { spectator?: boolean }) {
                 ...piece,
                 label: `${piece.name} (${
                   handCounts[piece.playerId] || 0
-                } cards in hand)`,
+                } cards)`,
               };
             } else if (piece.type === 'stack') {
               return {
@@ -711,6 +715,7 @@ export function App(props: { spectator?: boolean }) {
           onPromptTransaction={handlePromptTransaction}
           onClearSelectedPieces={() => setSelectedPieceIds(new Set())}
           onShowDiceModal={() => setShowDiceModal(true)}
+          onShowPlayerStats={() => setEditPlayerStats('1')}
           onZoomIn={() => container && (container as Viewport).zoom(-200)}
           onZoomOut={() => container && (container as Viewport).zoom(200)}
           onShowSettingsModal={() => setShowSettingsModal(true)}
@@ -731,6 +736,24 @@ export function App(props: { spectator?: boolean }) {
         <RenameModal
           onSave={handleRename}
           onClose={() => setShowRenameModal(false)}
+        />
+      )}
+
+      {editPlayerStats && (
+        <PlayerStatModal
+          onClose={() => setEditPlayerStats(undefined)}
+          pieces={pieces}
+          groups={game?.config.playerStats}
+          players={gameState?.players}
+          onUpdateStat={(update) => {
+            sendEvent({
+              ...update,
+              playerId,
+              id: slug.nice(),
+              ts: serverTimestamp(),
+              event: 'update_player_stat',
+            });
+          }}
         />
       )}
 
