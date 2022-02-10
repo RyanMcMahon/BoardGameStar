@@ -42,7 +42,7 @@ export interface PlayerValueConfig {
 
 export interface PlayerInputConfig extends PlayerValueConfig {
   type: 'input';
-  format: 'number' | 'currency';
+  format: 'string' | 'number' | 'currency';
 }
 
 export interface PlayerSelectConfig extends PlayerValueConfig {

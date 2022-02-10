@@ -16,6 +16,7 @@ import {
   PlayerStatConfig,
   PlayerSelectConfig,
   PlayerAttrConfig,
+  PlayerInputConfig,
 } from '../../types';
 import { getAssetDimensions, filePrompt } from '../../utils/assets';
 import { values } from 'lodash';
@@ -96,7 +97,7 @@ export function PlayerStatEditorModal(props: Props) {
                         const ps = [...playerStats];
                         const stats = [...group.stats];
                         stats[statIndex] = {
-                          ...(stats[statIndex] as PlayerSelectConfig),
+                          ...(stats[statIndex] as PlayerStatConfig),
                           label,
                         };
                         ps[groupIndex] = {
@@ -107,6 +108,37 @@ export function PlayerStatEditorModal(props: Props) {
                       }}
                     />
                     <br />
+
+                    {stat.type === 'input' && (
+                      <div>
+                        <select
+                          value={stat.format}
+                          onChange={(e) => {
+                            const format = e.target.value;
+                            const ps = [...playerStats];
+                            const stats = [...group.stats];
+                            stats[statIndex] = {
+                              ...(stats[statIndex] as PlayerInputConfig),
+                              format: format as
+                                | 'string'
+                                | 'number'
+                                | 'currency',
+                            };
+                            ps[groupIndex] = {
+                              ...group,
+                              stats,
+                            };
+                            handleUpdateStats(ps);
+                          }}
+                        >
+                          <option value={undefined}>-</option>
+                          <option value="string">String</option>
+                          <option value="number">Number</option>
+                          <option value="currency">Currency</option>
+                        </select>
+                      </div>
+                    )}
+
                     {stat.type === 'attr' && (
                       <div>
                         <textarea
