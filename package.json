@@ -53,7 +53,7 @@
     "unique-names-generator": "^4.6.0",
     "use-image": "^1.0.8",
     "uuid": "^8.3.2",
-    "vm2": "^3.9.5"
+    "vm2": "^3.9.6"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
