@@ -29,7 +29,7 @@
     "@types/uuid": "^8.3.3",
     "axios": "^0.24.0",
     "detect-browser": "^5.2.1",
-    "dexie": "^3.2.0",
+    "dexie": "^3.2.2",
     "fabric": "^4.6.0",
     "firebase": "^9.6.0",
     "lodash": "^4.17.21",
